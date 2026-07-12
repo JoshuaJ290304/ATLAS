@@ -12,6 +12,33 @@ All notable changes to ATLAS will be documented in this file.
 - Text extraction
 - Requirement extraction preparation
 
+## [0.2.0] - 2026-07-12
+
+### Added
+
+- Project-scoped PDF and DOCX uploads
+- File-extension, size, and signature validation
+- PostgreSQL document metadata
+- Alembic documents-table migration
+- PDF text extraction using PyMuPDF
+- DOCX text extraction using python-docx
+- SHA-256 file checksums
+- Document listing and extracted-text endpoints
+- Document download and deletion
+- Project-isolated upload directories
+- React document-management workspace
+- Automatic stored-file cleanup
+
+### Verified
+
+- PDF upload and extraction
+- Document metadata persistence
+- Document download
+- Document deletion
+- Persistence after container restart
+- Project ownership protection
+
+
 ## [0.1.0] - 2026-07-12
 
 ### Added

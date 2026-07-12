@@ -6,6 +6,7 @@ from sqlalchemy import select
 from app.api.dependencies import CurrentUser, DbSession
 from app.models.project import Project
 from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
+from app.services.documents import remove_project_upload_directory
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -83,4 +84,5 @@ async def delete_project(
     project = await get_owned_project(db, project_id, current_user.id)
     await db.delete(project)
     await db.commit()
+    remove_project_upload_directory(project_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

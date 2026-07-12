@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
@@ -128,8 +129,16 @@ export default function DashboardPage() {
                   <p className="mt-3 min-h-12 text-sm leading-6 text-slate-600">
                     {project.description || "No description provided."}
                   </p>
-                  <div className="mt-5 border-t border-slate-100 pt-4 text-xs text-slate-500">
-                    Created {new Date(project.created_at).toLocaleString()}
+                  <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+                    <span className="text-xs text-slate-500">
+                      Created {new Date(project.created_at).toLocaleString()}
+                    </span>
+                    <Link
+                      to={`/projects/${project.id}/documents`}
+                      className="rounded-lg bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-700 hover:bg-indigo-100"
+                    >
+                      Documents
+                    </Link>
                   </div>
                 </article>
               ))}

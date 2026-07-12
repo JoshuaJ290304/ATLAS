@@ -25,6 +25,12 @@ services:
       - .env
     ports:
       - "8000:8000"
+    environment:
+      UPLOAD_ROOT: /app/storage/uploads
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
+      ALLOWED_DOCUMENT_EXTENSIONS: ${ALLOWED_DOCUMENT_EXTENSIONS:-.pdf,.docx}
+    volumes:
+      - ./storage/uploads:/app/storage/uploads
     depends_on:
       postgres:
         condition: service_healthy
