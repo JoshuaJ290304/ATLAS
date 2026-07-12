@@ -34,3 +34,9 @@ class Project(TimestampMixin, Base):
     )
 
     owner = relationship("User", back_populates="projects")
+    documents = relationship(
+        "Document",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

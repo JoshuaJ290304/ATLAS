@@ -19,6 +19,10 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: str = "http://localhost:5173"
 
+    UPLOAD_ROOT: str = "storage/uploads"
+    MAX_UPLOAD_SIZE_MB: int = Field(default=10, ge=1, le=100)
+    ALLOWED_DOCUMENT_EXTENSIONS: str = ".pdf,.docx"
+
     model_config = SettingsConfigDict(
         env_file=("../.env", ".env"),
         env_file_encoding="utf-8",
