@@ -40,3 +40,10 @@ class Project(TimestampMixin, Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+    requirements = relationship(
+        "Requirement",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

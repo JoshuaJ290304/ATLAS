@@ -53,14 +53,14 @@ export default function DashboardPage() {
             Build traceability from the requirement outward.
           </h1>
           <p className="mt-4 max-w-3xl leading-7 text-slate-600">
-            Milestone 1 provides secure accounts and project isolation. Document intelligence,
-            traceability graphs, impact analysis, and the AI assistant will attach to these projects.
+            Milestones 1–3 provide secure projects, document processing, and a reviewable requirement
+            register. Traceability graphs, impact analysis, and the AI assistant will attach to these records.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Metric label="Projects" value={projects.length} />
-          <Metric label="Current milestone" value="01" />
-          <Metric label="Requirements" value="-" />
+          <Metric label="Current milestone" value="03" />
+          <Metric label="Requirements" value="Ready" />
           <Metric label="Coverage" value="-" />
         </div>
       </section>
@@ -133,12 +133,20 @@ export default function DashboardPage() {
                     <span className="text-xs text-slate-500">
                       Created {new Date(project.created_at).toLocaleString()}
                     </span>
-                    <Link
-                      to={`/projects/${project.id}/documents`}
-                      className="rounded-lg bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-700 hover:bg-indigo-100"
-                    >
-                      Documents
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link
+                        to={`/projects/${project.id}/documents`}
+                        className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                      >
+                        Documents
+                      </Link>
+                      <Link
+                        to={`/projects/${project.id}/requirements`}
+                        className="rounded-lg bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-700 hover:bg-indigo-100"
+                      >
+                        Requirements
+                      </Link>
+                    </div>
                   </div>
                 </article>
               ))}
