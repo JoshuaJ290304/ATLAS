@@ -100,9 +100,17 @@ export default function DocumentsPage() {
 
   return (
     <AppShell>
-      <Link to="/" className="text-sm font-bold text-indigo-700 hover:underline">
-        ← Back to projects
-      </Link>
+      <div className="flex flex-wrap items-center gap-4 text-sm font-bold">
+        <Link to="/" className="text-indigo-700 hover:underline">
+          ← Back to projects
+        </Link>
+        <Link
+          to={`/projects/${projectId}/requirements`}
+          className="text-slate-600 hover:text-indigo-700 hover:underline"
+        >
+          Requirement intelligence
+        </Link>
+      </div>
 
       <section className="mt-5 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div>

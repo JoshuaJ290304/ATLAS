@@ -47,3 +47,9 @@ class Document(TimestampMixin, Base):
     extraction_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     project = relationship("Project", back_populates="documents")
+
+    requirements = relationship(
+        "Requirement",
+        back_populates="source_document",
+        passive_deletes=True,
+    )
