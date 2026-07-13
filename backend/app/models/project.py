@@ -47,3 +47,17 @@ class Project(TimestampMixin, Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+    artifacts = relationship(
+        "Artifact",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    trace_links = relationship(
+        "TraceLink",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

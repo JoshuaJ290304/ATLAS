@@ -1,3 +1,4 @@
+from app.models.artifact import Artifact, ArtifactType
 from app.models.document import Document, DocumentStatus
 from app.models.project import Project, ProjectStatus
 from app.models.requirement import (
@@ -6,9 +7,17 @@ from app.models.requirement import (
     RequirementStatus,
     RequirementType,
 )
+from app.models.trace_link import (
+    TraceLink,
+    TraceLinkSource,
+    TraceLinkStatus,
+    TraceLinkType,
+)
 from app.models.user import User, UserRole
 
 __all__ = [
+    "Artifact",
+    "ArtifactType",
     "Document",
     "DocumentStatus",
     "Project",
@@ -17,6 +26,10 @@ __all__ = [
     "RequirementSource",
     "RequirementStatus",
     "RequirementType",
+    "TraceLink",
+    "TraceLinkSource",
+    "TraceLinkStatus",
+    "TraceLinkType",
     "User",
     "UserRole",
 ]

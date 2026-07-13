@@ -204,6 +204,12 @@ export default function RequirementsPage() {
         >
           Project documents
         </Link>
+        <Link
+          to={`/projects/${projectId}/traceability`}
+          className="text-slate-600 hover:text-indigo-700 hover:underline"
+        >
+          Traceability
+        </Link>
       </div>
 
       <section className="mt-5 grid gap-6 lg:grid-cols-[1.4fr_1fr]">

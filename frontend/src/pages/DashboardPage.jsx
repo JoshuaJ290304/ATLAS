@@ -53,15 +53,14 @@ export default function DashboardPage() {
             Build traceability from the requirement outward.
           </h1>
           <p className="mt-4 max-w-3xl leading-7 text-slate-600">
-            Milestones 1–3 provide secure projects, document processing, and a reviewable requirement
-            register. Traceability graphs, impact analysis, and the AI assistant will attach to these records.
+            Milestones 1–4 provide secure projects, document processing, requirement intelligence, and a reviewable traceability matrix. Impact analysis and the AI assistant will attach to these records.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Metric label="Projects" value={projects.length} />
-          <Metric label="Current milestone" value="03" />
+          <Metric label="Current milestone" value="04" />
           <Metric label="Requirements" value="Ready" />
-          <Metric label="Coverage" value="-" />
+          <Metric label="Traceability" value="Ready" />
         </div>
       </section>
 
@@ -145,6 +144,12 @@ export default function DashboardPage() {
                         className="rounded-lg bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-700 hover:bg-indigo-100"
                       >
                         Requirements
+                      </Link>
+                      <Link
+                        to={`/projects/${project.id}/traceability`}
+                        className="rounded-lg bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-700 hover:bg-emerald-100"
+                      >
+                        Traceability
                       </Link>
                     </div>
                   </div>
