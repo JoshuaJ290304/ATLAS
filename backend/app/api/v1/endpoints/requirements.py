@@ -25,6 +25,7 @@ from app.schemas.requirement import (
     RequirementSummaryRead,
     RequirementUpdate,
 )
+from app.services.impact import ensure_requirement_snapshot, requirement_version_from_model
 from app.services.requirements import (
     analyze_ambiguity,
     extract_requirement_candidates,
@@ -125,6 +126,8 @@ async def extract_requirements(
             ambiguity_flags=candidate.ambiguity_flags,
         )
         db.add(requirement)
+        await db.flush()
+        db.add(requirement_version_from_model(requirement))
         created.append(requirement)
         existing.add(normalized)
         sequence += 1
@@ -174,6 +177,8 @@ async def create_requirement(
         ambiguity_flags=ambiguity_flags,
     )
     db.add(requirement)
+    await db.flush()
+    db.add(requirement_version_from_model(requirement))
     await db.commit()
     await db.refresh(requirement)
     return requirement
@@ -258,6 +263,7 @@ async def update_requirement(
     current_user: CurrentUser,
 ) -> Requirement:
     requirement = await get_owned_requirement(db, project_id, requirement_id, current_user.id)
+    await ensure_requirement_snapshot(db, requirement)
     updates = payload.model_dump(exclude_unset=True)
 
     if "title" in updates and updates["title"] is not None:
@@ -280,6 +286,8 @@ async def update_requirement(
             requirement.requirement_type,
         )
     requirement.version += 1
+    await db.flush()
+    db.add(requirement_version_from_model(requirement))
 
     await db.commit()
     await db.refresh(requirement)

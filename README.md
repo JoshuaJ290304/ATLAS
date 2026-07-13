@@ -2,248 +2,104 @@
 
 **AI-Assisted Requirement Traceability and Change Impact Analysis Platform**
 
-ATLAS is a full-stack software engineering platform designed to extract, classify, organize, and trace software requirements from project documents.
+ATLAS is a full-stack MCA major project that converts project documents into structured requirements, links those requirements to software artifacts, and explains the impact of requirement changes.
 
-The system helps developers and project managers understand project requirements, detect ambiguous statements, establish relationships between software artifacts, and analyze the possible impact of requirement changes.
+## Current release
 
-## Current Version
+**v0.5.0 — Change-impact analysis**
 
-Development version: **v0.3.0**
-
-Current branch:
+Development branch used for this milestone:
 
 ```text
-feature/milestone-3-requirement-intelligence
+feature/milestone-5-impact-analysis
 ```
 
-## Project Status
+## Project status
 
-| Milestone   | Module                                | Status         |
-| ----------- | ------------------------------------- | -------------- |
-| Milestone 1 | Authentication and project management | Completed      |
-| Milestone 2 | Document upload and text extraction   | Completed      |
-| Milestone 3 | Requirement intelligence              | In development |
-| Milestone 4 | Traceability engine                   | Planned        |
-| Milestone 5 | Change-impact analysis                | Planned        |
-| Milestone 6 | AI project assistant                  | Planned        |
-| Milestone 7 | Analytics and reporting               | Planned        |
+| Milestone | Module | Status |
+|---|---|---|
+| 1 | Authentication and project management | Completed |
+| 2 | Document upload and text extraction | Completed |
+| 3 | Requirement intelligence | Completed |
+| 4 | Traceability engine | Completed |
+| 5 | Change-impact analysis and UI corrections | Completed |
+| 6 | AI project assistant | Next |
+| 7 | Analytics and reporting | Planned |
 
-## Core Features
+## Main features
 
-### Authentication
+### Authentication and projects
 
-* User registration
-* Argon2 password hashing
-* JWT login
-* Authenticated user profile
-* Protected API endpoints
-* Project ownership protection
+- Registration and Argon2 password hashing
+- JWT login and protected endpoints
+- Owner-isolated project CRUD
 
-### Project Management
+### Documents
 
-* Create projects
-* List projects
-* View project details
-* Update projects
-* Delete projects
-* Isolated data for each user
+- PDF and DOCX upload
+- Size, extension, and binary-signature checks
+- SHA-256 checksum
+- Project-isolated storage
+- PyMuPDF and `python-docx` text extraction
+- Document list, text, download, and delete operations
 
-### Document Management
+### Requirement intelligence
 
-* Upload PDF and DOCX files
-* Maximum file-size validation
-* File-extension validation
-* Actual PDF and DOCX signature validation
-* SHA-256 file checksum generation
-* Project-specific upload directories
-* Document metadata stored in PostgreSQL
-* PDF text extraction using PyMuPDF
-* DOCX text extraction using `python-docx`
-* Download uploaded documents
-* Delete uploaded documents
-* Automatic file cleanup
+- Deterministic requirement extraction
+- Functional/non-functional classification
+- Non-functional categories
+- Confidence score and ambiguity warnings
+- Manual creation, editing, status management, and versioning
 
-### Requirement Intelligence
+### Traceability
 
-* Extract requirement statements from document text
-* Classify functional requirements
-* Classify non-functional requirements
-* Detect security requirements
-* Detect performance requirements
-* Detect availability requirements
-* Detect usability requirements
-* Calculate classification confidence
-* Detect ambiguous requirement language
-* Display ambiguity reasons
-* Create requirements manually
-* Edit requirement details
-* Track requirement versions
-* Update requirement review status
-* Prevent duplicate extraction
-* Delete requirements
+- API, database-table, test-case, and UML-component artifacts
+- Manual links and explainable suggestions
+- Accept/reject review workflow
+- Traceability matrix and coverage metrics
 
-## Technology Stack
+### Change-impact analysis
 
-### Frontend
+- Immutable requirement snapshots
+- Version-to-version comparison
+- Changed fields, added/removed terms, and unified text diff
+- Directly affected artifacts from accepted links
+- Transitive impact paths through the trace graph
+- Explainable 0–100 risk score
+- Low, medium, high, and critical severity
+- Persistent impact reports and history
 
-* React
-* Vite
-* Tailwind CSS
-* React Router
-* Axios
+## Technology stack
 
-### Backend
+| Layer | Technology |
+|---|---|
+| Frontend | React, Vite, Tailwind CSS, React Router, Axios |
+| Backend | FastAPI, Pydantic, SQLAlchemy asyncio |
+| Database | PostgreSQL |
+| Migrations | Alembic |
+| Documents | PyMuPDF, python-docx |
+| Security | JWT, Argon2 |
+| Deployment | Docker Compose, Nginx |
+| Quality | Pytest, Ruff |
 
-* Python
-* FastAPI
-* SQLAlchemy
-* Pydantic
-* Alembic
-* JWT authentication
-* Argon2 password hashing
-
-### Database
-
-* PostgreSQL
-
-### Document Processing
-
-* PyMuPDF
-* `python-docx`
-
-### Development and Deployment
-
-* Docker
-* Docker Compose
-* Nginx
-* Pytest
-* Ruff
-* Git and GitHub
-
-## Project Structure
-
-```text
-ATLAS_Milestone_1/
-│
-├── backend/
-│   ├── alembic/
-│   │   └── versions/
-│   │       ├── 0001_create_users_and_projects.py
-│   │       ├── 0002_create_documents.py
-│   │       └── 0003_create_requirements.py
-│   │
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── v1/
-│   │   │       └── endpoints/
-│   │   │           ├── auth.py
-│   │   │           ├── documents.py
-│   │   │           ├── health.py
-│   │   │           ├── projects.py
-│   │   │           └── requirements.py
-│   │   │
-│   │   ├── core/
-│   │   ├── db/
-│   │   ├── models/
-│   │   │   ├── document.py
-│   │   │   ├── project.py
-│   │   │   ├── requirement.py
-│   │   │   └── user.py
-│   │   │
-│   │   ├── schemas/
-│   │   ├── services/
-│   │   └── main.py
-│   │
-│   ├── tests/
-│   ├── Dockerfile
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   │   ├── DashboardPage.jsx
-│   │   │   ├── DocumentsPage.jsx
-│   │   │   ├── LoginPage.jsx
-│   │   │   ├── RegisterPage.jsx
-│   │   │   └── RequirementsPage.jsx
-│   │   └── App.jsx
-│   │
-│   ├── Dockerfile
-│   ├── package.json
-│   └── package-lock.json
-│
-├── storage/
-│   └── uploads/
-│
-├── .env.example
-├── .gitignore
-├── CHANGELOG.md
-├── docker-compose.yml
-├── VERSION
-└── README.md
-```
-
-## Prerequisites
-
-Install the following software:
-
-* Docker Desktop
-* Git
-* Visual Studio Code
-
-Docker Desktop must use Linux containers with the WSL 2 engine.
-
-Check Docker:
+## Run with Docker
 
 ```powershell
-docker --version
-docker compose version
-docker info
+Copy-Item .env.example .env
 ```
 
-## Environment Configuration
-
-Create the local environment file:
-
-```powershell
-Copy-Item ".env.example" ".env"
-```
-
-Open `.env` and replace the example JWT secret:
-
-```env
-JWT_SECRET_KEY=replace_with_a_long_random_secret
-```
-
-Use a long private value.
-
-Do not commit `.env` to Git.
-
-Verify that Git ignores it:
-
-```powershell
-git check-ignore .env
-git ls-files .env
-```
-
-The second command should return no output.
-
-## Run the Project with Docker
-
-From the project root, run:
+Replace `JWT_SECRET_KEY` in `.env`, then run:
 
 ```powershell
 docker compose up --build -d
-```
-
-Check the containers:
-
-```powershell
 docker compose ps
 ```
+
+Open:
+
+- Frontend: `http://localhost:5173`
+- Swagger: `http://localhost:8000/docs`
+- Health: `http://localhost:8000/api/v1/health`
 
 View logs:
 
@@ -251,447 +107,132 @@ View logs:
 docker compose logs --tail=150 postgres backend frontend
 ```
 
-Open the application:
-
-* Frontend: `http://localhost:5173`
-* Swagger API: `http://localhost:8000/docs`
-* Health endpoint: `http://localhost:8000/api/v1/health`
-
 Stop the project:
 
 ```powershell
 docker compose down
 ```
 
-Stop the project and remove the PostgreSQL volume:
+Do not use `docker compose down -v` unless you intentionally want to delete the local PostgreSQL data volume.
 
-```powershell
-docker compose down -v
-```
+## Database migrations
 
-> Removing the volume permanently deletes local database records.
+| Revision | Purpose |
+|---|---|
+| `0001` | Users and projects |
+| `0002` | Documents |
+| `0003` | Requirements |
+| `0004` | Artifacts and trace links |
+| `0005` | Requirement snapshots and impact reports |
 
-## Database Migrations
+The backend container runs `alembic upgrade head` during startup.
 
-Migrations are applied automatically when the backend container starts.
-
-Current migrations:
-
-```text
-0001 - users and projects
-0002 - documents
-0003 - requirements and requirement versions
-```
-
-Run migrations manually:
-
-```powershell
-docker compose exec backend alembic upgrade head
-```
-
-Check the current migration:
+Manual commands:
 
 ```powershell
 docker compose exec backend alembic current
-```
-
-View migration history:
-
-```powershell
 docker compose exec backend alembic history
+docker compose exec backend alembic upgrade head
 ```
 
-## Local Backend Setup without Docker
+## Milestone 5 workflow
 
-Use Python 3.12 or newer and a running PostgreSQL instance.
+1. Open a project and create or extract requirements.
+2. Open **Traceability**, create artifacts, and accept correct links.
+3. Open **Requirements**, edit and save a requirement to create another version.
+4. Open **Impact**.
+5. Select the requirement, baseline version, and target version.
+6. Generate a report.
+7. Review changed fields, direct artifacts, transitive paths, risk factors, and severity.
+8. Reopen the report from history after a restart.
 
-```powershell
-cd backend
+Only accepted trace links influence impact analysis. Suggested and rejected links are excluded.
 
-python -m venv .venv
-.venv\Scripts\Activate.ps1
+## Impact risk model
 
-pip install -r requirements.txt
+| Factor | Maximum points |
+|---|---:|
+| Textual change magnitude | 30 |
+| Directly affected artifacts | 30 |
+| Transitive artifacts | 15 |
+| Requirement lifecycle status | 10 |
+| Ambiguity and high-risk NFR category | 10 |
+| Traceability uncertainty | 5 |
 
-alembic upgrade head
+Severity:
 
-uvicorn app.main:app --reload
-```
+- Low: 0–24
+- Medium: 25–49
+- High: 50–74
+- Critical: 75–100
 
-For a locally installed PostgreSQL server, change the host in `DATABASE_URL` from `postgres` to `localhost`.
+The score is an explainable engineering heuristic, not a statistical probability.
 
-Run backend tests:
+## API groups
 
-```powershell
-pytest -q
-```
+- `/api/v1/auth`
+- `/api/v1/projects`
+- `/api/v1/projects/{project_id}/documents`
+- `/api/v1/projects/{project_id}/requirements`
+- `/api/v1/projects/{project_id}/artifacts`
+- `/api/v1/projects/{project_id}/trace-links`
+- `/api/v1/projects/{project_id}/traceability`
+- `/api/v1/projects/{project_id}/impact-analyses`
 
-Run lint checks:
-
-```powershell
-ruff check .
-```
-
-## Local Frontend Setup without Docker
-
-Use Node.js 20.19 or newer.
-
-```powershell
-cd frontend
-
-npm install
-npm run dev
-```
-
-Create a production build:
-
-```powershell
-npm run build
-```
-
-The frontend reads:
-
-```env
-VITE_API_URL=http://localhost:8000/api/v1
-```
-
-## Application Workflow
-
-### 1. Register
-
-Open:
+Requirement version endpoints:
 
 ```text
-http://localhost:5173/register
+GET /api/v1/projects/{project_id}/requirements/{requirement_id}/versions
+GET /api/v1/projects/{project_id}/requirements/{requirement_id}/compare
 ```
-
-Create a user account with a valid name, email address, and password.
-
-### 2. Log In
-
-Open:
-
-```text
-http://localhost:5173/login
-```
-
-Use the registered credentials.
-
-### 3. Create a Project
-
-From the dashboard:
-
-1. Click **Create Project**.
-2. Enter the project name.
-3. Enter an optional description.
-4. Save the project.
-
-### 4. Upload a Document
-
-Open the project’s Documents page.
-
-Upload a valid:
-
-* PDF file
-* DOCX file
-
-The file must be within the configured maximum upload size.
-
-ATLAS will:
-
-1. Validate the file extension.
-2. Validate the file signature.
-3. Generate a SHA-256 checksum.
-4. Save the file inside the project directory.
-5. Extract the document text.
-6. Store document metadata in PostgreSQL.
-
-Uploaded files are stored under:
-
-```text
-storage/uploads/<project-id>/
-```
-
-### 5. Extract Requirements
-
-Open the project’s Requirements page.
-
-1. Select an uploaded document.
-2. Click **Extract Requirements**.
-3. Review the extracted statements.
-4. Check their classifications.
-5. Review ambiguity warnings.
-6. Edit incorrect or incomplete requirements.
-7. Mark requirements as reviewed or approved.
-
-## Requirement Classification
-
-ATLAS currently uses deterministic analysis rules.
-
-### Functional Requirement
-
-A functional requirement describes what the system must do.
-
-Example:
-
-```text
-The system shall allow registered users to log in using email and password.
-```
-
-### Non-Functional Requirement
-
-A non-functional requirement describes a quality attribute or operational constraint.
-
-Example:
-
-```text
-The application shall respond within two seconds for 500 concurrent users.
-```
-
-Supported non-functional categories include:
-
-* Performance
-* Security
-* Availability
-* Usability
-* Reliability
-* Maintainability
-* Scalability
-* Other
-
-## Ambiguity Detection
-
-ATLAS identifies requirement statements that contain vague, subjective, or incomplete wording.
-
-Examples of ambiguous terms:
-
-* fast
-* user-friendly
-* efficient
-* simple
-* flexible
-* appropriate
-* sufficient
-* usually
-* generally
-* should
-* may
-* and so on
-
-Ambiguous example:
-
-```text
-The application should provide a fast and user-friendly interface.
-```
-
-This statement is ambiguous because:
-
-* “should” is weaker than “shall” or “must”
-* “fast” is not measurable
-* “user-friendly” is subjective
-
-A better version is:
-
-```text
-The application shall display the dashboard within two seconds for at least 95% of requests.
-```
-
-## Requirement Versioning
-
-Each requirement starts with:
-
-```text
-Version 1
-```
-
-When an existing requirement is edited:
-
-1. Its previous state is preserved.
-2. The version number increases.
-3. The updated content becomes the current version.
-
-Example:
-
-```text
-Version 1 → Version 2
-```
-
-This provides an audit history for future traceability and impact analysis.
-
-## API Endpoints
-
-### Health
-
-| Method | Endpoint         | Purpose          |
-| ------ | ---------------- | ---------------- |
-| GET    | `/api/v1/health` | Check API health |
-
-### Authentication
-
-| Method | Endpoint                | Purpose                     |
-| ------ | ----------------------- | --------------------------- |
-| POST   | `/api/v1/auth/register` | Create an account           |
-| POST   | `/api/v1/auth/login`    | Obtain a JWT token          |
-| GET    | `/api/v1/auth/me`       | Read the authenticated user |
-
-### Projects
-
-| Method | Endpoint                        | Purpose          |
-| ------ | ------------------------------- | ---------------- |
-| POST   | `/api/v1/projects`              | Create a project |
-| GET    | `/api/v1/projects`              | List projects    |
-| GET    | `/api/v1/projects/{project_id}` | Read a project   |
-| PATCH  | `/api/v1/projects/{project_id}` | Update a project |
-| DELETE | `/api/v1/projects/{project_id}` | Delete a project |
-
-### Documents
-
-| Method | Endpoint                                                         | Purpose                |
-| ------ | ---------------------------------------------------------------- | ---------------------- |
-| POST   | `/api/v1/projects/{project_id}/documents`                        | Upload a document      |
-| GET    | `/api/v1/projects/{project_id}/documents`                        | List project documents |
-| GET    | `/api/v1/projects/{project_id}/documents/{document_id}`          | Read document metadata |
-| GET    | `/api/v1/projects/{project_id}/documents/{document_id}/download` | Download a document    |
-| GET    | `/api/v1/projects/{project_id}/documents/{document_id}/text`     | Read extracted text    |
-| DELETE | `/api/v1/projects/{project_id}/documents/{document_id}`          | Delete a document      |
-
-### Requirements
-
-| Method | Endpoint                                                               | Purpose                     |
-| ------ | ---------------------------------------------------------------------- | --------------------------- |
-| POST   | `/api/v1/projects/{project_id}/requirements/extract`                   | Extract requirements        |
-| POST   | `/api/v1/projects/{project_id}/requirements`                           | Create a manual requirement |
-| GET    | `/api/v1/projects/{project_id}/requirements`                           | List requirements           |
-| GET    | `/api/v1/projects/{project_id}/requirements/{requirement_id}`          | Read a requirement          |
-| PATCH  | `/api/v1/projects/{project_id}/requirements/{requirement_id}`          | Update a requirement        |
-| GET    | `/api/v1/projects/{project_id}/requirements/{requirement_id}/versions` | View version history        |
-| DELETE | `/api/v1/projects/{project_id}/requirements/{requirement_id}`          | Delete a requirement        |
 
 ## Testing
 
-Run all backend tests:
-
 ```powershell
 docker compose exec backend pytest -q
-```
-
-Run lint checks:
-
-```powershell
 docker compose exec backend ruff check .
-```
-
-Build the frontend:
-
-```powershell
 docker compose build frontend
 ```
 
-Current Milestone 3 verification target:
+## Git release workflow
 
-```text
-12 backend tests passing
-Frontend production build successful
-Alembic migration 0003 successful
-```
-
-## Git Workflow
-
-ATLAS uses feature branches for each milestone.
-
-Current branch:
-
-```text
-feature/milestone-3-requirement-intelligence
-```
-
-Commit Milestone 3 work:
+After local testing:
 
 ```powershell
 git add .
-
-git commit -m "feat: add requirement extraction and ambiguity analysis"
-
-git push -u origin feature/milestone-3-requirement-intelligence
+git commit -m "feat: add change impact analysis and responsive project actions"
+git push -u origin feature/milestone-5-impact-analysis
 ```
 
-After successful testing, merge it into `main`:
+Merge and tag only after the full local workflow passes:
 
 ```powershell
 git switch main
 git pull origin main
-
-git merge --no-ff feature/milestone-3-requirement-intelligence `
-  -m "merge: complete milestone 3 requirement intelligence"
-
+git merge --no-ff feature/milestone-5-impact-analysis -m "merge: complete milestone 5 impact analysis"
 git push origin main
+git tag -a v0.5.0 -m "ATLAS v0.5.0 - Change impact analysis"
+git push origin v0.5.0
 ```
 
-Create the Milestone 3 release:
+## Current limitations
 
-```powershell
-git tag -a v0.3.0 `
-  -m "ATLAS v0.3.0 - Requirement intelligence"
+- Historical requirement states from before migration `0005` cannot be reconstructed.
+- Scanned PDFs require OCR, which is not implemented yet.
+- Transitive impact uses accepted trace paths, not source-code call graphs.
+- The risk model is deterministic and intentionally reviewable.
+- AI-assisted semantic classification and question answering are planned for Milestone 6.
 
-git push origin v0.3.0
-```
+## Next milestone
 
-## Versioning
+### Milestone 6 — AI Project Assistant
 
-ATLAS follows Semantic Versioning.
+Planned work:
 
-| Version  | Description                                   |
-| -------- | --------------------------------------------- |
-| `v0.1.0` | Authentication and project management         |
-| `v0.2.0` | Document upload and extraction                |
-| `v0.3.0` | Requirement extraction and ambiguity analysis |
-| `v0.4.0` | Traceability engine                           |
-| `v0.5.0` | Change-impact analysis                        |
-| `v0.6.0` | AI project assistant                          |
-| `v1.0.0` | First stable release                          |
-
-## Security Notes
-
-* Never commit `.env`.
-* Never commit JWT secret keys.
-* Never commit database passwords.
-* Uploaded files are isolated by project.
-* API access is protected using JWT authentication.
-* Project ownership is checked before document or requirement access.
-* Uploaded file extensions and signatures are validated.
-* Passwords are stored as Argon2 hashes.
-
-## Current Limitations
-
-* Requirement extraction is rule-based.
-* Scanned PDFs without selectable text are not supported yet.
-* OCR is not implemented.
-* Requirement relationships are not yet generated.
-* Source-code analysis is not yet implemented.
-* LLM-based classification is planned for a later milestone.
-* Real-time team collaboration is not yet implemented.
-
-## Next Milestone
-
-### Milestone 4 — Traceability Engine
-
-The next milestone will add:
-
-* Software artifact records
-* API artifact management
-* Database-table artifact management
-* UML component management
-* Test-case artifact management
-* Requirement-to-artifact links
-* Manual traceability links
-* Suggested traceability links
-* Link confidence scoring
-* Traceability matrix
-* Requirement coverage metrics
-* Artifact coverage metrics
-
-## License
-
-This project is currently developed as an MCA major project.
-
-A formal open-source license has not yet been selected.
+- Project-isolated semantic search
+- Text chunking and embeddings
+- ChromaDB vector storage
+- Ollama local LLM integration
+- Retrieval-Augmented Generation
+- Source-cited project answers
+- Requirement and artifact explanations

@@ -1,7 +1,54 @@
-@'
 # Changelog
 
-All notable changes to ATLAS will be documented in this file.
+All notable changes to ATLAS are documented here. The project follows Semantic Versioning.
+
+## [Unreleased]
+
+### Planned
+
+- Local AI project assistant with semantic search and source citations
+- ChromaDB vector indexing and Ollama integration
+- Analytics and reporting improvements
+
+## [0.5.0] - 2026-07-13
+
+### Added
+
+- Persisted requirement-version snapshots
+- Requirement version list and comparison endpoints
+- Deterministic requirement change detection
+- Directly affected artifact discovery through accepted trace links
+- Transitive impact paths through the requirement-artifact graph
+- Reproducible risk scoring from change magnitude, trace scope, lifecycle status, and quality signals
+- Low, medium, high, and critical impact severity
+- Explainable risk-factor breakdown
+- Stored change summaries and impact-analysis history
+- Impact-report detail and deletion endpoints
+- React impact-analysis workspace
+- Alembic migration `0005`
+
+### Changed
+
+- Project-card actions now use a responsive two-column grid and remain inside each card.
+- Added an Impact action to every project card.
+- Traceability summary now displays rejected-link count.
+- API application version updated to `0.5.0`.
+
+### Verified
+
+- Requirement snapshots are created for new, extracted, and edited requirements.
+- Version comparisons identify changed fields and added/removed terms.
+- Suggested/rejected links are excluded from impact paths.
+- Direct and transitive artifacts are resolved from accepted trace links.
+- Risk scoring is deterministic.
+- Impact reports persist and can be reopened or deleted.
+- Dashboard and traceability UI corrections build successfully.
+
+### Limitations
+
+- Requirement versions created before migration `0005` cannot be reconstructed; the current stored state becomes the first available snapshot.
+- Transitive impact follows accepted requirement-artifact paths and does not yet include source-code call graphs.
+- Risk scores are explainable heuristics, not probability estimates.
 
 ## [0.4.0] - 2026-07-13
 
@@ -9,122 +56,57 @@ All notable changes to ATLAS will be documented in this file.
 
 - Software artifact management
 - API, database-table, test-case, and UML-component artifacts
-- Manual requirement-to-artifact traceability links
-- Automatic trace-link suggestions
-- Explainable confidence scoring
-- Accept and reject review workflow
+- Manual requirement-to-artifact links
+- Explainable automatic trace-link suggestions
+- Confidence scoring and accept/reject review workflow
 - Traceability matrix
-- Requirement coverage metrics
-- Artifact coverage metrics
+- Requirement and artifact coverage metrics
 - Cascade deletion for artifact trace links
-- Alembic traceability migration
+- Alembic migration `0004`
 - React traceability workspace
-
-### Verified
-
-- Artifact creation, editing, and deletion
-- Automatic suggestion generation
-- Accept and reject workflow
-- Manual traceability links
-- Traceability matrix states
-- Requirement and artifact coverage
-- Restart persistence
-- Cascade cleanup after artifact deletion
 
 ### Known Issues
 
-- Project-card navigation buttons can overflow or become misaligned on some screen sizes.
-- Rejected trace-link count is not displayed in the top traceability summary cards.
-- These UI issues are scheduled for correction in Milestone 5.
+- Project-card navigation actions could overflow on some screen sizes.
+- Rejected trace-link count was not displayed in the top summary.
 
+Both issues are corrected in `v0.5.0`.
 
 ## [0.3.0] - 2026-07-13
 
 ### Added
 
 - Requirement extraction from uploaded document text
-- Functional and non-functional requirement classification
-- Non-functional categories for security, performance, availability, usability, reliability, maintainability, and scalability
-- Requirement classification confidence scores
-- Ambiguous-language detection
-- Readable ambiguity reasons
-- Manual requirement creation
-- Requirement editing
-- Requirement status management
-- Requirement version history
-- Duplicate extraction prevention
-- Requirement deletion
-- Project ownership protection for requirement operations
-- Alembic requirements migration
-- React requirement-management workspace
-
-### Verified
-
-- Requirement extraction from uploaded documents
 - Functional and non-functional classification
-- Ambiguity flag generation
-- Manual requirement creation
-- Requirement editing
-- Version increment after editing
-- Requirement deletion
-- Persistence after Docker restart
-- Backend tests
-- Frontend production build
-
-### Limitations
-
-- Requirement extraction is currently rule-based.
-- Scanned PDFs without selectable text are not supported.
-- OCR is not yet implemented.
-- AI-based classification is planned for a later milestone.
-
+- Classification confidence scores
+- Ambiguous-language detection with readable reasons
+- Manual requirement creation and editing
+- Requirement status management and version increments
+- Duplicate extraction prevention
+- Alembic migration `0003`
+- React requirement-management workspace
 
 ## [0.2.0] - 2026-07-12
 
 ### Added
 
 - Project-scoped PDF and DOCX uploads
-- File-extension, size, and signature validation
-- PostgreSQL document metadata
-- Alembic documents-table migration
-- PDF text extraction using PyMuPDF
-- DOCX text extraction using python-docx
-- SHA-256 file checksums
-- Document listing and extracted-text endpoints
-- Document download and deletion
+- File extension, size, and signature validation
+- SHA-256 checksums and PostgreSQL document metadata
+- PDF extraction with PyMuPDF and DOCX extraction with `python-docx`
+- Document listing, extracted-text, download, and deletion endpoints
 - Project-isolated upload directories
-- React document-management workspace
-- Automatic stored-file cleanup
-
-### Verified
-
-- PDF upload and extraction
-- Document metadata persistence
-- Document download
-- Document deletion
-- Persistence after container restart
-- Project ownership protection
-
+- Alembic migration `0002`
+- React document workspace
 
 ## [0.1.0] - 2026-07-12
 
 ### Added
 
-- FastAPI backend
-- React and Tailwind CSS frontend
-- PostgreSQL database integration
-- Docker Compose environment
-- Alembic migrations
-- User registration and login
-- Argon2 password hashing
-- JWT authentication
-- Project CRUD operations
-- Swagger API documentation
-- Backend tests and linting
-
-### Fixed
-
-- Replaced inaccessible registry URLs in package-lock.json
-- Changed frontend Docker image to Node 20 Bookworm Slim
-- Corrected frontend dependency installation
-'@ | Set-Content ".\CHANGELOG.md" -Encoding UTF8
+- FastAPI backend and React frontend foundations
+- PostgreSQL with asynchronous SQLAlchemy
+- Alembic migration `0001`
+- User registration, Argon2 password hashing, and JWT authentication
+- Protected project CRUD
+- Docker Compose development environment
+- Swagger documentation, backend tests, and linting

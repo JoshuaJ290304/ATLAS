@@ -9,7 +9,16 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from app.core.config import settings
 from app.db.base import Base
-from app.models import Artifact, Document, Project, Requirement, TraceLink, User  # noqa: F401
+from app.models import (  # noqa: F401
+    Artifact,
+    Document,
+    ImpactAnalysis,
+    Project,
+    Requirement,
+    RequirementVersion,
+    TraceLink,
+    User,
+)
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

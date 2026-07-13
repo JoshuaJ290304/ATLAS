@@ -4,6 +4,13 @@ import { Link } from "react-router-dom";
 import api from "../api/client";
 import AppShell from "../components/AppShell";
 
+const PROJECT_ACTIONS = [
+  { key: "documents", label: "Documents", className: "bg-slate-100 text-slate-700 hover:bg-slate-200" },
+  { key: "requirements", label: "Requirements", className: "bg-indigo-50 text-indigo-700 hover:bg-indigo-100" },
+  { key: "traceability", label: "Traceability", className: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" },
+  { key: "impact", label: "Impact", className: "bg-amber-50 text-amber-800 hover:bg-amber-100" },
+];
+
 export default function DashboardPage() {
   const [projects, setProjects] = useState([]);
   const [form, setForm] = useState({ name: "", description: "" });
@@ -53,19 +60,23 @@ export default function DashboardPage() {
             Build traceability from the requirement outward.
           </h1>
           <p className="mt-4 max-w-3xl leading-7 text-slate-600">
-            Milestones 1–4 provide secure projects, document processing, requirement intelligence, and a reviewable traceability matrix. Impact analysis and the AI assistant will attach to these records.
+            Milestones 1–5 provide secure projects, document processing, requirement intelligence,
+            traceability, and reproducible change-impact reports.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Metric label="Projects" value={projects.length} />
-          <Metric label="Current milestone" value="04" />
-          <Metric label="Requirements" value="Ready" />
+          <Metric label="Current milestone" value="05" />
           <Metric label="Traceability" value="Ready" />
+          <Metric label="Impact analysis" value="Ready" />
         </div>
       </section>
 
-      <section className="mt-10 grid gap-8 lg:grid-cols-[380px_1fr]">
-        <form onSubmit={createProject} className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="mt-10 grid gap-8 lg:grid-cols-[380px_minmax(0,1fr)]">
+        <form
+          onSubmit={createProject}
+          className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+        >
           <h2 className="text-xl font-black text-slate-900">Create project</h2>
           <p className="mt-1 text-sm leading-6 text-slate-500">
             Each uploaded SRS and all derived artifacts will belong to one project.
@@ -100,7 +111,7 @@ export default function DashboardPage() {
           </button>
         </form>
 
-        <div>
+        <div className="min-w-0">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-black text-slate-900">Your projects</h2>
             <button onClick={loadProjects} className="text-sm font-bold text-indigo-700 hover:underline">
@@ -116,41 +127,37 @@ export default function DashboardPage() {
               <p className="mt-2 text-sm text-slate-500">Create the first project using the form.</p>
             </div>
           ) : (
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="mt-5 grid gap-4 xl:grid-cols-2">
               {projects.map((project) => (
-                <article key={project.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <div className="flex items-start justify-between gap-4">
-                    <h3 className="text-lg font-black text-slate-900">{project.name}</h3>
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold capitalize text-emerald-700">
+                <article
+                  key={project.id}
+                  className="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                >
+                  <div className="flex min-w-0 items-start justify-between gap-4">
+                    <h3 className="min-w-0 break-words text-lg font-black text-slate-900">
+                      {project.name}
+                    </h3>
+                    <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold capitalize text-emerald-700">
                       {project.status}
                     </span>
                   </div>
-                  <p className="mt-3 min-h-12 text-sm leading-6 text-slate-600">
+                  <p className="mt-3 min-h-12 flex-1 break-words text-sm leading-6 text-slate-600">
                     {project.description || "No description provided."}
                   </p>
-                  <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-                    <span className="text-xs text-slate-500">
+                  <div className="mt-5 border-t border-slate-100 pt-4">
+                    <p className="text-xs text-slate-500">
                       Created {new Date(project.created_at).toLocaleString()}
-                    </span>
-                    <div className="flex gap-2">
-                      <Link
-                        to={`/projects/${project.id}/documents`}
-                        className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200"
-                      >
-                        Documents
-                      </Link>
-                      <Link
-                        to={`/projects/${project.id}/requirements`}
-                        className="rounded-lg bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-700 hover:bg-indigo-100"
-                      >
-                        Requirements
-                      </Link>
-                      <Link
-                        to={`/projects/${project.id}/traceability`}
-                        className="rounded-lg bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-700 hover:bg-emerald-100"
-                      >
-                        Traceability
-                      </Link>
+                    </p>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {PROJECT_ACTIONS.map((action) => (
+                        <Link
+                          key={action.key}
+                          to={`/projects/${project.id}/${action.key}`}
+                          className={`min-w-0 rounded-lg px-3 py-2 text-center text-sm font-bold ${action.className}`}
+                        >
+                          {action.label}
+                        </Link>
+                      ))}
                     </div>
                   </div>
                 </article>
