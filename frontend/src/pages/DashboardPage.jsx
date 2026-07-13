@@ -9,6 +9,12 @@ const PROJECT_ACTIONS = [
   { key: "requirements", label: "Requirements", className: "bg-indigo-50 text-indigo-700 hover:bg-indigo-100" },
   { key: "traceability", label: "Traceability", className: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" },
   { key: "impact", label: "Impact", className: "bg-amber-50 text-amber-800 hover:bg-amber-100" },
+  {
+    key: "assistant",
+    label: "AI Assistant",
+    className: "bg-violet-50 text-violet-700 hover:bg-violet-100",
+    gridClassName: "col-span-2",
+  },
 ];
 
 export default function DashboardPage() {
@@ -60,15 +66,15 @@ export default function DashboardPage() {
             Build traceability from the requirement outward.
           </h1>
           <p className="mt-4 max-w-3xl leading-7 text-slate-600">
-            Milestones 1–5 provide secure projects, document processing, requirement intelligence,
-            traceability, and reproducible change-impact reports.
+            Milestones 1–6 provide secure projects, document processing, requirement intelligence,
+            traceability, impact reports, and source-grounded project assistance.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Metric label="Projects" value={projects.length} />
-          <Metric label="Current milestone" value="05" />
+          <Metric label="Current milestone" value="06" />
           <Metric label="Traceability" value="Ready" />
-          <Metric label="Impact analysis" value="Ready" />
+          <Metric label="AI assistant" value="Ready" />
         </div>
       </section>
 
@@ -153,7 +159,7 @@ export default function DashboardPage() {
                         <Link
                           key={action.key}
                           to={`/projects/${project.id}/${action.key}`}
-                          className={`min-w-0 rounded-lg px-3 py-2 text-center text-sm font-bold ${action.className}`}
+                          className={`min-w-0 rounded-lg px-3 py-2 text-center text-sm font-bold ${action.className} ${action.gridClassName || ""}`}
                         >
                           {action.label}
                         </Link>

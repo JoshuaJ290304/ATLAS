@@ -1,27 +1,20 @@
-# Environment and secrets
+# Environment
 .env
-.env.*
-!.env.example
+*.env.local
 
 # Python
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
-.mypy_cache/
 .venv/
 venv/
 htmlcov/
 .coverage
-.coverage.*
-*.log
 
 # Node
 node_modules/
 dist/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # IDE and OS
 .vscode/
@@ -29,6 +22,12 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Uploaded and generated project files
+# Uploaded project files
 storage/uploads/*
 !storage/uploads/.gitkeep
+
+# AI assistant generated data and model cache
+storage/vector/*
+!storage/vector/.gitkeep
+storage/models/*
+!storage/models/.gitkeep

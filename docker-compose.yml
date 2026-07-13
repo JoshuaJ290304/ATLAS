@@ -29,14 +29,33 @@ services:
       UPLOAD_ROOT: /app/storage/uploads
       MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
       ALLOWED_DOCUMENT_EXTENSIONS: ${ALLOWED_DOCUMENT_EXTENSIONS:-.pdf,.docx}
+      CHROMA_PERSIST_ROOT: /app/storage/vector
+      MODEL_CACHE_ROOT: /app/storage/models
+      HF_HOME: /app/storage/models/huggingface
+      TRANSFORMERS_CACHE: /app/storage/models/huggingface
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:4b-instruct}
     volumes:
       - ./storage/uploads:/app/storage/uploads
+      - ./storage/vector:/app/storage/vector
+      - ./storage/models:/app/storage/models
     depends_on:
       postgres:
         condition: service_healthy
     command: >
       sh -c "alembic upgrade head &&
       uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: atlas-ollama
+    restart: unless-stopped
+    profiles: ["ai"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - atlas_ollama_data:/root/.ollama
+
 
   frontend:
     build:
@@ -52,3 +71,4 @@ services:
 
 volumes:
   atlas_postgres_data:
+  atlas_ollama_data:

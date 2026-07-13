@@ -6,6 +6,7 @@ from sqlalchemy import select
 from app.api.dependencies import CurrentUser, DbSession
 from app.models.project import Project
 from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
+from app.services.assistant import delete_project_vectors
 from app.services.documents import remove_project_upload_directory
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -82,6 +83,7 @@ async def delete_project(
     current_user: CurrentUser,
 ) -> Response:
     project = await get_owned_project(db, project_id, current_user.id)
+    await delete_project_vectors(project_id)
     await db.delete(project)
     await db.commit()
     remove_project_upload_directory(project_id)

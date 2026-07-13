@@ -6,9 +6,55 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 
 ### Planned
 
-- Local AI project assistant with semantic search and source citations
-- ChromaDB vector indexing and Ollama integration
-- Analytics and reporting improvements
+- Project analytics and health dashboard
+- Exportable final reports
+- Deployment and final-release preparation
+
+## [0.6.0] - 2026-07-13
+
+### Added
+
+- Project-isolated knowledge indexing
+- Deterministic chunking with configurable overlap
+- Sentence Transformer document and query embeddings
+- Persistent ChromaDB vector storage
+- Semantic search across documents, requirements, artifacts, and impact reports
+- Ollama-based Retrieval-Augmented Generation
+- Numbered source citations in assistant answers
+- Persistent assistant conversations and messages
+- Index status, rebuild, and clear operations
+- Ollama/model availability reporting
+- Retrieval-only fallback when Ollama is unavailable
+- React AI Assistant workspace with chat and semantic-search modes
+- Optional Ollama Docker Compose profile
+- Persistent model and vector-storage mounts
+- Alembic migration `0006`
+
+### Changed
+
+- Project cards now include an AI Assistant action.
+- Dashboard milestone status updated to Milestone 6.
+- API application version updated to `0.6.0`.
+- README and environment documentation now include Ollama, ChromaDB, and embedding setup.
+
+### Verified
+
+- Chunking and normalization behavior
+- Index source generation for all four project source types
+- Grounded prompt construction and numbered citations
+- Retrieval-only fallback behavior
+- 29 backend tests
+- Ruff checks
+- Frontend production build with 89 transformed modules
+- Alembic `0005 → 0006` SQL generation
+- Eight assistant API operations registered
+
+### Limitations
+
+- Exact PDF page-level citations are not yet available.
+- The first embedding run downloads the configured Sentence Transformer model.
+- Indexing is synchronous and designed for student-scale projects.
+- The project index must be rebuilt after source records change.
 
 ## [0.5.0] - 2026-07-13
 
@@ -17,85 +63,46 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Persisted requirement-version snapshots
 - Requirement version list and comparison endpoints
 - Deterministic requirement change detection
-- Directly affected artifact discovery through accepted trace links
-- Transitive impact paths through the requirement-artifact graph
-- Reproducible risk scoring from change magnitude, trace scope, lifecycle status, and quality signals
-- Low, medium, high, and critical impact severity
+- Directly and transitively affected artifact discovery
+- Reproducible risk scoring and impact severity
 - Explainable risk-factor breakdown
 - Stored change summaries and impact-analysis history
-- Impact-report detail and deletion endpoints
 - React impact-analysis workspace
 - Alembic migration `0005`
 
 ### Changed
 
-- Project-card actions now use a responsive two-column grid and remain inside each card.
-- Added an Impact action to every project card.
-- Traceability summary now displays rejected-link count.
-- API application version updated to `0.5.0`.
-
-### Verified
-
-- Requirement snapshots are created for new, extracted, and edited requirements.
-- Version comparisons identify changed fields and added/removed terms.
-- Suggested/rejected links are excluded from impact paths.
-- Direct and transitive artifacts are resolved from accepted trace links.
-- Risk scoring is deterministic.
-- Impact reports persist and can be reopened or deleted.
-- Dashboard and traceability UI corrections build successfully.
-
-### Limitations
-
-- Requirement versions created before migration `0005` cannot be reconstructed; the current stored state becomes the first available snapshot.
-- Transitive impact follows accepted requirement-artifact paths and does not yet include source-code call graphs.
-- Risk scores are explainable heuristics, not probability estimates.
+- Project-card actions use a responsive layout.
+- Traceability summary displays rejected-link count.
 
 ## [0.4.0] - 2026-07-13
 
 ### Added
 
 - Software artifact management
-- API, database-table, test-case, and UML-component artifacts
-- Manual requirement-to-artifact links
-- Explainable automatic trace-link suggestions
-- Confidence scoring and accept/reject review workflow
-- Traceability matrix
-- Requirement and artifact coverage metrics
-- Cascade deletion for artifact trace links
+- Manual and suggested requirement-to-artifact links
+- Confidence scoring and accept/reject workflow
+- Traceability matrix and coverage metrics
 - Alembic migration `0004`
 - React traceability workspace
-
-### Known Issues
-
-- Project-card navigation actions could overflow on some screen sizes.
-- Rejected trace-link count was not displayed in the top summary.
-
-Both issues are corrected in `v0.5.0`.
 
 ## [0.3.0] - 2026-07-13
 
 ### Added
 
-- Requirement extraction from uploaded document text
-- Functional and non-functional classification
-- Classification confidence scores
-- Ambiguous-language detection with readable reasons
-- Manual requirement creation and editing
-- Requirement status management and version increments
-- Duplicate extraction prevention
+- Requirement extraction and functional/non-functional classification
+- Confidence scores and ambiguity detection
+- Manual requirement creation, editing, status, and version increments
 - Alembic migration `0003`
-- React requirement-management workspace
+- React requirement workspace
 
 ## [0.2.0] - 2026-07-12
 
 ### Added
 
 - Project-scoped PDF and DOCX uploads
-- File extension, size, and signature validation
-- SHA-256 checksums and PostgreSQL document metadata
-- PDF extraction with PyMuPDF and DOCX extraction with `python-docx`
-- Document listing, extracted-text, download, and deletion endpoints
-- Project-isolated upload directories
+- File validation, checksums, metadata, and text extraction
+- Document list, text, download, and deletion endpoints
 - Alembic migration `0002`
 - React document workspace
 
@@ -103,10 +110,9 @@ Both issues are corrected in `v0.5.0`.
 
 ### Added
 
-- FastAPI backend and React frontend foundations
+- FastAPI and React foundations
 - PostgreSQL with asynchronous SQLAlchemy
 - Alembic migration `0001`
-- User registration, Argon2 password hashing, and JWT authentication
+- Registration, Argon2 password hashing, and JWT authentication
 - Protected project CRUD
-- Docker Compose development environment
-- Swagger documentation, backend tests, and linting
+- Docker Compose environment
