@@ -6,6 +6,7 @@ import DocumentsPage from "./pages/DocumentsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import RequirementsPage from "./pages/RequirementsPage";
+import TraceabilityPage from "./pages/TraceabilityPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 export default function App() {
@@ -36,6 +37,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <RequirementsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId/traceability"
+            element={
+              <ProtectedRoute>
+                <TraceabilityPage />
               </ProtectedRoute>
             }
           />
