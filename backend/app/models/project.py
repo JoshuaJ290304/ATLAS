@@ -55,6 +55,20 @@ class Project(TimestampMixin, Base):
         passive_deletes=True,
     )
 
+    requirement_versions = relationship(
+        "RequirementVersion",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    impact_analyses = relationship(
+        "ImpactAnalysis",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
     trace_links = relationship(
         "TraceLink",
         back_populates="project",

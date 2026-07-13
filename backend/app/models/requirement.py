@@ -96,6 +96,18 @@ class Requirement(TimestampMixin, Base):
 
     project = relationship("Project", back_populates="requirements")
     source_document = relationship("Document", back_populates="requirements")
+    versions = relationship(
+        "RequirementVersion",
+        back_populates="requirement",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="RequirementVersion.version",
+    )
+    impact_analyses = relationship(
+        "ImpactAnalysis",
+        back_populates="requirement",
+        passive_deletes=True,
+    )
     trace_links = relationship(
         "TraceLink",
         back_populates="requirement",

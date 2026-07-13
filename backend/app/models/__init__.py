@@ -1,5 +1,11 @@
 from app.models.artifact import Artifact, ArtifactType
 from app.models.document import Document, DocumentStatus
+from app.models.impact import (
+    ImpactAnalysis,
+    ImpactSeverity,
+    RequirementChangeType,
+    RequirementVersion,
+)
 from app.models.project import Project, ProjectStatus
 from app.models.requirement import (
     Requirement,
@@ -20,12 +26,16 @@ __all__ = [
     "ArtifactType",
     "Document",
     "DocumentStatus",
+    "ImpactAnalysis",
+    "ImpactSeverity",
     "Project",
     "ProjectStatus",
     "Requirement",
+    "RequirementChangeType",
     "RequirementSource",
     "RequirementStatus",
     "RequirementType",
+    "RequirementVersion",
     "TraceLink",
     "TraceLinkSource",
     "TraceLinkStatus",

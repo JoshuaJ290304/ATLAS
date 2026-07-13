@@ -296,6 +296,12 @@ export default function TraceabilityPage() {
         >
           Requirements
         </Link>
+        <Link
+          to={`/projects/${projectId}/impact`}
+          className="text-slate-600 hover:text-indigo-700 hover:underline"
+        >
+          Impact analysis
+        </Link>
       </div>
 
       <section className="mt-5 grid gap-6 xl:grid-cols-[1.2fr_1fr]">
@@ -311,11 +317,12 @@ export default function TraceabilityPage() {
             using only accepted evidence.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-2">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
           <Metric label="Requirement coverage" value={`${summary.requirement_coverage_percent}%`} />
           <Metric label="Artifact coverage" value={`${summary.artifact_coverage_percent}%`} />
           <Metric label="Accepted links" value={summary.accepted_links} />
           <Metric label="To review" value={summary.suggested_links} />
+          <Metric label="Rejected links" value={summary.rejected_links} />
         </div>
       </section>
 

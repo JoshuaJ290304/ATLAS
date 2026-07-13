@@ -1,20 +1,24 @@
-﻿# Milestone 5 Tasks
+# Milestone 5 Tasks
 
 ## UI fixes carried forward from Milestone 4
 
-- Arrange Documents, Requirements, and Traceability buttons properly inside project cards.
-- Prevent action buttons from overflowing on smaller screens.
-- Make project-card actions responsive.
-- Add Rejected links count to the traceability summary cards.
+- [x] Arrange Documents, Requirements, Traceability, and Impact actions inside project cards.
+- [x] Prevent project actions from overflowing on smaller screens.
+- [x] Make project-card actions responsive.
+- [x] Add rejected-link count to traceability summary cards.
 
 ## Impact Analysis Engine
 
-- Requirement change detection
-- Requirement version comparison
-- Directly affected artifacts
-- Transitively affected artifacts
-- Risk scoring
-- Impact severity
-- Change summaries
-- Impact reports
-- Impact-analysis history
+- [x] Persist requirement-version snapshots.
+- [x] Compare baseline and target requirement versions.
+- [x] Detect changed fields and textual differences.
+- [x] Identify directly affected artifacts using accepted links.
+- [x] Identify transitive artifacts through shared trace paths.
+- [x] Calculate an explainable risk score.
+- [x] Assign low, medium, high, or critical severity.
+- [x] Generate change summaries.
+- [x] Store impact-analysis history.
+- [x] Add report detail and deletion actions.
+- [x] Add React impact-analysis workspace.
+- [x] Add migration and backend tests.
+- [x] Update README, changelog, version, and implementation notes.

@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import DashboardPage from "./pages/DashboardPage";
 import DocumentsPage from "./pages/DocumentsPage";
+import ImpactAnalysisPage from "./pages/ImpactAnalysisPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import RequirementsPage from "./pages/RequirementsPage";
@@ -45,6 +46,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <TraceabilityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId/impact"
+            element={
+              <ProtectedRoute>
+                <ImpactAnalysisPage />
               </ProtectedRoute>
             }
           />
