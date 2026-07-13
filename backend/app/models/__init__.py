@@ -1,4 +1,13 @@
 from app.models.artifact import Artifact, ArtifactType
+from app.models.assistant import (
+    AssistantConversation,
+    AssistantIndex,
+    AssistantIndexStatus,
+    AssistantMessage,
+    AssistantMessageRole,
+    KnowledgeChunk,
+    KnowledgeSourceType,
+)
 from app.models.document import Document, DocumentStatus
 from app.models.impact import (
     ImpactAnalysis,
@@ -24,10 +33,17 @@ from app.models.user import User, UserRole
 __all__ = [
     "Artifact",
     "ArtifactType",
+    "AssistantConversation",
+    "AssistantIndex",
+    "AssistantIndexStatus",
+    "AssistantMessage",
+    "AssistantMessageRole",
     "Document",
     "DocumentStatus",
     "ImpactAnalysis",
     "ImpactSeverity",
+    "KnowledgeChunk",
+    "KnowledgeSourceType",
     "Project",
     "ProjectStatus",
     "Requirement",

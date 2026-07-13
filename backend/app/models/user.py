@@ -31,3 +31,10 @@ class User(TimestampMixin, Base):
     projects = relationship(
         "Project", back_populates="owner", cascade="all, delete-orphan", passive_deletes=True
     )
+
+    assistant_conversations = relationship(
+        "AssistantConversation",
+        back_populates="owner",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

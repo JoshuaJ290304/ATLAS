@@ -2,16 +2,16 @@
 
 **AI-Assisted Requirement Traceability and Change Impact Analysis Platform**
 
-ATLAS is a full-stack MCA major project that converts project documents into structured requirements, links those requirements to software artifacts, and explains the impact of requirement changes.
+ATLAS is a full-stack MCA major project that converts software project documents into structured requirements, links those requirements to technical artifacts, explains the impact of changes, and answers project questions from indexed evidence.
 
 ## Current release
 
-**v0.5.0 — Change-impact analysis**
+**v0.6.0 — AI Project Assistant**
 
 Development branch used for this milestone:
 
 ```text
-feature/milestone-5-impact-analysis
+feature/milestone-6-ai-project-assistant
 ```
 
 ## Project status
@@ -23,8 +23,8 @@ feature/milestone-5-impact-analysis
 | 3 | Requirement intelligence | Completed |
 | 4 | Traceability engine | Completed |
 | 5 | Change-impact analysis and UI corrections | Completed |
-| 6 | AI project assistant | Next |
-| 7 | Analytics and reporting | Planned |
+| 6 | AI project assistant | Completed |
+| 7 | Analytics and reporting | Next |
 
 ## Main features
 
@@ -48,7 +48,7 @@ feature/milestone-5-impact-analysis
 - Deterministic requirement extraction
 - Functional/non-functional classification
 - Non-functional categories
-- Confidence score and ambiguity warnings
+- Confidence scores and ambiguity warnings
 - Manual creation, editing, status management, and versioning
 
 ### Traceability
@@ -62,12 +62,22 @@ feature/milestone-5-impact-analysis
 
 - Immutable requirement snapshots
 - Version-to-version comparison
-- Changed fields, added/removed terms, and unified text diff
-- Directly affected artifacts from accepted links
-- Transitive impact paths through the trace graph
-- Explainable 0–100 risk score
-- Low, medium, high, and critical severity
+- Direct and transitive affected artifacts
+- Explainable 0–100 risk score and severity
 - Persistent impact reports and history
+
+### AI project assistant
+
+- Project-isolated knowledge indexing
+- Deterministic text chunking with overlap
+- Sentence Transformer embeddings
+- Persistent ChromaDB vector storage
+- Semantic search across documents, requirements, artifacts, and impact reports
+- Retrieval-Augmented Generation through a local Ollama model
+- Numbered source citations
+- Persistent project conversations and messages
+- Retrieval-only fallback when Ollama is unavailable
+- Index status, rebuild, and clear operations
 
 ## Technology stack
 
@@ -78,17 +88,87 @@ feature/milestone-5-impact-analysis
 | Database | PostgreSQL |
 | Migrations | Alembic |
 | Documents | PyMuPDF, python-docx |
+| Embeddings | Sentence Transformers (`all-MiniLM-L6-v2`) |
+| Vector database | ChromaDB persistent client |
+| Local LLM | Ollama with configurable Qwen/Llama/Gemma model |
 | Security | JWT, Argon2 |
 | Deployment | Docker Compose, Nginx |
 | Quality | Pytest, Ruff |
 
-## Run with Docker
+## Prerequisites
+
+- Docker Desktop with Linux containers and WSL 2
+- Git
+- Visual Studio Code
+- Ollama for full generated answers
+
+Verify Docker:
+
+```powershell
+docker --version
+docker compose version
+docker info
+```
+
+## Environment setup
+
+Create the local environment file:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Replace `JWT_SECRET_KEY` in `.env`, then run:
+Replace `JWT_SECRET_KEY` with a long private value.
+
+Important assistant settings:
+
+```env
+CHROMA_PERSIST_ROOT=storage/vector
+MODEL_CACHE_ROOT=storage/models
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+OLLAMA_MODEL=qwen3:4b-instruct
+ASSISTANT_ALLOW_RETRIEVAL_FALLBACK=true
+```
+
+Never commit `.env`, vector data, downloaded models, or uploaded project documents.
+
+## Ollama setup
+
+### Recommended: Ollama installed on Windows
+
+Install and start Ollama, then pull the configured model:
+
+```powershell
+ollama pull qwen3:4b-instruct
+ollama list
+```
+
+The backend container reaches Windows Ollama through:
+
+```text
+http://host.docker.internal:11434
+```
+
+### Optional: Ollama Docker profile
+
+Change `.env`:
+
+```env
+OLLAMA_BASE_URL=http://ollama:11434
+```
+
+Start the optional service and pull the model:
+
+```powershell
+docker compose --profile ai up -d ollama
+docker exec atlas-ollama ollama pull qwen3:4b-instruct
+docker compose restart backend
+```
+
+Do not run both host Ollama and the Docker Ollama service on port `11434` at the same time.
+
+## Run with Docker
 
 ```powershell
 docker compose up --build -d
@@ -104,7 +184,7 @@ Open:
 View logs:
 
 ```powershell
-docker compose logs --tail=150 postgres backend frontend
+docker compose logs --tail=200 postgres backend frontend
 ```
 
 Stop the project:
@@ -113,7 +193,7 @@ Stop the project:
 docker compose down
 ```
 
-Do not use `docker compose down -v` unless you intentionally want to delete the local PostgreSQL data volume.
+Do not use `docker compose down -v` unless you intentionally want to delete PostgreSQL and Ollama volumes.
 
 ## Database migrations
 
@@ -124,67 +204,78 @@ Do not use `docker compose down -v` unless you intentionally want to delete the 
 | `0003` | Requirements |
 | `0004` | Artifacts and trace links |
 | `0005` | Requirement snapshots and impact reports |
+| `0006` | Knowledge chunks, assistant index, conversations, and messages |
 
-The backend container runs `alembic upgrade head` during startup.
-
-Manual commands:
+The backend runs `alembic upgrade head` during startup.
 
 ```powershell
 docker compose exec backend alembic current
 docker compose exec backend alembic history
-docker compose exec backend alembic upgrade head
 ```
 
-## Milestone 5 workflow
+## AI assistant workflow
 
-1. Open a project and create or extract requirements.
-2. Open **Traceability**, create artifacts, and accept correct links.
-3. Open **Requirements**, edit and save a requirement to create another version.
-4. Open **Impact**.
-5. Select the requirement, baseline version, and target version.
-6. Generate a report.
-7. Review changed fields, direct artifacts, transitive paths, risk factors, and severity.
-8. Reopen the report from history after a restart.
+1. Create or open a project.
+2. Upload at least one PDF or DOCX with selectable text.
+3. Extract or create requirements.
+4. Add software artifacts and impact reports when available.
+5. Open **AI Assistant** from the project card.
+6. Click **Build index**.
+7. Wait for the embedding model to download on the first run.
+8. Use **Semantic search** to inspect retrieved evidence.
+9. Use **Ask project** for a grounded answer with numbered citations.
+10. Rebuild the index whenever project documents or structured records change.
 
-Only accepted trace links influence impact analysis. Suggested and rejected links are excluded.
+Indexed source types:
 
-## Impact risk model
+- Uploaded document text
+- Requirements
+- Software artifacts
+- Impact-analysis reports
 
-| Factor | Maximum points |
-|---|---:|
-| Textual change magnitude | 30 |
-| Directly affected artifacts | 30 |
-| Transitive artifacts | 15 |
-| Requirement lifecycle status | 10 |
-| Ambiguity and high-risk NFR category | 10 |
-| Traceability uncertainty | 5 |
+Only data belonging to the selected project is retrieved.
 
-Severity:
+## Retrieval and answer behavior
 
-- Low: 0–24
-- Medium: 25–49
-- High: 50–74
-- Critical: 75–100
+ATLAS embeds project chunks with Sentence Transformers and stores them in a persistent ChromaDB collection. Questions are embedded using the same model and filtered by `project_id` before nearest-neighbor retrieval.
 
-The score is an explainable engineering heuristic, not a statistical probability.
+The Ollama prompt contains only the retrieved project evidence and instructs the model to:
 
-## API groups
+- Avoid unsupported claims
+- State when evidence is insufficient
+- Cite claims using `[1]`, `[2]`, and similar markers
 
-- `/api/v1/auth`
-- `/api/v1/projects`
-- `/api/v1/projects/{project_id}/documents`
-- `/api/v1/projects/{project_id}/requirements`
-- `/api/v1/projects/{project_id}/artifacts`
-- `/api/v1/projects/{project_id}/trace-links`
-- `/api/v1/projects/{project_id}/traceability`
-- `/api/v1/projects/{project_id}/impact-analyses`
+When Ollama cannot be reached and retrieval fallback is enabled, ATLAS returns the strongest evidence excerpts instead of inventing an answer.
 
-Requirement version endpoints:
+## Assistant API endpoints
+
+Base path:
 
 ```text
-GET /api/v1/projects/{project_id}/requirements/{requirement_id}/versions
-GET /api/v1/projects/{project_id}/requirements/{requirement_id}/compare
+/api/v1/projects/{project_id}/assistant
 ```
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/status` | Read index, Ollama, and model status |
+| POST | `/index` | Build or rebuild project knowledge index |
+| DELETE | `/index` | Clear project knowledge index |
+| POST | `/search` | Run project-isolated semantic search |
+| POST | `/ask` | Ask a grounded project question |
+| GET | `/conversations` | List project conversations |
+| GET | `/conversations/{conversation_id}` | Read messages and citations |
+| DELETE | `/conversations/{conversation_id}` | Delete a conversation |
+
+## Assistant storage
+
+Generated local data is stored under:
+
+```text
+storage/vector/   # ChromaDB persistence
+storage/models/   # Sentence Transformer/Hugging Face cache
+```
+
+These folders are mounted into the backend container and excluded from Git, except for `.gitkeep` files.
 
 ## Testing
 
@@ -194,45 +285,57 @@ docker compose exec backend ruff check .
 docker compose build frontend
 ```
 
+Milestone 6 verification target:
+
+```text
+29 backend tests passing
+Frontend production build successful (89 modules)
+Alembic migration 0006 successful
+8 assistant API operations registered
+```
+
 ## Git release workflow
 
 After local testing:
 
 ```powershell
 git add .
-git commit -m "feat: add change impact analysis and responsive project actions"
-git push -u origin feature/milestone-5-impact-analysis
+git commit -m "feat: add source-grounded AI project assistant"
+git push -u origin feature/milestone-6-ai-project-assistant
 ```
 
-Merge and tag only after the full local workflow passes:
+Merge and tag only after indexing, search, Ollama answers, fallback answers, citations, persistence, and deletion pass:
 
 ```powershell
 git switch main
 git pull origin main
-git merge --no-ff feature/milestone-5-impact-analysis -m "merge: complete milestone 5 impact analysis"
+git merge --no-ff feature/milestone-6-ai-project-assistant -m "merge: complete milestone 6 AI project assistant"
 git push origin main
-git tag -a v0.5.0 -m "ATLAS v0.5.0 - Change impact analysis"
-git push origin v0.5.0
+git tag -a v0.6.0 -m "ATLAS v0.6.0 - AI project assistant"
+git push origin v0.6.0
 ```
 
 ## Current limitations
 
-- Historical requirement states from before migration `0005` cannot be reconstructed.
+- The first index build requires internet access to download the embedding model unless it is already cached.
+- Full generated answers require Ollama and the configured model.
+- Chunks from PDFs currently cite the document rather than exact page coordinates.
 - Scanned PDFs require OCR, which is not implemented yet.
-- Transitive impact uses accepted trace paths, not source-code call graphs.
-- The risk model is deterministic and intentionally reviewable.
-- AI-assisted semantic classification and question answering are planned for Milestone 6.
+- Indexing runs synchronously and is intended for student-scale projects.
+- Rebuild the index after changing documents, requirements, artifacts, or impact reports.
+- Answers are grounded by retrieval, but users should still verify critical engineering decisions against cited sources.
 
 ## Next milestone
 
-### Milestone 6 — AI Project Assistant
+### Milestone 7 — Analytics and Reporting
 
 Planned work:
 
-- Project-isolated semantic search
-- Text chunking and embeddings
-- ChromaDB vector storage
-- Ollama local LLM integration
-- Retrieval-Augmented Generation
-- Source-cited project answers
-- Requirement and artifact explanations
+- Project health dashboard
+- Requirement-type and status charts
+- Ambiguity trends
+- Traceability and coverage analytics
+- Impact-risk distribution
+- Document and assistant usage statistics
+- Exportable project report
+- Final deployment, documentation, and release preparation
