@@ -5,7 +5,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, Response, status
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 
 from app.api.dependencies import CurrentUser, DbSession
 from app.api.v1.endpoints.projects import get_owned_project
@@ -100,6 +100,14 @@ async def create_artifact(
     current_user: CurrentUser,
 ) -> Artifact:
     await get_owned_project(db, project_id, current_user.id)
+    duplicate = await db.execute(
+        select(Artifact.id).where(
+            Artifact.project_id == project_id,
+            func.lower(Artifact.name) == payload.name.lower(),
+        )
+    )
+    if duplicate.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=409, detail="An artifact with this name already exists")
     sequence = await next_artifact_number(db, project_id)
     artifact = Artifact(
         project_id=project_id,
@@ -170,9 +178,16 @@ async def update_artifact(
 ) -> Artifact:
     artifact = await get_owned_artifact(db, project_id, artifact_id, current_user.id)
     updates = payload.model_dump(exclude_unset=True)
-    for field in ("name", "description"):
-        if field in updates and updates[field] is not None:
-            updates[field] = updates[field].strip()
+    if "name" in updates and updates["name"] is not None:
+        duplicate = await db.execute(
+            select(Artifact.id).where(
+                Artifact.project_id == project_id,
+                Artifact.id != artifact.id,
+                func.lower(Artifact.name) == updates["name"].lower(),
+            )
+        )
+        if duplicate.scalar_one_or_none() is not None:
+            raise HTTPException(status_code=409, detail="An artifact with this name already exists")
     for field, value in updates.items():
         setattr(artifact, field, value)
     await db.commit()

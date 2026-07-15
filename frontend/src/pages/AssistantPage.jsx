@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import ProjectNav from "../components/ProjectNav";
+import { FieldError } from "../components/UI";
+import { apiErrorMessage, clean, validateRequired } from "../utils/validation";
 
 const SOURCE_STYLES = {
   document: "bg-sky-50 text-sky-700",
@@ -19,6 +22,8 @@ export default function AssistantPage() {
   const [activeConversation, setActiveConversation] = useState(null);
   const [question, setQuestion] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [questionError, setQuestionError] = useState("");
+  const [searchError, setSearchError] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -103,8 +108,10 @@ export default function AssistantPage() {
 
   async function askQuestion(event) {
     event.preventDefault();
-    const value = question.trim();
-    if (!value) return;
+    const value = clean(question);
+    const validationMessage = validateRequired(value, "Question", 3, 2000);
+    setQuestionError(validationMessage);
+    if (validationMessage) return;
     setAsking(true);
     setError("");
     setNotice("");
@@ -126,7 +133,7 @@ export default function AssistantPage() {
         setNotice("Ollama was unavailable, so ATLAS returned retrieval-only evidence.");
       }
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Could not answer the project question.");
+      setError(apiErrorMessage(requestError, "Could not answer the project question."));
     } finally {
       setAsking(false);
     }
@@ -134,8 +141,10 @@ export default function AssistantPage() {
 
   async function runSearch(event) {
     event.preventDefault();
-    const value = searchQuery.trim();
-    if (!value) return;
+    const value = clean(searchQuery);
+    const validationMessage = validateRequired(value, "Search query", 3, 1000);
+    setSearchError(validationMessage);
+    if (validationMessage) return;
     setSearching(true);
     setError("");
     try {
@@ -145,7 +154,7 @@ export default function AssistantPage() {
       });
       setSearchResults(response.data.results);
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Could not search project evidence.");
+      setError(apiErrorMessage(requestError, "Could not search project evidence."));
     } finally {
       setSearching(false);
     }
@@ -173,31 +182,9 @@ export default function AssistantPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-wrap items-center gap-4 text-sm font-bold">
-        <Link to="/" className="text-indigo-700 hover:underline">
-          ← Back to projects
-        </Link>
-        <Link
-          to={`/projects/${projectId}/documents`}
-          className="text-slate-600 hover:text-indigo-700 hover:underline"
-        >
-          Documents
-        </Link>
-        <Link
-          to={`/projects/${projectId}/requirements`}
-          className="text-slate-600 hover:text-indigo-700 hover:underline"
-        >
-          Requirements
-        </Link>
-        <Link
-          to={`/projects/${projectId}/traceability`}
-          className="text-slate-600 hover:text-indigo-700 hover:underline"
-        >
-          Traceability
-        </Link>
-      </div>
+      <ProjectNav projectId={projectId} />
 
-      <section className="mt-5 grid gap-6 xl:grid-cols-[1.25fr_1fr]">
+      <section className="atlas-page-header">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-violet-600">
             Milestone 6
@@ -227,7 +214,7 @@ export default function AssistantPage() {
         </section>
       )}
 
-      <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="mt-8 atlas-card p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-black text-slate-900">Project knowledge index</h2>
@@ -273,7 +260,7 @@ export default function AssistantPage() {
 
       {mode === "chat" ? (
         <section className="mt-5 grid gap-6 xl:grid-cols-[310px_minmax(0,1fr)]">
-          <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <aside className="atlas-card p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-black text-slate-900">Conversations</h2>
               <button onClick={newConversation} className="text-sm font-bold text-violet-700">
@@ -334,15 +321,21 @@ export default function AssistantPage() {
                 messages.map((message) => <ChatMessage key={message.id} message={message} />)
               )}
             </div>
-            <form onSubmit={askQuestion} className="border-t border-slate-200 p-5">
+            <form onSubmit={askQuestion} noValidate className="border-t border-slate-200 p-5">
               <textarea
                 rows={3}
                 value={question}
-                onChange={(event) => setQuestion(event.target.value)}
+                aria-invalid={Boolean(questionError)}
+                onChange={(event) => {
+                  setQuestion(event.target.value);
+                  if (questionError) setQuestionError("");
+                }}
                 disabled={!indexReady || asking}
-                className="w-full resize-none rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100 disabled:bg-slate-50"
+                maxLength={2000}
+                className="atlas-textarea disabled:bg-slate-50"
                 placeholder={indexReady ? "Ask a source-grounded project question..." : "Build the project index first."}
               />
+              <FieldError>{questionError}</FieldError>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <p className="text-xs text-slate-500">
                   Answers are limited to indexed project evidence and include citations.
@@ -359,7 +352,7 @@ export default function AssistantPage() {
         </section>
       ) : (
         <section className="mt-5 grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-          <form onSubmit={runSearch} className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <form onSubmit={runSearch} noValidate className="atlas-panel h-fit">
             <h2 className="text-xl font-black text-slate-900">Semantic evidence search</h2>
             <p className="mt-1 text-sm leading-6 text-slate-500">
               Retrieve the most relevant document, requirement, artifact, and impact chunks.
@@ -367,10 +360,16 @@ export default function AssistantPage() {
             <textarea
               rows={5}
               value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              className="mt-5 w-full resize-none rounded-xl border border-slate-300 px-4 py-3"
+              aria-invalid={Boolean(searchError)}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                if (searchError) setSearchError("");
+              }}
+              maxLength={1000}
+              className="atlas-textarea mt-5"
               placeholder="Search for password reset security and related test cases"
             />
+            <FieldError>{searchError}</FieldError>
             <button
               disabled={!indexReady || searching || searchQuery.trim().length < 3}
               className="mt-4 w-full rounded-xl bg-violet-600 px-4 py-3 font-bold text-white disabled:opacity-50"

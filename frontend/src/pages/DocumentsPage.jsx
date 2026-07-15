@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import ProjectNav from "../components/ProjectNav";
+import { FieldError } from "../components/UI";
+import { apiErrorMessage, validateFile } from "../utils/validation";
 
 export default function DocumentsPage() {
   const { projectId } = useParams();
@@ -10,6 +13,7 @@ export default function DocumentsPage() {
   const [project, setProject] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [fileError, setFileError] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -38,8 +42,9 @@ export default function DocumentsPage() {
 
   async function uploadDocument(event) {
     event.preventDefault();
-    if (!selectedFile) {
-      setError("Choose a PDF or DOCX file first.");
+    const validationMessage = validateFile(selectedFile);
+    if (validationMessage) {
+      setFileError(validationMessage);
       return;
     }
 
@@ -53,6 +58,7 @@ export default function DocumentsPage() {
       const response = await api.post(`/projects/${projectId}/documents`, formData);
       setDocuments((current) => [response.data, ...current]);
       setSelectedFile(null);
+      setFileError("");
       if (fileInputRef.current) fileInputRef.current.value = "";
       setNotice(
         response.data.status === "extracted"
@@ -60,7 +66,7 @@ export default function DocumentsPage() {
           : "Document uploaded, but text extraction failed. Check its status below.",
       );
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Document upload failed.");
+      setError(apiErrorMessage(requestError, "Document upload failed."));
     } finally {
       setUploading(false);
     }
@@ -100,19 +106,9 @@ export default function DocumentsPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-wrap items-center gap-4 text-sm font-bold">
-        <Link to="/" className="text-indigo-700 hover:underline">
-          ← Back to projects
-        </Link>
-        <Link
-          to={`/projects/${projectId}/requirements`}
-          className="text-slate-600 hover:text-indigo-700 hover:underline"
-        >
-          Requirement intelligence
-        </Link>
-      </div>
+      <ProjectNav projectId={projectId} />
 
-      <section className="mt-5 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <section className="atlas-page-header">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-indigo-600">
             Milestone 2
@@ -145,7 +141,8 @@ export default function DocumentsPage() {
       <section className="mt-10 grid gap-8 lg:grid-cols-[380px_1fr]">
         <form
           onSubmit={uploadDocument}
-          className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          noValidate
+          className="atlas-panel h-fit"
         >
           <h2 className="text-xl font-black text-slate-900">Upload SRS document</h2>
           <p className="mt-1 text-sm leading-6 text-slate-500">
@@ -159,9 +156,15 @@ export default function DocumentsPage() {
               required
               type="file"
               accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
+              aria-invalid={Boolean(fileError)}
+              onChange={(event) => {
+                const file = event.target.files?.[0] || null;
+                setSelectedFile(file);
+                setFileError(validateFile(file));
+              }}
               className="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:font-bold file:text-indigo-700"
             />
+            <FieldError>{fileError}</FieldError>
           </label>
 
           {selectedFile && (
@@ -179,8 +182,8 @@ export default function DocumentsPage() {
           )}
 
           <button
-            disabled={uploading}
-            className="mt-5 w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
+            disabled={uploading || Boolean(fileError) || !selectedFile}
+            className="atlas-button-primary mt-5 w-full"
           >
             {uploading ? "Uploading and extracting..." : "Upload document"}
           </button>
@@ -206,7 +209,7 @@ export default function DocumentsPage() {
               {documents.map((document) => (
                 <article
                   key={document.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                  className="atlas-panel"
                 >
                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                     <div>

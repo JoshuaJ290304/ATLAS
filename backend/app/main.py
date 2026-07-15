@@ -6,7 +6,7 @@ from app.core.config import settings
 
 app = FastAPI(
     title=settings.APP_NAME,
-    version="0.6.0",
+    version="0.7.0",
     description="AI-assisted requirement traceability and change-impact analysis platform.",
 )
 

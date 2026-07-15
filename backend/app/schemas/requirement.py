@@ -1,13 +1,14 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.models.requirement import (
     RequirementSource,
     RequirementStatus,
     RequirementType,
 )
+from app.schemas.validation import clean_optional_text, clean_required_text
 
 
 class RequirementCreate(BaseModel):
@@ -17,10 +18,27 @@ class RequirementCreate(BaseModel):
     non_functional_category: str | None = Field(default=None, max_length=80)
     status: RequirementStatus = RequirementStatus.DRAFT
 
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str) -> str:
+        return clean_required_text(value, "Requirement title")
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str) -> str:
+        return clean_required_text(value, "Requirement description")
+
+    @field_validator("non_functional_category")
+    @classmethod
+    def clean_category(cls, value: str | None) -> str | None:
+        return clean_optional_text(value)
+
     @model_validator(mode="after")
     def validate_category(self) -> "RequirementCreate":
         if self.requirement_type == RequirementType.FUNCTIONAL:
             self.non_functional_category = None
+        elif not self.non_functional_category:
+            raise ValueError("A non-functional category is required")
         return self
 
 
@@ -30,6 +48,25 @@ class RequirementUpdate(BaseModel):
     requirement_type: RequirementType | None = None
     non_functional_category: str | None = Field(default=None, max_length=80)
     status: RequirementStatus | None = None
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return clean_required_text(value, "Requirement title")
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return clean_required_text(value, "Requirement description")
+
+    @field_validator("non_functional_category")
+    @classmethod
+    def clean_category(cls, value: str | None) -> str | None:
+        return clean_optional_text(value)
 
 
 class RequirementExtractionRequest(BaseModel):

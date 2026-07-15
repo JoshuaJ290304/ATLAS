@@ -272,10 +272,15 @@ async def update_requirement(
         updates["description"] = updates["description"].strip()
 
     resolved_type = updates.get("requirement_type", requirement.requirement_type)
+    resolved_category = updates.get(
+        "non_functional_category", requirement.non_functional_category
+    )
     if resolved_type == RequirementType.FUNCTIONAL:
         updates["non_functional_category"] = None
-    elif updates.get("non_functional_category"):
-        updates["non_functional_category"] = updates["non_functional_category"].strip()
+    elif not resolved_category:
+        raise HTTPException(
+            status_code=422, detail="A non-functional category is required"
+        )
 
     for field, value in updates.items():
         setattr(requirement, field, value)

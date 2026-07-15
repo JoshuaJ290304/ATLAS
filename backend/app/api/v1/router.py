@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
+    analytics,
     assistant,
     auth,
     documents,
@@ -26,3 +27,4 @@ api_router.include_router(impact.version_router)
 api_router.include_router(impact.impact_router)
 
 api_router.include_router(assistant.router)
+api_router.include_router(analytics.router)

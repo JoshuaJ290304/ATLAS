@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import ProjectNav from "../components/ProjectNav";
+import { FieldError } from "../components/UI";
+import { apiErrorMessage } from "../utils/validation";
 
 const EMPTY_SUMMARY = {
   total: 0,
@@ -36,6 +39,7 @@ export default function ImpactAnalysisPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [formError, setFormError] = useState("");
 
   async function loadWorkspace() {
     setLoading(true);
@@ -100,6 +104,12 @@ export default function ImpactAnalysisPage() {
 
   async function runAnalysis(event) {
     event.preventDefault();
+    let validationMessage = "";
+    if (!requirementId) validationMessage = "Select a requirement.";
+    else if (!baselineVersion || !targetVersion) validationMessage = "Select both baseline and target versions.";
+    else if (Number(baselineVersion) >= Number(targetVersion)) validationMessage = "Baseline version must be lower than target version.";
+    setFormError(validationMessage);
+    if (validationMessage) return;
     setAnalyzing(true);
     setError("");
     setNotice("");
@@ -116,7 +126,7 @@ export default function ImpactAnalysisPage() {
       await loadWorkspace();
       setSelectedAnalysis(response.data);
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Could not run impact analysis.");
+      setError(apiErrorMessage(requestError, "Could not run impact analysis."));
     } finally {
       setAnalyzing(false);
     }
@@ -139,19 +149,9 @@ export default function ImpactAnalysisPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-wrap items-center gap-4 text-sm font-bold">
-        <Link to="/" className="text-indigo-700 hover:underline">
-          ← Back to projects
-        </Link>
-        <Link to={`/projects/${projectId}/requirements`} className="text-slate-600 hover:text-indigo-700 hover:underline">
-          Requirements
-        </Link>
-        <Link to={`/projects/${projectId}/traceability`} className="text-slate-600 hover:text-indigo-700 hover:underline">
-          Traceability
-        </Link>
-      </div>
+      <ProjectNav projectId={projectId} />
 
-      <section className="mt-5 grid gap-6 xl:grid-cols-[1.15fr_1fr]">
+      <section className="atlas-page-header">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-indigo-600">
             Milestone 5
@@ -183,7 +183,7 @@ export default function ImpactAnalysisPage() {
 
       <section className="mt-10 grid gap-8 xl:grid-cols-[380px_minmax(0,1fr)]">
         <div className="space-y-6">
-          <form onSubmit={runAnalysis} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <form onSubmit={runAnalysis} noValidate className="atlas-panel">
             <h2 className="text-xl font-black text-slate-900">Run impact analysis</h2>
             <p className="mt-1 text-sm leading-6 text-slate-500">
               Edit a requirement at least once so two persisted versions are available.
@@ -192,8 +192,8 @@ export default function ImpactAnalysisPage() {
               Requirement
               <select
                 value={requirementId}
-                onChange={(event) => setRequirementId(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
+                onChange={(event) => { setRequirementId(event.target.value); setFormError(""); }}
+                className="atlas-select"
               >
                 <option value="">Select a requirement</option>
                 {requirements.map((item) => (
@@ -217,6 +217,7 @@ export default function ImpactAnalysisPage() {
                 versions={versions.filter((item) => item.version > Number(baselineVersion || 0))}
               />
             </div>
+            <FieldError>{formError}</FieldError>
             {selectedRequirement && (
               <p className="mt-4 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
                 Current requirement version: {selectedRequirement.version}. Stored snapshots: {versions.length}.
@@ -235,7 +236,7 @@ export default function ImpactAnalysisPage() {
             </button>
           </form>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="atlas-panel">
             <h2 className="text-xl font-black text-slate-900">Report history</h2>
             {loading ? (
               <p className="mt-4 text-sm text-slate-500">Loading reports...</p>
@@ -291,7 +292,7 @@ function ImpactReport({ analysis, onDelete }) {
   const differences = analysis.differences || {};
   return (
     <article className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="atlas-panel">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-wider text-indigo-600">
@@ -321,7 +322,7 @@ function ImpactReport({ analysis, onDelete }) {
         <ArtifactImpactList title="Transitive impact" items={analysis.transitive_artifacts} />
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="atlas-panel">
         <h3 className="text-xl font-black text-slate-900">Risk-score breakdown</h3>
         <div className="mt-5 space-y-4">
           {analysis.risk_factors.map((factor) => (
@@ -342,7 +343,7 @@ function ImpactReport({ analysis, onDelete }) {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="atlas-panel">
         <h3 className="text-xl font-black text-slate-900">Version difference</h3>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <Metric label="Changed text" value={`${Math.round((differences.change_ratio || 0) * 100)}%`} />
@@ -367,7 +368,7 @@ function ImpactReport({ analysis, onDelete }) {
 
 function ArtifactImpactList({ title, items }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="atlas-panel">
       <h3 className="text-xl font-black text-slate-900">{title}</h3>
       {items.length === 0 ? (
         <p className="mt-4 text-sm leading-6 text-slate-500">No artifacts were found on this path.</p>
