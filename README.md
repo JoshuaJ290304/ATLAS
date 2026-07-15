@@ -2,16 +2,16 @@
 
 **AI-Assisted Requirement Traceability and Change Impact Analysis Platform**
 
-ATLAS is a full-stack MCA major project that converts software project documents into structured requirements, links those requirements to technical artifacts, explains the impact of changes, and answers project questions from indexed evidence.
+ATLAS is a full-stack MCA major project that converts software project documents into structured requirements, links requirements to technical artifacts, explains the impact of changes, answers project questions from indexed evidence, and presents project health through an analytics and reporting dashboard.
 
 ## Current release
 
-**v0.6.0 — AI Project Assistant**
+**v0.7.0 — Analytics, Reporting, UI/UX, and Validation**
 
-Development branch used for this milestone:
+Development branch:
 
 ```text
-feature/milestone-6-ai-project-assistant
+feature/milestone-7-analytics-reporting
 ```
 
 ## Project status
@@ -22,62 +22,116 @@ feature/milestone-6-ai-project-assistant
 | 2 | Document upload and text extraction | Completed |
 | 3 | Requirement intelligence | Completed |
 | 4 | Traceability engine | Completed |
-| 5 | Change-impact analysis and UI corrections | Completed |
+| 5 | Change-impact analysis | Completed |
 | 6 | AI project assistant | Completed |
-| 7 | Analytics and reporting | Next |
+| 7 | Analytics, reporting, UI/UX, and validation | Completed |
 
-## Main features
+## Main capabilities
 
-### Authentication and projects
+### Authentication and project management
 
-- Registration and Argon2 password hashing
-- JWT login and protected endpoints
+- Registration with strong-password validation
+- Argon2 password hashing and JWT authentication
 - Owner-isolated project CRUD
+- Duplicate project-name protection
+- Responsive project dashboard with direct access to every module
 
-### Documents
+### Document intelligence
 
 - PDF and DOCX upload
-- Size, extension, and binary-signature checks
-- SHA-256 checksum
-- Project-isolated storage
-- PyMuPDF and `python-docx` text extraction
-- Document list, text, download, and delete operations
+- File extension, size, and binary-signature validation
+- SHA-256 checksum and project-isolated storage
+- Text extraction using PyMuPDF and `python-docx`
+- Document metadata, download, and deletion
 
 ### Requirement intelligence
 
 - Deterministic requirement extraction
-- Functional/non-functional classification
+- Functional and non-functional classification
 - Non-functional categories
-- Confidence scores and ambiguity warnings
-- Manual creation, editing, status management, and versioning
+- Confidence and ambiguity scores
+- Manual creation, review status, editing, and immutable version snapshots
 
 ### Traceability
 
 - API, database-table, test-case, and UML-component artifacts
-- Manual links and explainable suggestions
-- Accept/reject review workflow
-- Traceability matrix and coverage metrics
+- Manual and explainable suggested links
+- Accept/reject workflow
+- Requirement and artifact coverage
+- Traceability matrix
 
 ### Change-impact analysis
 
-- Immutable requirement snapshots
-- Version-to-version comparison
+- Requirement version comparison
 - Direct and transitive affected artifacts
-- Explainable 0–100 risk score and severity
+- Explainable 0–100 risk score
+- Low, medium, high, and critical severity
 - Persistent impact reports and history
 
 ### AI project assistant
 
-- Project-isolated knowledge indexing
-- Deterministic text chunking with overlap
+- Project-isolated semantic index
 - Sentence Transformer embeddings
-- Persistent ChromaDB vector storage
-- Semantic search across documents, requirements, artifacts, and impact reports
-- Retrieval-Augmented Generation through a local Ollama model
-- Numbered source citations
-- Persistent project conversations and messages
+- Persistent ChromaDB storage
+- Ollama-based grounded answers
+- Numbered citations
+- Semantic search and persistent conversations
 - Retrieval-only fallback when Ollama is unavailable
-- Index status, rebuild, and clear operations
+
+### Analytics and reporting
+
+- Project-health score from 0 to 100
+- Explainable health factors and improvement priorities
+- Document extraction statistics
+- Requirement type, status, category, review, and ambiguity analytics
+- Artifact inventory analytics
+- Traceability coverage and link-status analytics
+- Impact-risk and severity analytics
+- Assistant index and usage statistics
+- Recent project activity
+- Standalone HTML report download
+- CSV and JSON exports
+
+## UI/UX improvements in v0.7.0
+
+- Unified visual design system across all modules
+- Responsive project navigation and project action grid
+- Consistent cards, typography, spacing, buttons, inputs, alerts, and tables
+- Polished authentication experience
+- Mobile-friendly layouts and horizontal navigation
+- Loading, empty, success, warning, and error states
+- Keyboard-visible focus states and readable contrast
+- Reduced-motion support
+
+## Validation model
+
+ATLAS validates data in both React and FastAPI.
+
+### Frontend validation
+
+- Required fields and blank-space prevention
+- Minimum and maximum lengths
+- Email format
+- Strong password rules and password confirmation
+- PDF/DOCX type and 10 MB size checks
+- Non-functional category requirement
+- Artifact and requirement form validation
+- Requirement-version ordering for impact analysis
+- Assistant search and question length checks
+- Inline field-specific errors
+- Disabled submit buttons during requests
+
+### Backend validation
+
+- Pydantic field limits and enum validation
+- Trimmed and normalized text
+- Strong registration password rules
+- Duplicate project and artifact name checks
+- Non-functional category enforcement
+- Trace-confidence ranges
+- Impact baseline/target ordering
+- File binary-signature and size validation
+- Project ownership enforcement on every module
 
 ## Technology stack
 
@@ -88,85 +142,29 @@ feature/milestone-6-ai-project-assistant
 | Database | PostgreSQL |
 | Migrations | Alembic |
 | Documents | PyMuPDF, python-docx |
-| Embeddings | Sentence Transformers (`all-MiniLM-L6-v2`) |
-| Vector database | ChromaDB persistent client |
-| Local LLM | Ollama with configurable Qwen/Llama/Gemma model |
+| Embeddings | Sentence Transformers |
+| Vector database | ChromaDB |
+| Local LLM | Ollama |
 | Security | JWT, Argon2 |
 | Deployment | Docker Compose, Nginx |
 | Quality | Pytest, Ruff |
 
 ## Prerequisites
 
-- Docker Desktop with Linux containers and WSL 2
+- Docker Desktop using Linux containers and WSL 2
 - Git
 - Visual Studio Code
-- Ollama for full generated answers
-
-Verify Docker:
-
-```powershell
-docker --version
-docker compose version
-docker info
-```
+- Ollama for generated AI answers
 
 ## Environment setup
-
-Create the local environment file:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Replace `JWT_SECRET_KEY` with a long private value.
+Replace `JWT_SECRET_KEY` with a long private value. Keep the existing database and assistant settings from `.env.example`.
 
-Important assistant settings:
-
-```env
-CHROMA_PERSIST_ROOT=storage/vector
-MODEL_CACHE_ROOT=storage/models
-EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
-OLLAMA_BASE_URL=http://host.docker.internal:11434
-OLLAMA_MODEL=qwen3:4b-instruct
-ASSISTANT_ALLOW_RETRIEVAL_FALLBACK=true
-```
-
-Never commit `.env`, vector data, downloaded models, or uploaded project documents.
-
-## Ollama setup
-
-### Recommended: Ollama installed on Windows
-
-Install and start Ollama, then pull the configured model:
-
-```powershell
-ollama pull qwen3:4b-instruct
-ollama list
-```
-
-The backend container reaches Windows Ollama through:
-
-```text
-http://host.docker.internal:11434
-```
-
-### Optional: Ollama Docker profile
-
-Change `.env`:
-
-```env
-OLLAMA_BASE_URL=http://ollama:11434
-```
-
-Start the optional service and pull the model:
-
-```powershell
-docker compose --profile ai up -d ollama
-docker exec atlas-ollama ollama pull qwen3:4b-instruct
-docker compose restart backend
-```
-
-Do not run both host Ollama and the Docker Ollama service on port `11434` at the same time.
+Never commit `.env`, uploaded files, vector data, or downloaded models.
 
 ## Run with Docker
 
@@ -187,14 +185,6 @@ View logs:
 docker compose logs --tail=200 postgres backend frontend
 ```
 
-Stop the project:
-
-```powershell
-docker compose down
-```
-
-Do not use `docker compose down -v` unless you intentionally want to delete PostgreSQL and Ollama volumes.
-
 ## Database migrations
 
 | Revision | Purpose |
@@ -204,78 +194,66 @@ Do not use `docker compose down -v` unless you intentionally want to delete Post
 | `0003` | Requirements |
 | `0004` | Artifacts and trace links |
 | `0005` | Requirement snapshots and impact reports |
-| `0006` | Knowledge chunks, assistant index, conversations, and messages |
+| `0006` | AI assistant knowledge and conversation records |
 
-The backend runs `alembic upgrade head` during startup.
+Milestone 7 does not require a migration because all analytics are calculated from existing live records.
 
-```powershell
-docker compose exec backend alembic current
-docker compose exec backend alembic history
-```
+## Analytics workflow
 
-## AI assistant workflow
+1. Open a project.
+2. Select **Analytics** from the project card or project navigation.
+3. Review the health score and factor explanations.
+4. Inspect requirement, artifact, traceability, impact, and assistant charts.
+5. Review recent project activity.
+6. Download an HTML, CSV, or JSON report.
 
-1. Create or open a project.
-2. Upload at least one PDF or DOCX with selectable text.
-3. Extract or create requirements.
-4. Add software artifacts and impact reports when available.
-5. Open **AI Assistant** from the project card.
-6. Click **Build index**.
-7. Wait for the embedding model to download on the first run.
-8. Use **Semantic search** to inspect retrieved evidence.
-9. Use **Ask project** for a grounded answer with numbered citations.
-10. Rebuild the index whenever project documents or structured records change.
-
-Indexed source types:
-
-- Uploaded document text
-- Requirements
-- Software artifacts
-- Impact-analysis reports
-
-Only data belonging to the selected project is retrieved.
-
-## Retrieval and answer behavior
-
-ATLAS embeds project chunks with Sentence Transformers and stores them in a persistent ChromaDB collection. Questions are embedded using the same model and filtered by `project_id` before nearest-neighbor retrieval.
-
-The Ollama prompt contains only the retrieved project evidence and instructs the model to:
-
-- Avoid unsupported claims
-- State when evidence is insufficient
-- Cite claims using `[1]`, `[2]`, and similar markers
-
-When Ollama cannot be reached and retrieval fallback is enabled, ATLAS returns the strongest evidence excerpts instead of inventing an answer.
-
-## Assistant API endpoints
+### Analytics API
 
 Base path:
 
 ```text
-/api/v1/projects/{project_id}/assistant
+/api/v1/projects/{project_id}/analytics
 ```
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/status` | Read index, Ollama, and model status |
-| POST | `/index` | Build or rebuild project knowledge index |
-| DELETE | `/index` | Clear project knowledge index |
-| POST | `/search` | Run project-isolated semantic search |
-| POST | `/ask` | Ask a grounded project question |
-| GET | `/conversations` | List project conversations |
-| GET | `/conversations/{conversation_id}` | Read messages and citations |
-| DELETE | `/conversations/{conversation_id}` | Delete a conversation |
+| GET | `/analytics` | Read complete live project analytics |
+| GET | `/analytics/export?format=html` | Download standalone HTML report |
+| GET | `/analytics/export?format=csv` | Download metric rows as CSV |
+| GET | `/analytics/export?format=json` | Download complete analytics as JSON |
 
-## Assistant storage
+## Project-health scoring
 
-Generated local data is stored under:
+The score is deterministic and explainable:
 
-```text
-storage/vector/   # ChromaDB persistence
-storage/models/   # Sentence Transformer/Hugging Face cache
+| Factor | Maximum |
+|---|---:|
+| Document readiness | 15 |
+| Requirement quality | 20 |
+| Traceability coverage | 30 |
+| Impact-analysis discipline | 15 |
+| Artifact inventory | 10 |
+| AI knowledge-index readiness | 10 |
+| **Total** | **100** |
+
+The dashboard presents each factor, its score, and the specific action that improves it.
+
+## Ollama setup
+
+For Ollama installed on Windows:
+
+```powershell
+ollama pull qwen3:4b-instruct
+ollama list
 ```
 
-These folders are mounted into the backend container and excluded from Git, except for `.gitkeep` files.
+Use:
+
+```env
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+```
+
+The assistant still provides retrieval-only evidence if Ollama is unavailable and fallback is enabled.
 
 ## Testing
 
@@ -285,57 +263,45 @@ docker compose exec backend ruff check .
 docker compose build frontend
 ```
 
-Milestone 6 verification target:
+Milestone 7 verified results:
 
 ```text
-29 backend tests passing
-Frontend production build successful (89 modules)
-Alembic migration 0006 successful
-8 assistant API operations registered
+36 backend tests passed
+Ruff checks passed
+Frontend production build passed with 94 transformed modules
+No Milestone 7 migration required
 ```
 
-## Git release workflow
+## Versioning
 
-After local testing:
-
-```powershell
-git add .
-git commit -m "feat: add source-grounded AI project assistant"
-git push -u origin feature/milestone-6-ai-project-assistant
-```
-
-Merge and tag only after indexing, search, Ollama answers, fallback answers, citations, persistence, and deletion pass:
-
-```powershell
-git switch main
-git pull origin main
-git merge --no-ff feature/milestone-6-ai-project-assistant -m "merge: complete milestone 6 AI project assistant"
-git push origin main
-git tag -a v0.6.0 -m "ATLAS v0.6.0 - AI project assistant"
-git push origin v0.6.0
-```
+| Version | Description |
+|---|---|
+| `v0.1.0` | Authentication and projects |
+| `v0.2.0` | Document upload and extraction |
+| `v0.3.0` | Requirement intelligence |
+| `v0.4.0` | Traceability engine |
+| `v0.5.0` | Change-impact analysis |
+| `v0.6.0` | AI project assistant |
+| `v0.7.0` | Analytics, reporting, UI/UX, and validation |
+| `v1.0.0` | Stable final release |
 
 ## Current limitations
 
-- The first index build requires internet access to download the embedding model unless it is already cached.
-- Full generated answers require Ollama and the configured model.
-- Chunks from PDFs currently cite the document rather than exact page coordinates.
-- Scanned PDFs require OCR, which is not implemented yet.
-- Indexing runs synchronously and is intended for student-scale projects.
-- Rebuild the index after changing documents, requirements, artifacts, or impact reports.
-- Answers are grounded by retrieval, but users should still verify critical engineering decisions against cited sources.
+- The generated project report is HTML rather than PDF.
+- Scanned PDFs require OCR, which is not implemented.
+- Exact PDF page-coordinate citations are not available.
+- Indexing and analytics are synchronous and intended for student-scale projects.
+- Generated AI answers should be verified against their cited project evidence.
 
-## Next milestone
+## Next release
 
-### Milestone 7 — Analytics and Reporting
+### v1.0.0 — Final stable project
 
-Planned work:
+Planned finalization work:
 
-- Project health dashboard
-- Requirement-type and status charts
-- Ambiguity trends
-- Traceability and coverage analytics
-- Impact-risk distribution
-- Document and assistant usage statistics
-- Exportable project report
-- Final deployment, documentation, and release preparation
+- Full end-to-end acceptance test
+- Production deployment guidance
+- Optional cloud configuration
+- Final MCA report and demonstration script
+- Security and performance review
+- Formal release notes and repository cleanup

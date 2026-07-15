@@ -1,55 +1,82 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import Icon from "../components/Icon";
+import { Alert, EmptyState, FieldError, LoadingState, PageHeader, StatCard } from "../components/UI";
+import { apiErrorMessage, clean, validateRequired } from "../utils/validation";
 
 const PROJECT_ACTIONS = [
-  { key: "documents", label: "Documents", className: "bg-slate-100 text-slate-700 hover:bg-slate-200" },
-  { key: "requirements", label: "Requirements", className: "bg-indigo-50 text-indigo-700 hover:bg-indigo-100" },
-  { key: "traceability", label: "Traceability", className: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" },
-  { key: "impact", label: "Impact", className: "bg-amber-50 text-amber-800 hover:bg-amber-100" },
-  {
-    key: "assistant",
-    label: "AI Assistant",
-    className: "bg-violet-50 text-violet-700 hover:bg-violet-100",
-    gridClassName: "col-span-2",
-  },
+  { key: "documents", label: "Documents", caption: "Upload & extract", icon: "document", iconClass: "text-indigo-600", cardClass: "hover:border-indigo-200 hover:bg-indigo-50" },
+  { key: "requirements", label: "Requirements", caption: "Classify & review", icon: "requirement", iconClass: "text-violet-600", cardClass: "hover:border-violet-200 hover:bg-violet-50" },
+  { key: "traceability", label: "Traceability", caption: "Link artifacts", icon: "trace", iconClass: "text-emerald-600", cardClass: "hover:border-emerald-200 hover:bg-emerald-50" },
+  { key: "impact", label: "Impact", caption: "Assess change risk", icon: "impact", iconClass: "text-amber-600", cardClass: "hover:border-amber-200 hover:bg-amber-50" },
+  { key: "assistant", label: "AI Assistant", caption: "Ask with sources", icon: "assistant", iconClass: "text-cyan-600", cardClass: "hover:border-cyan-200 hover:bg-cyan-50" },
+  { key: "analytics", label: "Analytics", caption: "Health & reports", icon: "analytics", iconClass: "text-rose-600", cardClass: "hover:border-rose-200 hover:bg-rose-50" },
 ];
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState([]);
   const [form, setForm] = useState({ name: "", description: "" });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [query, setQuery] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
   async function loadProjects() {
+    setLoading(true);
     try {
       const response = await api.get("/projects");
       setProjects(response.data);
       setError("");
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Could not load projects.");
+      setError(apiErrorMessage(requestError, "Could not load projects."));
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    loadProjects();
-  }, []);
+  useEffect(() => { loadProjects(); }, []);
+
+  const filteredProjects = useMemo(() => {
+    const normalized = clean(query).toLowerCase();
+    if (!normalized) return projects;
+    return projects.filter((project) =>
+      `${project.name} ${project.description || ""}`.toLowerCase().includes(normalized),
+    );
+  }, [projects, query]);
+
+  function validateProject() {
+    const next = {
+      name: validateRequired(form.name, "Project name", 2, 160),
+      description:
+        form.description.length > 4000 ? "Description must be at most 4000 characters." : "",
+    };
+    Object.keys(next).forEach((key) => !next[key] && delete next[key]);
+    setFieldErrors(next);
+    return Object.keys(next).length === 0;
+  }
 
   async function createProject(event) {
     event.preventDefault();
+    if (!validateProject()) return;
     setCreating(true);
     setError("");
+    setNotice("");
     try {
-      const response = await api.post("/projects", form);
+      const response = await api.post("/projects", {
+        name: clean(form.name),
+        description: clean(form.description) || null,
+      });
       setProjects((current) => [response.data, ...current]);
       setForm({ name: "", description: "" });
+      setFieldErrors({});
+      setNotice(`Project “${response.data.name}” created successfully.`);
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Could not create project.");
+      setError(apiErrorMessage(requestError, "Could not create project."));
     } finally {
       setCreating(false);
     }
@@ -57,111 +84,103 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <section className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.22em] text-indigo-600">
-            Project workspace
-          </p>
-          <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-950">
-            Build traceability from the requirement outward.
-          </h1>
-          <p className="mt-4 max-w-3xl leading-7 text-slate-600">
-            Milestones 1–6 provide secure projects, document processing, requirement intelligence,
-            traceability, impact reports, and source-grounded project assistance.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Metric label="Projects" value={projects.length} />
-          <Metric label="Current milestone" value="06" />
-          <Metric label="Traceability" value="Ready" />
-          <Metric label="AI assistant" value="Ready" />
-        </div>
+      <PageHeader
+        eyebrow="Project command centre"
+        title="Turn software requirements into connected engineering knowledge."
+        description="Manage project evidence from source documents through requirement quality, traceability, impact analysis, grounded AI answers, and executive analytics."
+      />
+
+      <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Projects" value={projects.length} detail="Owned workspaces" icon="home" tone="indigo" />
+        <StatCard label="Release" value="0.7.0" detail="Analytics & design" icon="analytics" tone="violet" />
+        <StatCard label="Modules" value="07" detail="Integrated milestones" icon="trace" tone="emerald" />
+        <StatCard label="Validation" value="Active" detail="Client + API" icon="shield" tone="cyan" />
       </section>
 
-      <section className="mt-10 grid gap-8 lg:grid-cols-[380px_minmax(0,1fr)]">
-        <form
-          onSubmit={createProject}
-          className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-        >
-          <h2 className="text-xl font-black text-slate-900">Create project</h2>
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Each uploaded SRS and all derived artifacts will belong to one project.
-          </p>
-          <label className="mt-5 block text-sm font-semibold text-slate-700">
+      {(error || notice) && (
+        <div className="mt-6 space-y-3">
+          {error && <Alert type="error" onClose={() => setError("")}>{error}</Alert>}
+          {notice && <Alert type="success" onClose={() => setNotice("")}>{notice}</Alert>}
+        </div>
+      )}
+
+      <section className="mt-8 grid gap-7 xl:grid-cols-[360px_minmax(0,1fr)]">
+        <form onSubmit={createProject} noValidate className="atlas-panel h-fit xl:sticky xl:top-24">
+          <div className="flex items-start gap-3">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-indigo-50 text-indigo-600"><Icon name="plus" /></span>
+            <div><h2 className="text-xl font-black text-slate-950">Create project</h2><p className="mt-1 text-sm leading-6 text-slate-500">Start with a clear project identity. All evidence remains isolated inside it.</p></div>
+          </div>
+          <label className="atlas-label mt-6">
             Project name
             <input
-              required
-              minLength={2}
               value={form.name}
-              onChange={(event) => setForm({ ...form, name: event.target.value })}
-              className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+              aria-invalid={Boolean(fieldErrors.name)}
+              onChange={(event) => {
+                setForm({ ...form, name: event.target.value });
+                if (fieldErrors.name) setFieldErrors({ ...fieldErrors, name: "" });
+              }}
+              className="atlas-input"
               placeholder="Finance Management System"
+              maxLength={160}
             />
+            <div className="flex justify-between"><FieldError>{fieldErrors.name}</FieldError><span className="atlas-help ml-auto">{form.name.length}/160</span></div>
           </label>
-          <label className="mt-5 block text-sm font-semibold text-slate-700">
-            Description
+          <label className="atlas-label mt-5">
+            Description <span className="font-normal text-slate-400">(optional)</span>
             <textarea
-              rows={4}
+              rows={5}
               value={form.description}
-              onChange={(event) => setForm({ ...form, description: event.target.value })}
-              className="mt-2 w-full resize-none rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
-              placeholder="Describe the project and its main goal."
+              aria-invalid={Boolean(fieldErrors.description)}
+              onChange={(event) => {
+                setForm({ ...form, description: event.target.value });
+                if (fieldErrors.description) setFieldErrors({ ...fieldErrors, description: "" });
+              }}
+              className="atlas-textarea"
+              placeholder="Describe the business goal, users, and main system boundary."
+              maxLength={4000}
             />
+            <div className="flex justify-between"><FieldError>{fieldErrors.description}</FieldError><span className="atlas-help ml-auto">{form.description.length}/4000</span></div>
           </label>
-          {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-          <button
-            disabled={creating}
-            className="mt-5 w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
-          >
-            {creating ? "Creating..." : "Create project"}
+          <button disabled={creating} className="atlas-button-primary mt-5 w-full">
+            <Icon name="plus" className="h-4 w-4" /> {creating ? "Creating project..." : "Create project"}
           </button>
         </form>
 
         <div className="min-w-0">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black text-slate-900">Your projects</h2>
-            <button onClick={loadProjects} className="text-sm font-bold text-indigo-700 hover:underline">
-              Refresh
-            </button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div><h2 className="text-2xl font-black tracking-tight text-slate-950">Your projects</h2><p className="mt-1 text-sm text-slate-500">Open a module or review project health.</p></div>
+            <div className="flex gap-2">
+              <label className="relative flex-1 sm:w-64">
+                <Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input value={query} onChange={(event) => setQuery(event.target.value)} className="atlas-input !mt-0 !pl-10" placeholder="Search projects" aria-label="Search projects" />
+              </label>
+              <button type="button" onClick={loadProjects} className="atlas-button-secondary" aria-label="Refresh projects"><Icon name="refresh" className="h-4 w-4" /></button>
+            </div>
           </div>
 
           {loading ? (
-            <p className="mt-5 text-slate-500">Loading projects...</p>
+            <LoadingState label="Loading projects..." />
           ) : projects.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-              <p className="font-bold text-slate-800">No projects yet</p>
-              <p className="mt-2 text-sm text-slate-500">Create the first project using the form.</p>
-            </div>
+            <div className="mt-5"><EmptyState icon="home" title="No projects yet" description="Create the first ATLAS workspace using the form." /></div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="mt-5"><EmptyState icon="search" title="No matching projects" description="Try a different project name or clear the search." /></div>
           ) : (
-            <div className="mt-5 grid gap-4 xl:grid-cols-2">
-              {projects.map((project) => (
-                <article
-                  key={project.id}
-                  className="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-                >
-                  <div className="flex min-w-0 items-start justify-between gap-4">
-                    <h3 className="min-w-0 break-words text-lg font-black text-slate-900">
-                      {project.name}
-                    </h3>
-                    <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold capitalize text-emerald-700">
-                      {project.status}
-                    </span>
-                  </div>
-                  <p className="mt-3 min-h-12 flex-1 break-words text-sm leading-6 text-slate-600">
-                    {project.description || "No description provided."}
-                  </p>
-                  <div className="mt-5 border-t border-slate-100 pt-4">
-                    <p className="text-xs text-slate-500">
-                      Created {new Date(project.created_at).toLocaleString()}
-                    </p>
-                    <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-5 grid gap-5 2xl:grid-cols-2">
+              {filteredProjects.map((project) => (
+                <article key={project.id} className="atlas-card flex min-w-0 flex-col overflow-hidden">
+                  <div className="h-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-cyan-500" />
+                  <div className="flex flex-1 flex-col p-6">
+                    <div className="flex min-w-0 items-start justify-between gap-4">
+                      <div className="min-w-0"><p className="text-xs font-black uppercase tracking-[.15em] text-indigo-500">Software project</p><h3 className="mt-2 break-words text-xl font-black text-slate-950">{project.name}</h3></div>
+                      <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-black capitalize text-emerald-700">{project.status}</span>
+                    </div>
+                    <p className="mt-3 min-h-12 flex-1 break-words text-sm leading-6 text-slate-600">{project.description || "No project description has been added yet."}</p>
+                    <div className="mt-5 flex items-center gap-2 border-t border-slate-100 pt-4 text-xs text-slate-400"><Icon name="clock" className="h-4 w-4" />Created {new Date(project.created_at).toLocaleDateString()}</div>
+                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {PROJECT_ACTIONS.map((action) => (
-                        <Link
-                          key={action.key}
-                          to={`/projects/${project.id}/${action.key}`}
-                          className={`min-w-0 rounded-lg px-3 py-2 text-center text-sm font-bold ${action.className} ${action.gridClassName || ""}`}
-                        >
-                          {action.label}
+                        <Link key={action.key} to={`/projects/${project.id}/${action.key}`} className={`group rounded-xl border border-slate-200 p-3 no-underline transition hover:-translate-y-0.5 ${action.cardClass}`}>
+                          <div className="flex items-center gap-2"><Icon name={action.icon} className={`h-4 w-4 ${action.iconClass}`} /><span className="text-xs font-black text-slate-800">{action.label}</span></div>
+                          <p className="mt-1 text-[10px] text-slate-400">{action.caption}</p>
                         </Link>
                       ))}
                     </div>
@@ -173,14 +192,5 @@ export default function DashboardPage() {
         </div>
       </section>
     </AppShell>
-  );
-}
-
-function Metric({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-black text-slate-900">{value}</p>
-    </div>
   );
 }

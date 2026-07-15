@@ -1,13 +1,14 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.assistant import (
     AssistantIndexStatus,
     AssistantMessageRole,
     KnowledgeSourceType,
 )
+from app.schemas.validation import clean_required_text
 
 
 class AssistantIndexRead(BaseModel):
@@ -37,6 +38,11 @@ class AssistantStatusRead(BaseModel):
 class SemanticSearchRequest(BaseModel):
     query: str = Field(min_length=3, max_length=1000)
     top_k: int = Field(default=5, ge=1, le=10)
+
+    @field_validator("query")
+    @classmethod
+    def validate_query(cls, value: str) -> str:
+        return clean_required_text(value, "Search query")
 
 
 class AssistantCitationRead(BaseModel):
@@ -88,6 +94,11 @@ class AssistantAskRequest(BaseModel):
     question: str = Field(min_length=3, max_length=2000)
     conversation_id: UUID | None = None
     top_k: int = Field(default=5, ge=1, le=8)
+
+    @field_validator("question")
+    @classmethod
+    def validate_question(cls, value: str) -> str:
+        return clean_required_text(value, "Question")
 
 
 class AssistantAskRead(BaseModel):

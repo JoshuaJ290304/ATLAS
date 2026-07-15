@@ -1,10 +1,11 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.models.artifact import ArtifactType
 from app.models.trace_link import TraceLinkSource, TraceLinkStatus, TraceLinkType
+from app.schemas.validation import clean_optional_text, clean_required_text
 
 
 class ArtifactCreate(BaseModel):
@@ -13,12 +14,32 @@ class ArtifactCreate(BaseModel):
     description: str = Field(min_length=5, max_length=10000)
     technical_details: dict[str, object] = Field(default_factory=dict)
 
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        return clean_required_text(value, "Artifact name")
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str) -> str:
+        return clean_required_text(value, "Artifact description")
+
 
 class ArtifactUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=180)
     artifact_type: ArtifactType | None = None
     description: str | None = Field(default=None, min_length=5, max_length=10000)
     technical_details: dict[str, object] | None = None
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str | None) -> str | None:
+        return clean_required_text(value, "Artifact name") if value is not None else None
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str | None) -> str | None:
+        return clean_required_text(value, "Artifact description") if value is not None else None
 
 
 class ArtifactRead(BaseModel):
@@ -49,6 +70,11 @@ class TraceLinkCreate(BaseModel):
     link_type: TraceLinkType | None = None
     confidence_score: float = Field(default=1.0, ge=0, le=1)
     evidence_note: str | None = Field(default=None, max_length=1000)
+
+    @field_validator("evidence_note")
+    @classmethod
+    def validate_evidence_note(cls, value: str | None) -> str | None:
+        return clean_optional_text(value)
 
 
 class TraceLinkUpdate(BaseModel):

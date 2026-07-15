@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import ProjectNav from "../components/ProjectNav";
+import { FieldError } from "../components/UI";
+import { apiErrorMessage, clean, validateRequired } from "../utils/validation";
 
 const EMPTY_MANUAL = {
   title: "",
@@ -24,6 +27,8 @@ export default function RequirementsPage() {
   const [manual, setManual] = useState(EMPTY_MANUAL);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState(null);
+  const [manualErrors, setManualErrors] = useState({});
+  const [editErrors, setEditErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -107,25 +112,45 @@ export default function RequirementsPage() {
     }
   }
 
+
+  function validateRequirementForm(values) {
+    const next = {
+      title: validateRequired(values.title, "Requirement title", 3, 180),
+      description: validateRequired(values.description, "Requirement description", 10, 10000),
+      non_functional_category:
+        values.requirement_type === "non_functional"
+          ? validateRequired(values.non_functional_category, "Non-functional category", 2, 80)
+          : "",
+    };
+    Object.keys(next).forEach((key) => !next[key] && delete next[key]);
+    return next;
+  }
+
   async function createManualRequirement(event) {
     event.preventDefault();
+    const validationErrors = validateRequirementForm(manual);
+    setManualErrors(validationErrors);
+    if (Object.keys(validationErrors).length) return;
     setSaving(true);
     setError("");
     setNotice("");
     try {
       const payload = {
         ...manual,
+        title: clean(manual.title),
+        description: clean(manual.description),
         non_functional_category:
           manual.requirement_type === "non_functional"
-            ? manual.non_functional_category || null
+            ? clean(manual.non_functional_category) || null
             : null,
       };
       await api.post(`/projects/${projectId}/requirements`, payload);
       setManual(EMPTY_MANUAL);
+      setManualErrors({});
       setNotice("Manual requirement created.");
       await loadWorkspace();
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Could not create the requirement.");
+      setError(apiErrorMessage(requestError, "Could not create the requirement."));
     } finally {
       setSaving(false);
     }
@@ -142,18 +167,24 @@ export default function RequirementsPage() {
     });
     setError("");
     setNotice("");
+    setEditErrors({});
   }
 
   async function saveRequirement(event, requirementId) {
     event.preventDefault();
+    const validationErrors = validateRequirementForm(editForm);
+    setEditErrors(validationErrors);
+    if (Object.keys(validationErrors).length) return;
     setSaving(true);
     setError("");
     try {
       const payload = {
         ...editForm,
+        title: clean(editForm.title),
+        description: clean(editForm.description),
         non_functional_category:
           editForm.requirement_type === "non_functional"
-            ? editForm.non_functional_category || null
+            ? clean(editForm.non_functional_category) || null
             : null,
       };
       const response = await api.patch(
@@ -167,11 +198,12 @@ export default function RequirementsPage() {
       );
       setEditingId(null);
       setEditForm(null);
+      setEditErrors({});
       setNotice(`Requirement ${response.data.code} updated to version ${response.data.version}.`);
       const summaryResponse = await api.get(`/projects/${projectId}/requirements/summary`);
       setSummary(summaryResponse.data);
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Could not update the requirement.");
+      setError(apiErrorMessage(requestError, "Could not update the requirement."));
     } finally {
       setSaving(false);
     }
@@ -194,31 +226,9 @@ export default function RequirementsPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-wrap items-center gap-4 text-sm font-bold">
-        <Link to="/" className="text-indigo-700 hover:underline">
-          ← Back to projects
-        </Link>
-        <Link
-          to={`/projects/${projectId}/documents`}
-          className="text-slate-600 hover:text-indigo-700 hover:underline"
-        >
-          Project documents
-        </Link>
-        <Link
-          to={`/projects/${projectId}/traceability`}
-          className="text-slate-600 hover:text-indigo-700 hover:underline"
-        >
-          Traceability
-        </Link>
-        <Link
-          to={`/projects/${projectId}/impact`}
-          className="text-slate-600 hover:text-indigo-700 hover:underline"
-        >
-          Impact analysis
-        </Link>
-      </div>
+      <ProjectNav projectId={projectId} />
 
-      <section className="mt-5 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <section className="atlas-page-header">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-indigo-600">
             Milestone 3
@@ -252,7 +262,7 @@ export default function RequirementsPage() {
         <div className="space-y-6">
           <form
             onSubmit={runExtraction}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            className="atlas-panel"
           >
             <h2 className="text-xl font-black text-slate-900">Extract from document</h2>
             <p className="mt-1 text-sm leading-6 text-slate-500">
@@ -264,7 +274,7 @@ export default function RequirementsPage() {
               <select
                 value={selectedDocumentId}
                 onChange={(event) => setSelectedDocumentId(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
+                className="atlas-select"
               >
                 <option value="">Select document</option>
                 {extractedDocuments.map((document) => (
@@ -302,10 +312,11 @@ export default function RequirementsPage() {
 
           <form
             onSubmit={createManualRequirement}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            noValidate
+            className="atlas-panel"
           >
             <h2 className="text-xl font-black text-slate-900">Add manual requirement</h2>
-            <RequirementFields form={manual} setForm={setManual} />
+            <RequirementFields form={manual} setForm={setManual} errors={manualErrors} clearErrors={setManualErrors} />
             <button
               disabled={saving}
               className="mt-5 w-full rounded-xl bg-slate-900 px-4 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-60"
@@ -380,6 +391,7 @@ export default function RequirementsPage() {
                   <form
                     key={requirement.id}
                     onSubmit={(event) => saveRequirement(event, requirement.id)}
+                    noValidate
                     className="rounded-2xl border-2 border-indigo-200 bg-white p-6 shadow-sm"
                   >
                     <div className="flex items-center justify-between gap-4">
@@ -397,7 +409,7 @@ export default function RequirementsPage() {
                         Cancel
                       </button>
                     </div>
-                    <RequirementFields form={editForm} setForm={setEditForm} />
+                    <RequirementFields form={editForm} setForm={setEditForm} errors={editErrors} clearErrors={setEditErrors} />
                     <button
                       disabled={saving}
                       className="mt-5 rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white disabled:opacity-60"
@@ -425,7 +437,7 @@ export default function RequirementsPage() {
   );
 }
 
-function RequirementFields({ form, setForm }) {
+function RequirementFields({ form, setForm, errors = {}, clearErrors }) {
   return (
     <div className="mt-5 space-y-4">
       <label className="block text-sm font-semibold text-slate-700">
@@ -435,10 +447,15 @@ function RequirementFields({ form, setForm }) {
           minLength={3}
           maxLength={180}
           value={form.title}
-          onChange={(event) => setForm({ ...form, title: event.target.value })}
-          className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"
+          aria-invalid={Boolean(errors.title)}
+          onChange={(event) => {
+            setForm({ ...form, title: event.target.value });
+            if (errors.title) clearErrors?.((current) => ({ ...current, title: "" }));
+          }}
+          className="atlas-input"
           placeholder="Allow users to reset forgotten passwords"
         />
+        <FieldError>{errors.title}</FieldError>
       </label>
       <label className="block text-sm font-semibold text-slate-700">
         Description
@@ -447,10 +464,15 @@ function RequirementFields({ form, setForm }) {
           minLength={10}
           rows={5}
           value={form.description}
-          onChange={(event) => setForm({ ...form, description: event.target.value })}
-          className="mt-2 w-full resize-y rounded-xl border border-slate-300 px-4 py-3"
+          aria-invalid={Boolean(errors.description)}
+          onChange={(event) => {
+            setForm({ ...form, description: event.target.value });
+            if (errors.description) clearErrors?.((current) => ({ ...current, description: "" }));
+          }}
+          className="atlas-textarea"
           placeholder="The system shall allow a registered user to reset a forgotten password."
         />
+        <FieldError>{errors.description}</FieldError>
       </label>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm font-semibold text-slate-700">
@@ -465,7 +487,7 @@ function RequirementFields({ form, setForm }) {
                   event.target.value === "functional" ? "" : form.non_functional_category,
               })
             }
-            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
+            className="atlas-select"
           >
             <option value="functional">Functional</option>
             <option value="non_functional">Non-functional</option>
@@ -476,7 +498,7 @@ function RequirementFields({ form, setForm }) {
           <select
             value={form.status}
             onChange={(event) => setForm({ ...form, status: event.target.value })}
-            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
+            className="atlas-select"
           >
             <option value="draft">Draft</option>
             <option value="reviewed">Reviewed</option>
@@ -491,12 +513,15 @@ function RequirementFields({ form, setForm }) {
           <input
             maxLength={80}
             value={form.non_functional_category}
-            onChange={(event) =>
-              setForm({ ...form, non_functional_category: event.target.value })
-            }
-            className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"
+            aria-invalid={Boolean(errors.non_functional_category)}
+            onChange={(event) => {
+              setForm({ ...form, non_functional_category: event.target.value });
+              if (errors.non_functional_category) clearErrors?.((current) => ({ ...current, non_functional_category: "" }));
+            }}
+            className="atlas-input"
             placeholder="security, performance, usability..."
           />
+          <FieldError>{errors.non_functional_category}</FieldError>
         </label>
       )}
     </div>
@@ -505,7 +530,7 @@ function RequirementFields({ form, setForm }) {
 
 function RequirementCard({ requirement, document, onEdit, onDelete }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <article className="atlas-panel">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
         <div>
           <div className="flex flex-wrap items-center gap-2">

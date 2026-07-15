@@ -1,83 +1,146 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import AuthLayout from "../components/AuthLayout";
+import { Alert, FieldError } from "../components/UI";
 import { useAuth } from "../context/AuthContext";
+import {
+  apiErrorMessage,
+  clean,
+  passwordRules,
+  validateEmail,
+  validatePassword,
+  validateRequired,
+} from "../utils/validation";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { isAuthenticated, register } = useAuth();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+  const strength = useMemo(() => 4 - passwordRules(form.password).length, [form.password]);
+
+  if (isAuthenticated) return <Navigate to="/" replace />;
+
+  function validate() {
+    const next = {
+      name: validateRequired(form.name, "Full name", 2, 120),
+      email: validateEmail(form.email),
+      password: validatePassword(form.password),
+      confirmPassword:
+        !form.confirmPassword
+          ? "Confirm your password."
+          : form.password !== form.confirmPassword
+            ? "Passwords do not match."
+            : "",
+    };
+    Object.keys(next).forEach((key) => !next[key] && delete next[key]);
+    setErrors(next);
+    return Object.keys(next).length === 0;
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (!validate()) return;
     setError("");
     setSubmitting(true);
     try {
-      await register(form);
+      await register({
+        name: clean(form.name),
+        email: clean(form.email).toLowerCase(),
+        password: form.password,
+      });
       navigate("/");
     } catch (requestError) {
-      const detail = requestError.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Registration failed. Check your details.");
+      setError(apiErrorMessage(requestError, "Registration failed. Review the highlighted fields."));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <AuthLayout title="Create your account" subtitle="Start a traceability workspace for your software project.">
-      <form className="space-y-5" onSubmit={handleSubmit}>
-        <label className="block text-sm font-semibold text-slate-700">
+    <AuthLayout title="Create your account" subtitle="Start a secure traceability workspace for your software project.">
+      <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+        <label className="atlas-label">
           Full name
           <input
-            required
-            minLength={2}
+            autoComplete="name"
             value={form.name}
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
-            className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
-            placeholder="Your name"
+            aria-invalid={Boolean(errors.name)}
+            onChange={(event) => {
+              setForm({ ...form, name: event.target.value });
+              if (errors.name) setErrors({ ...errors, name: "" });
+            }}
+            className="atlas-input"
+            placeholder="Joshua J"
           />
+          <FieldError>{errors.name}</FieldError>
         </label>
-        <label className="block text-sm font-semibold text-slate-700">
-          Email
+        <label className="atlas-label">
+          Email address
           <input
-            required
             type="email"
+            autoComplete="email"
             value={form.email}
-            onChange={(event) => setForm({ ...form, email: event.target.value })}
-            className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+            aria-invalid={Boolean(errors.email)}
+            onChange={(event) => {
+              setForm({ ...form, email: event.target.value });
+              if (errors.email) setErrors({ ...errors, email: "" });
+            }}
+            className="atlas-input"
             placeholder="you@example.com"
           />
+          <FieldError>{errors.email}</FieldError>
         </label>
-        <label className="block text-sm font-semibold text-slate-700">
+        <label className="atlas-label">
           Password
           <input
-            required
-            minLength={8}
             type="password"
+            autoComplete="new-password"
             value={form.password}
-            onChange={(event) => setForm({ ...form, password: event.target.value })}
-            className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+            aria-invalid={Boolean(errors.password)}
+            onChange={(event) => {
+              setForm({ ...form, password: event.target.value });
+              if (errors.password) setErrors({ ...errors, password: "" });
+            }}
+            className="atlas-input"
             placeholder="At least 8 characters"
           />
+          <div className="mt-2 grid grid-cols-4 gap-1.5" aria-label={`Password strength ${strength} of 4`}>
+            {[1, 2, 3, 4].map((item) => (
+              <span key={item} className={`h-1.5 rounded-full ${item <= strength ? "bg-indigo-500" : "bg-slate-200"}`} />
+            ))}
+          </div>
+          <p className="atlas-help">Use uppercase, lowercase, and a number.</p>
+          <FieldError>{errors.password}</FieldError>
         </label>
-        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-        <button
-          disabled={submitting}
-          className="w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {submitting ? "Creating account..." : "Create account"}
+        <label className="atlas-label">
+          Confirm password
+          <input
+            type="password"
+            autoComplete="new-password"
+            value={form.confirmPassword}
+            aria-invalid={Boolean(errors.confirmPassword)}
+            onChange={(event) => {
+              setForm({ ...form, confirmPassword: event.target.value });
+              if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: "" });
+            }}
+            className="atlas-input"
+            placeholder="Repeat your password"
+          />
+          <FieldError>{errors.confirmPassword}</FieldError>
+        </label>
+        {error && <Alert type="error">{error}</Alert>}
+        <button disabled={submitting} className="atlas-button-primary w-full">
+          {submitting ? "Creating account..." : "Create secure account"}
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-slate-600">
         Already registered?{" "}
-        <Link className="font-bold text-indigo-700 hover:underline" to="/login">
+        <Link className="font-extrabold text-indigo-700 hover:underline" to="/login">
           Log in
         </Link>
       </p>

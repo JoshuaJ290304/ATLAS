@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Response, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.api.dependencies import CurrentUser, DbSession
 from app.models.project import Project
@@ -28,9 +28,18 @@ async def create_project(
     db: DbSession,
     current_user: CurrentUser,
 ) -> Project:
+    duplicate = await db.execute(
+        select(Project.id).where(
+            Project.owner_id == current_user.id,
+            func.lower(Project.name) == payload.name.lower(),
+        )
+    )
+    if duplicate.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=409, detail="A project with this name already exists")
+
     project = Project(
         owner_id=current_user.id,
-        name=payload.name.strip(),
+        name=payload.name,
         description=payload.description,
     )
     db.add(project)
@@ -68,7 +77,15 @@ async def update_project(
     project = await get_owned_project(db, project_id, current_user.id)
     updates = payload.model_dump(exclude_unset=True)
     if "name" in updates and updates["name"] is not None:
-        updates["name"] = updates["name"].strip()
+        duplicate = await db.execute(
+            select(Project.id).where(
+                Project.owner_id == current_user.id,
+                Project.id != project.id,
+                func.lower(Project.name) == updates["name"].lower(),
+            )
+        )
+        if duplicate.scalar_one_or_none() is not None:
+            raise HTTPException(status_code=409, detail="A project with this name already exists")
     for field, value in updates.items():
         setattr(project, field, value)
     await db.commit()

@@ -6,9 +6,61 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 
 ### Planned
 
-- Project analytics and health dashboard
-- Exportable final reports
-- Deployment and final-release preparation
+- Final deployment hardening
+- Optional OCR for scanned PDFs
+- Background indexing for larger projects
+
+## [0.7.0] - 2026-07-13
+
+### Added
+
+- Live project analytics aggregation endpoint
+- Explainable 100-point project-health score
+- Health factors for document readiness, requirement quality, traceability, artifact inventory, impact discipline, and AI-index readiness
+- Requirement type, status, and non-functional-category distributions
+- Artifact-type distribution
+- Accepted, suggested, and rejected trace-link analytics
+- Requirement and artifact coverage analytics
+- Impact-risk and severity distribution
+- Assistant index, conversation, and message statistics
+- Recent project activity feed
+- Downloadable HTML project-health report
+- CSV analytics export
+- JSON analytics export
+- React analytics and reporting workspace
+- Reusable project navigation, icons, alerts, loading states, statistics, progress bars, and empty states
+- Shared frontend form-validation utilities
+- Shared backend string normalization and password-strength validation
+- Duplicate project-name and artifact-name protection
+- New analytics and validation tests
+
+### Changed
+
+- Complete visual refresh for authentication, dashboard, project navigation, cards, forms, tables, buttons, alerts, and responsive layouts
+- Project cards now expose all six modules in a stable responsive grid
+- All project workspaces share a consistent navigation bar
+- Registration now requires uppercase, lowercase, and numeric password characters
+- Project, requirement, artifact, assistant, impact, and upload forms provide clearer client-side errors
+- Pydantic schemas trim whitespace and reject blank-only text
+- Non-functional requirements require a category
+- API and user-interface version updated to `0.7.0`
+- README expanded with analytics, reporting, design, validation, and release guidance
+
+### Verified
+
+- 36 backend tests passing
+- Ruff checks passing
+- Frontend production build successful with 94 transformed modules
+- Analytics JSON, CSV, and HTML export generation
+- Project health scoring at complete, partial, and empty states
+- Existing Milestone 1–6 routes remain registered
+- No database migration required because analytics are calculated from live project data
+
+### Limitations
+
+- The HTML report is a standalone downloadable report rather than a PDF.
+- Analytics are calculated on request and are designed for student-scale projects.
+- Exact PDF page-level citations and OCR remain future enhancements.
 
 ## [0.6.0] - 2026-07-13
 
@@ -23,57 +75,19 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Numbered source citations in assistant answers
 - Persistent assistant conversations and messages
 - Index status, rebuild, and clear operations
-- Ollama/model availability reporting
 - Retrieval-only fallback when Ollama is unavailable
-- React AI Assistant workspace with chat and semantic-search modes
-- Optional Ollama Docker Compose profile
-- Persistent model and vector-storage mounts
 - Alembic migration `0006`
-
-### Changed
-
-- Project cards now include an AI Assistant action.
-- Dashboard milestone status updated to Milestone 6.
-- API application version updated to `0.6.0`.
-- README and environment documentation now include Ollama, ChromaDB, and embedding setup.
-
-### Verified
-
-- Chunking and normalization behavior
-- Index source generation for all four project source types
-- Grounded prompt construction and numbered citations
-- Retrieval-only fallback behavior
-- 29 backend tests
-- Ruff checks
-- Frontend production build with 89 transformed modules
-- Alembic `0005 → 0006` SQL generation
-- Eight assistant API operations registered
-
-### Limitations
-
-- Exact PDF page-level citations are not yet available.
-- The first embedding run downloads the configured Sentence Transformer model.
-- Indexing is synchronous and designed for student-scale projects.
-- The project index must be rebuilt after source records change.
 
 ## [0.5.0] - 2026-07-13
 
 ### Added
 
 - Persisted requirement-version snapshots
-- Requirement version list and comparison endpoints
-- Deterministic requirement change detection
-- Directly and transitively affected artifact discovery
+- Requirement version comparison
+- Direct and transitive affected-artifact discovery
 - Reproducible risk scoring and impact severity
-- Explainable risk-factor breakdown
-- Stored change summaries and impact-analysis history
-- React impact-analysis workspace
+- Persistent impact reports
 - Alembic migration `0005`
-
-### Changed
-
-- Project-card actions use a responsive layout.
-- Traceability summary displays rejected-link count.
 
 ## [0.4.0] - 2026-07-13
 
@@ -84,7 +98,6 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Confidence scoring and accept/reject workflow
 - Traceability matrix and coverage metrics
 - Alembic migration `0004`
-- React traceability workspace
 
 ## [0.3.0] - 2026-07-13
 
@@ -94,7 +107,6 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Confidence scores and ambiguity detection
 - Manual requirement creation, editing, status, and version increments
 - Alembic migration `0003`
-- React requirement workspace
 
 ## [0.2.0] - 2026-07-12
 
@@ -102,9 +114,7 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 
 - Project-scoped PDF and DOCX uploads
 - File validation, checksums, metadata, and text extraction
-- Document list, text, download, and deletion endpoints
 - Alembic migration `0002`
-- React document workspace
 
 ## [0.1.0] - 2026-07-12
 
@@ -112,7 +122,7 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 
 - FastAPI and React foundations
 - PostgreSQL with asynchronous SQLAlchemy
-- Alembic migration `0001`
 - Registration, Argon2 password hashing, and JWT authentication
 - Protected project CRUD
 - Docker Compose environment
+- Alembic migration `0001`

@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { AuthProvider } from "./context/AuthContext";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import AssistantPage from "./pages/AssistantPage";
 import DashboardPage from "./pages/DashboardPage";
 import DocumentsPage from "./pages/DocumentsPage";
@@ -63,6 +64,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ImpactAnalysisPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId/analytics"
+            element={
+              <ProtectedRoute>
+                <AnalyticsPage />
               </ProtectedRoute>
             }
           />

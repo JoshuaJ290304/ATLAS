@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import ProjectNav from "../components/ProjectNav";
+import { FieldError } from "../components/UI";
+import { apiErrorMessage, clean, validateRequired } from "../utils/validation";
 
 const EMPTY_ARTIFACT = {
   name: "",
@@ -63,6 +66,9 @@ export default function TraceabilityPage() {
   const [manualLink, setManualLink] = useState(EMPTY_MANUAL_LINK);
   const [editingArtifactId, setEditingArtifactId] = useState(null);
   const [editArtifactForm, setEditArtifactForm] = useState(null);
+  const [artifactErrors, setArtifactErrors] = useState({});
+  const [editArtifactErrors, setEditArtifactErrors] = useState({});
+  const [manualLinkErrors, setManualLinkErrors] = useState({});
   const [minimumConfidence, setMinimumConfidence] = useState(0.3);
   const [replaceSuggestions, setReplaceSuggestions] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -129,25 +135,41 @@ export default function TraceabilityPage() {
     [matrix],
   );
 
+
+  function validateArtifact(values) {
+    const next = {
+      name: validateRequired(values.name, "Artifact name", 2, 180),
+      description: validateRequired(values.description, "Artifact description", 5, 10000),
+      technical_notes:
+        values.technical_notes.length > 4000 ? "Technical notes must be at most 4000 characters." : "",
+    };
+    Object.keys(next).forEach((key) => !next[key] && delete next[key]);
+    return next;
+  }
+
   async function createArtifact(event) {
     event.preventDefault();
+    const validationErrors = validateArtifact(artifactForm);
+    setArtifactErrors(validationErrors);
+    if (Object.keys(validationErrors).length) return;
     setSaving(true);
     setError("");
     setNotice("");
     try {
       await api.post(`/projects/${projectId}/artifacts`, {
-        name: artifactForm.name,
+        name: clean(artifactForm.name),
         artifact_type: artifactForm.artifact_type,
-        description: artifactForm.description,
-        technical_details: artifactForm.technical_notes
-          ? { notes: artifactForm.technical_notes }
+        description: clean(artifactForm.description),
+        technical_details: clean(artifactForm.technical_notes)
+          ? { notes: clean(artifactForm.technical_notes) }
           : {},
       });
       setArtifactForm(EMPTY_ARTIFACT);
+      setArtifactErrors({});
       setNotice("Software artifact created.");
       await loadWorkspace();
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Could not create the artifact.");
+      setError(apiErrorMessage(requestError, "Could not create the artifact."));
     } finally {
       setSaving(false);
     }
@@ -163,27 +185,32 @@ export default function TraceabilityPage() {
     });
     setError("");
     setNotice("");
+    setEditArtifactErrors({});
   }
 
   async function saveArtifact(event, artifactId) {
     event.preventDefault();
+    const validationErrors = validateArtifact(editArtifactForm);
+    setEditArtifactErrors(validationErrors);
+    if (Object.keys(validationErrors).length) return;
     setSaving(true);
     setError("");
     try {
       await api.patch(`/projects/${projectId}/artifacts/${artifactId}`, {
-        name: editArtifactForm.name,
+        name: clean(editArtifactForm.name),
         artifact_type: editArtifactForm.artifact_type,
-        description: editArtifactForm.description,
-        technical_details: editArtifactForm.technical_notes
-          ? { notes: editArtifactForm.technical_notes }
+        description: clean(editArtifactForm.description),
+        technical_details: clean(editArtifactForm.technical_notes)
+          ? { notes: clean(editArtifactForm.technical_notes) }
           : {},
       });
       setEditingArtifactId(null);
       setEditArtifactForm(null);
+      setEditArtifactErrors({});
       setNotice("Artifact updated. Regenerate suggestions if its meaning changed.");
       await loadWorkspace();
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Could not update the artifact.");
+      setError(apiErrorMessage(requestError, "Could not update the artifact."));
     } finally {
       setSaving(false);
     }
@@ -229,10 +256,15 @@ export default function TraceabilityPage() {
 
   async function createManualTrace(event) {
     event.preventDefault();
-    if (!manualLink.requirement_id || !manualLink.artifact_id) {
-      setError("Select both a requirement and an artifact.");
-      return;
-    }
+    const validationErrors = {
+      requirement_id: manualLink.requirement_id ? "" : "Select a requirement.",
+      artifact_id: manualLink.artifact_id ? "" : "Select an artifact.",
+      evidence_note:
+        manualLink.evidence_note.length > 1000 ? "Evidence must be at most 1000 characters." : "",
+    };
+    Object.keys(validationErrors).forEach((key) => !validationErrors[key] && delete validationErrors[key]);
+    setManualLinkErrors(validationErrors);
+    if (Object.keys(validationErrors).length) return;
     setSaving(true);
     setError("");
     setNotice("");
@@ -242,13 +274,14 @@ export default function TraceabilityPage() {
         artifact_id: manualLink.artifact_id,
         link_type: manualLink.link_type || null,
         confidence_score: 1,
-        evidence_note: manualLink.evidence_note || null,
+        evidence_note: clean(manualLink.evidence_note) || null,
       });
       setManualLink((current) => ({ ...current, evidence_note: "", link_type: "" }));
+      setManualLinkErrors({});
       setNotice("Manual trace link accepted and added to coverage.");
       await loadWorkspace();
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Could not create the trace link.");
+      setError(apiErrorMessage(requestError, "Could not create the trace link."));
     } finally {
       setSaving(false);
     }
@@ -280,31 +313,9 @@ export default function TraceabilityPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-wrap items-center gap-4 text-sm font-bold">
-        <Link to="/" className="text-indigo-700 hover:underline">
-          ← Back to projects
-        </Link>
-        <Link
-          to={`/projects/${projectId}/documents`}
-          className="text-slate-600 hover:text-indigo-700 hover:underline"
-        >
-          Documents
-        </Link>
-        <Link
-          to={`/projects/${projectId}/requirements`}
-          className="text-slate-600 hover:text-indigo-700 hover:underline"
-        >
-          Requirements
-        </Link>
-        <Link
-          to={`/projects/${projectId}/impact`}
-          className="text-slate-600 hover:text-indigo-700 hover:underline"
-        >
-          Impact analysis
-        </Link>
-      </div>
+      <ProjectNav projectId={projectId} />
 
-      <section className="mt-5 grid gap-6 xl:grid-cols-[1.2fr_1fr]">
+      <section className="atlas-page-header">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-indigo-600">
             Milestone 4
@@ -339,13 +350,14 @@ export default function TraceabilityPage() {
         <div className="space-y-6">
           <form
             onSubmit={createArtifact}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            noValidate
+            className="atlas-panel"
           >
             <h2 className="text-xl font-black text-slate-900">Add software artifact</h2>
             <p className="mt-1 text-sm leading-6 text-slate-500">
               Add the APIs, tables, tests, and UML components affected by requirements.
             </p>
-            <ArtifactFields form={artifactForm} setForm={setArtifactForm} />
+            <ArtifactFields form={artifactForm} setForm={setArtifactForm} errors={artifactErrors} clearErrors={setArtifactErrors} />
             <button
               disabled={saving}
               className="mt-5 w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
@@ -356,7 +368,7 @@ export default function TraceabilityPage() {
 
           <form
             onSubmit={generateSuggestions}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            className="atlas-panel"
           >
             <h2 className="text-xl font-black text-slate-900">Suggest trace links</h2>
             <p className="mt-1 text-sm leading-6 text-slate-500">
@@ -393,7 +405,8 @@ export default function TraceabilityPage() {
 
           <form
             onSubmit={createManualTrace}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            noValidate
+            className="atlas-panel"
           >
             <h2 className="text-xl font-black text-slate-900">Create manual link</h2>
             <SelectField
@@ -404,6 +417,7 @@ export default function TraceabilityPage() {
                 value: item.id,
                 label: `${item.code} — ${item.title}`,
               }))}
+              error={manualLinkErrors.requirement_id}
             />
             <SelectField
               label="Artifact"
@@ -413,6 +427,7 @@ export default function TraceabilityPage() {
                 value: item.id,
                 label: `${item.code} — ${item.name}`,
               }))}
+              error={manualLinkErrors.artifact_id}
             />
             <SelectField
               label="Link type (automatic when blank)"
@@ -429,9 +444,12 @@ export default function TraceabilityPage() {
                 onChange={(event) =>
                   setManualLink({ ...manualLink, evidence_note: event.target.value })
                 }
-                className="mt-2 w-full resize-none rounded-xl border border-slate-300 px-4 py-3"
+                aria-invalid={Boolean(manualLinkErrors.evidence_note)}
+                className="atlas-textarea"
                 placeholder="Why does this artifact satisfy or verify the requirement?"
+                maxLength={1000}
               />
+              <FieldError>{manualLinkErrors.evidence_note}</FieldError>
             </label>
             <button
               disabled={saving || requirements.length === 0 || artifacts.length === 0}
@@ -463,11 +481,11 @@ export default function TraceabilityPage() {
                 {artifacts.map((artifact) => (
                   <article
                     key={artifact.id}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                    className="atlas-card p-5"
                   >
                     {editingArtifactId === artifact.id ? (
-                      <form onSubmit={(event) => saveArtifact(event, artifact.id)}>
-                        <ArtifactFields form={editArtifactForm} setForm={setEditArtifactForm} />
+                      <form onSubmit={(event) => saveArtifact(event, artifact.id)} noValidate>
+                        <ArtifactFields form={editArtifactForm} setForm={setEditArtifactForm} errors={editArtifactErrors} clearErrors={setEditArtifactErrors} />
                         <div className="mt-4 flex gap-2">
                           <button className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">
                             Save
@@ -550,7 +568,7 @@ export default function TraceabilityPage() {
                   return (
                     <article
                       key={link.id}
-                      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                      className="atlas-card p-5"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
@@ -614,7 +632,7 @@ export default function TraceabilityPage() {
         </div>
       </section>
 
-      <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="mt-10 atlas-panel">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-2xl font-black text-slate-900">Traceability matrix</h2>
@@ -687,7 +705,7 @@ export default function TraceabilityPage() {
   );
 }
 
-function ArtifactFields({ form, setForm }) {
+function ArtifactFields({ form, setForm, errors = {}, clearErrors }) {
   return (
     <>
       <label className="mt-5 block text-sm font-semibold text-slate-700">
@@ -696,17 +714,23 @@ function ArtifactFields({ form, setForm }) {
           required
           minLength={2}
           value={form.name}
-          onChange={(event) => setForm({ ...form, name: event.target.value })}
-          className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"
+          aria-invalid={Boolean(errors.name)}
+          onChange={(event) => {
+            setForm({ ...form, name: event.target.value });
+            if (errors.name) clearErrors?.((current) => ({ ...current, name: "" }));
+          }}
+          className="atlas-input"
           placeholder="Password reset API"
+          maxLength={180}
         />
+        <FieldError>{errors.name}</FieldError>
       </label>
       <label className="mt-4 block text-sm font-semibold text-slate-700">
         Type
         <select
           value={form.artifact_type}
           onChange={(event) => setForm({ ...form, artifact_type: event.target.value })}
-          className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
+          className="atlas-select"
         >
           {Object.entries(TYPE_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
@@ -722,33 +746,46 @@ function ArtifactFields({ form, setForm }) {
           minLength={5}
           rows={4}
           value={form.description}
-          onChange={(event) => setForm({ ...form, description: event.target.value })}
-          className="mt-2 w-full resize-none rounded-xl border border-slate-300 px-4 py-3"
+          aria-invalid={Boolean(errors.description)}
+          onChange={(event) => {
+            setForm({ ...form, description: event.target.value });
+            if (errors.description) clearErrors?.((current) => ({ ...current, description: "" }));
+          }}
+          className="atlas-textarea"
           placeholder="Explain the artifact responsibility using requirement vocabulary."
+          maxLength={10000}
         />
+        <FieldError>{errors.description}</FieldError>
       </label>
       <label className="mt-4 block text-sm font-semibold text-slate-700">
         Technical notes
         <textarea
           rows={3}
           value={form.technical_notes}
-          onChange={(event) => setForm({ ...form, technical_notes: event.target.value })}
-          className="mt-2 w-full resize-none rounded-xl border border-slate-300 px-4 py-3"
+          aria-invalid={Boolean(errors.technical_notes)}
+          onChange={(event) => {
+            setForm({ ...form, technical_notes: event.target.value });
+            if (errors.technical_notes) clearErrors?.((current) => ({ ...current, technical_notes: "" }));
+          }}
+          className="atlas-textarea"
           placeholder="POST /auth/password-reset, users table fields, expected test outcome..."
+          maxLength={4000}
         />
+        <FieldError>{errors.technical_notes}</FieldError>
       </label>
     </>
   );
 }
 
-function SelectField({ label, value, onChange, options, blankLabel = "Select" }) {
+function SelectField({ label, value, onChange, options, blankLabel = "Select", error }) {
   return (
     <label className="mt-4 block text-sm font-semibold text-slate-700">
       {label}
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
+        className="atlas-select"
+        aria-invalid={Boolean(error)}
       >
         <option value="">{blankLabel}</option>
         {options.map((option) => (
@@ -757,6 +794,7 @@ function SelectField({ label, value, onChange, options, blankLabel = "Select" })
           </option>
         ))}
       </select>
+      <FieldError>{error}</FieldError>
     </label>
   );
 }
