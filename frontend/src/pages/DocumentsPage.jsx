@@ -3,12 +3,14 @@ import { useParams } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import { useConfirmDialog } from "../components/ConfirmDialog";
 import ProjectNav from "../components/ProjectNav";
-import { FieldError } from "../components/UI";
+import { Alert, FieldError } from "../components/UI";
 import { apiErrorMessage, validateFile } from "../utils/validation";
 
 export default function DocumentsPage() {
   const { projectId } = useParams();
+  const { confirm, confirmationDialog } = useConfirmDialog();
   const fileInputRef = useRef(null);
   const [project, setProject] = useState(null);
   const [documents, setDocuments] = useState([]);
@@ -91,7 +93,11 @@ export default function DocumentsPage() {
   }
 
   async function deleteDocument(document) {
-    const confirmed = window.confirm(`Delete ${document.original_filename}?`);
+    const confirmed = await confirm({
+      title: "Delete document?",
+      message: `“${document.original_filename}” and its extracted content will be permanently removed.`,
+      confirmLabel: "Delete document",
+    });
     if (!confirmed) return;
 
     setError("");
@@ -106,12 +112,13 @@ export default function DocumentsPage() {
 
   return (
     <AppShell>
+      {confirmationDialog}
       <ProjectNav projectId={projectId} />
 
       <section className="atlas-page-header">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-indigo-600">
-            Milestone 2
+            Document intelligence
           </p>
           <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-950">
             {project?.name || "Project documents"}
@@ -121,7 +128,7 @@ export default function DocumentsPage() {
             its checksum and metadata, and extracts text for requirement intelligence.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="atlas-header-metrics">
           <Metric label="Documents" value={documents.length} />
           <Metric
             label="Extracted"
@@ -174,14 +181,15 @@ export default function DocumentsPage() {
             </div>
           )}
 
-          {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-          {notice && (
-            <p className="mt-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">
-              {notice}
-            </p>
+          {(error || notice) && (
+            <div className="mt-4 space-y-3">
+              {error && <Alert type="error" onClose={() => setError("")}>{error}</Alert>}
+              {notice && <Alert type="success" onClose={() => setNotice("")}>{notice}</Alert>}
+            </div>
           )}
 
           <button
+            type="submit"
             disabled={uploading || Boolean(fileError) || !selectedFile}
             className="atlas-button-primary mt-5 w-full"
           >
@@ -192,7 +200,7 @@ export default function DocumentsPage() {
         <div>
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-black text-slate-900">Project documents</h2>
-            <button onClick={loadWorkspace} className="text-sm font-bold text-indigo-700 hover:underline">
+            <button type="button" onClick={loadWorkspace} className="text-sm font-bold text-indigo-700 hover:underline">
               Refresh
             </button>
           </div>
@@ -266,9 +274,9 @@ export default function DocumentsPage() {
 
 function Metric({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-black text-slate-900">{value}</p>
+    <div className="atlas-metric-card">
+      <p className="atlas-metric-label">{label}</p>
+      <p className="atlas-metric-value">{value}</p>
     </div>
   );
 }

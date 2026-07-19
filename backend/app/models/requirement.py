@@ -114,3 +114,25 @@ class Requirement(TimestampMixin, Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+    reviews = relationship(
+        "RequirementReview",
+        back_populates="requirement",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="RequirementReview.created_at",
+    )
+
+    comments = relationship(
+        "RequirementComment",
+        back_populates="requirement",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="RequirementComment.created_at",
+    )
+
+    baseline_items = relationship(
+        "BaselineRequirement",
+        back_populates="requirement",
+        passive_deletes=True,
+    )

@@ -18,6 +18,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("atlas_access_token");
+      window.dispatchEvent(new CustomEvent("atlas:session-expired"));
     }
     return Promise.reject(error);
   },

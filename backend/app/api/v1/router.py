@@ -5,6 +5,7 @@ from app.api.v1.endpoints import (
     assistant,
     auth,
     documents,
+    governance,
     health,
     impact,
     projects,
@@ -18,6 +19,7 @@ api_router.include_router(auth.router)
 api_router.include_router(projects.router)
 api_router.include_router(documents.router)
 api_router.include_router(requirements.router)
+api_router.include_router(governance.router)
 
 api_router.include_router(traceability.artifact_router)
 api_router.include_router(traceability.trace_router)

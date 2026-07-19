@@ -3,8 +3,9 @@ import { useParams } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import { useConfirmDialog } from "../components/ConfirmDialog";
 import ProjectNav from "../components/ProjectNav";
-import { FieldError } from "../components/UI";
+import { Alert, FieldError } from "../components/UI";
 import { apiErrorMessage, clean, validateRequired } from "../utils/validation";
 
 const SOURCE_STYLES = {
@@ -16,6 +17,7 @@ const SOURCE_STYLES = {
 
 export default function AssistantPage() {
   const { projectId } = useParams();
+  const { confirm, confirmationDialog } = useConfirmDialog();
   const [project, setProject] = useState(null);
   const [status, setStatus] = useState(null);
   const [conversations, setConversations] = useState([]);
@@ -76,7 +78,12 @@ export default function AssistantPage() {
   }
 
   async function clearIndex() {
-    if (!window.confirm("Clear the project knowledge index? Chat history will be kept.")) return;
+    const confirmed = await confirm({
+      title: "Clear knowledge index?",
+      message: "Indexed vectors will be removed. Conversation history will be preserved and you can rebuild the index later.",
+      confirmLabel: "Clear index",
+    });
+    if (!confirmed) return;
     try {
       await api.delete(`/projects/${projectId}/assistant/index`, { timeout: 120000 });
       setNotice("Project knowledge index cleared.");
@@ -161,7 +168,12 @@ export default function AssistantPage() {
   }
 
   async function deleteConversation(conversationId) {
-    if (!window.confirm("Delete this assistant conversation?")) return;
+    const confirmed = await confirm({
+      title: "Delete conversation?",
+      message: "This conversation and its messages will be permanently removed.",
+      confirmLabel: "Delete conversation",
+    });
+    if (!confirmed) return;
     try {
       await api.delete(`/projects/${projectId}/assistant/conversations/${conversationId}`);
       if (activeConversation?.id === conversationId) setActiveConversation(null);
@@ -182,12 +194,13 @@ export default function AssistantPage() {
 
   return (
     <AppShell>
+      {confirmationDialog}
       <ProjectNav projectId={projectId} />
 
       <section className="atlas-page-header">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-violet-600">
-            Milestone 6
+            Project knowledge assistant
           </p>
           <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-950">
             {project?.name || "AI project assistant"}
@@ -197,7 +210,7 @@ export default function AssistantPage() {
             Sentence Transformers, and a local Ollama model.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-2">
+        <div className="atlas-header-metrics">
           <Metric label="Index" value={status?.index?.status || "—"} />
           <Metric label="Sources" value={status?.index?.source_count ?? 0} />
           <Metric label="Chunks" value={status?.index?.chunk_count ?? 0} />
@@ -207,10 +220,8 @@ export default function AssistantPage() {
 
       {(error || notice) && (
         <section className="mt-6 space-y-3">
-          {error && <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
-          {notice && (
-            <p className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-700">{notice}</p>
-          )}
+          {error && <Alert type="error" onClose={() => setError("")}>{error}</Alert>}
+          {notice && <Alert type="success" onClose={() => setNotice("")}>{notice}</Alert>}
         </section>
       )}
 
@@ -226,14 +237,14 @@ export default function AssistantPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button
+            <button type="button"
               onClick={rebuildIndex}
               disabled={indexing}
               className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-violet-700 disabled:opacity-50"
             >
               {indexing ? "Indexing project..." : indexReady ? "Rebuild index" : "Build index"}
             </button>
-            <button
+            <button type="button"
               onClick={clearIndex}
               disabled={!indexReady || indexing}
               className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
@@ -263,7 +274,7 @@ export default function AssistantPage() {
           <aside className="atlas-card p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-black text-slate-900">Conversations</h2>
-              <button onClick={newConversation} className="text-sm font-bold text-violet-700">
+              <button type="button" onClick={newConversation} className="text-sm font-bold text-violet-700">
                 + New
               </button>
             </div>
@@ -282,7 +293,7 @@ export default function AssistantPage() {
                         : "border-slate-200"
                     }`}
                   >
-                    <button
+                    <button type="button"
                       onClick={() => openConversation(conversation.id)}
                       className="w-full text-left"
                     >
@@ -293,7 +304,7 @@ export default function AssistantPage() {
                         {new Date(conversation.updated_at).toLocaleString()}
                       </p>
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => deleteConversation(conversation.id)}
                       className="mt-2 text-xs font-bold text-red-600 hover:underline"
                     >
@@ -341,6 +352,7 @@ export default function AssistantPage() {
                   Answers are limited to indexed project evidence and include citations.
                 </p>
                 <button
+                  type="submit"
                   disabled={!indexReady || asking || question.trim().length < 3}
                   className="shrink-0 rounded-xl bg-violet-600 px-5 py-2.5 font-bold text-white hover:bg-violet-700 disabled:opacity-50"
                 >
@@ -371,6 +383,7 @@ export default function AssistantPage() {
             />
             <FieldError>{searchError}</FieldError>
             <button
+              type="submit"
               disabled={!indexReady || searching || searchQuery.trim().length < 3}
               className="mt-4 w-full rounded-xl bg-violet-600 px-4 py-3 font-bold text-white disabled:opacity-50"
             >
@@ -446,7 +459,7 @@ function CitationCard({ citation, number, compact = false }) {
 
 function ModeButton({ active, onClick, children }) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={`flex-1 rounded-lg px-5 py-2.5 text-sm font-bold sm:flex-none ${
         active ? "bg-white text-violet-700 shadow-sm" : "text-slate-600"
@@ -460,7 +473,7 @@ function ModeButton({ active, onClick, children }) {
 function Metric({ label, value }) {
   return (
     <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</p>
+      <p className="atlas-metric-label">{label}</p>
       <p className="mt-2 truncate text-xl font-black capitalize text-slate-900">{value}</p>
     </div>
   );

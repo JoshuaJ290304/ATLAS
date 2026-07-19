@@ -72,12 +72,12 @@ export default function AnalyticsPage() {
     <AppShell>
       <ProjectNav projectId={projectId} />
       <PageHeader
-        eyebrow="Milestone 7 · Analytics & reporting"
+        eyebrow="Analytics & reporting"
         title={analytics?.project_name || "Project analytics"}
         description="Measure requirement quality, traceability coverage, change risk, AI readiness, and overall project health from live ATLAS data."
         actions={
           <>
-            <button onClick={loadAnalytics} className="atlas-button-secondary"><Icon name="refresh" className="h-4 w-4" />Refresh</button>
+            <button type="button" onClick={loadAnalytics} className="atlas-button-secondary"><Icon name="refresh" className="h-4 w-4" />Refresh</button>
             <ExportButton label="HTML report" format="html" exporting={exporting} onClick={downloadReport} />
             <ExportButton label="CSV" format="csv" exporting={exporting} onClick={downloadReport} />
             <ExportButton label="JSON" format="json" exporting={exporting} onClick={downloadReport} />
@@ -197,7 +197,7 @@ export default function AnalyticsPage() {
 }
 
 function ExportButton({ label, format, exporting, onClick }) {
-  return <button disabled={Boolean(exporting)} onClick={() => onClick(format)} className="atlas-button-primary"><Icon name="download" className="h-4 w-4" />{exporting === format ? "Preparing..." : label}</button>;
+  return <button type="button" disabled={Boolean(exporting)} onClick={() => onClick(format)} className="atlas-button-primary"><Icon name="download" className="h-4 w-4" />{exporting === format ? "Preparing..." : label}</button>;
 }
 
 function ChartPanel({ title, subtitle, children }) {

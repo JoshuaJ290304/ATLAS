@@ -97,3 +97,31 @@ class Project(TimestampMixin, Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+    requirement_reviews = relationship(
+        "RequirementReview",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    requirement_comments = relationship(
+        "RequirementComment",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    baselines = relationship(
+        "ProjectBaseline",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    audit_logs = relationship(
+        "AuditLog",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

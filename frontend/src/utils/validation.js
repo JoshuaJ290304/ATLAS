@@ -44,10 +44,19 @@ export function validateFile(file, maxBytes = 10 * 1024 * 1024) {
 }
 
 export function apiErrorMessage(error, fallback) {
-  const detail = error?.response?.data?.detail;
+  if (error?.code === "ECONNABORTED") {
+    return "The request took too long. Check the service status and try again.";
+  }
+  if (!error?.response) {
+    return "ATLAS could not reach the application service. Check Docker and your network connection.";
+  }
+  const detail = error.response.data?.detail;
   if (typeof detail === "string") return detail;
   if (Array.isArray(detail) && detail.length) {
     return detail.map((item) => item.msg || "Invalid value").join(" ");
+  }
+  if (error.response.status >= 500) {
+    return "The service encountered an unexpected error. Try again or review the backend logs.";
   }
   return fallback;
 }

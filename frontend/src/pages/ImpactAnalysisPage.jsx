@@ -3,8 +3,9 @@ import { useParams } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import { useConfirmDialog } from "../components/ConfirmDialog";
 import ProjectNav from "../components/ProjectNav";
-import { FieldError } from "../components/UI";
+import { Alert, FieldError } from "../components/UI";
 import { apiErrorMessage } from "../utils/validation";
 
 const EMPTY_SUMMARY = {
@@ -26,6 +27,7 @@ const SEVERITY_STYLES = {
 
 export default function ImpactAnalysisPage() {
   const { projectId } = useParams();
+  const { confirm, confirmationDialog } = useConfirmDialog();
   const [project, setProject] = useState(null);
   const [requirements, setRequirements] = useState([]);
   const [analyses, setAnalyses] = useState([]);
@@ -133,7 +135,12 @@ export default function ImpactAnalysisPage() {
   }
 
   async function deleteAnalysis(analysisId) {
-    if (!window.confirm("Delete this stored impact report?")) return;
+    const confirmed = await confirm({
+      title: "Delete impact report?",
+      message: "This stored analysis will be permanently removed from report history.",
+      confirmLabel: "Delete report",
+    });
+    if (!confirmed) return;
     try {
       await api.delete(`/projects/${projectId}/impact-analyses/${analysisId}`);
       setSelectedAnalysis(null);
@@ -149,12 +156,13 @@ export default function ImpactAnalysisPage() {
 
   return (
     <AppShell>
+      {confirmationDialog}
       <ProjectNav projectId={projectId} />
 
       <section className="atlas-page-header">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-indigo-600">
-            Milestone 5
+            Change intelligence
           </p>
           <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-950">
             {project?.name || "Change-impact analysis"}
@@ -164,7 +172,7 @@ export default function ImpactAnalysisPage() {
             risk score, and preserve each report for later review.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="atlas-header-metrics">
           <Metric label="Reports" value={summary.total} />
           <Metric label="High" value={summary.high} />
           <Metric label="Critical" value={summary.critical} />
@@ -176,8 +184,8 @@ export default function ImpactAnalysisPage() {
 
       {(error || notice) && (
         <section className="mt-6 space-y-3">
-          {error && <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
-          {notice && <p className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-700">{notice}</p>}
+          {error && <Alert type="error" onClose={() => setError("")}>{error}</Alert>}
+          {notice && <Alert type="success" onClose={() => setNotice("")}>{notice}</Alert>}
         </section>
       )}
 
@@ -229,6 +237,7 @@ export default function ImpactAnalysisPage() {
               </p>
             )}
             <button
+              type="submit"
               disabled={!validSelection || analyzing}
               className="mt-5 w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
             >
@@ -246,6 +255,7 @@ export default function ImpactAnalysisPage() {
               <div className="mt-4 space-y-3">
                 {analyses.map((analysis) => (
                   <button
+                    type="button"
                     key={analysis.id}
                     onClick={() => setSelectedAnalysis(analysis)}
                     className={`w-full rounded-xl border p-4 text-left transition ${
@@ -298,7 +308,7 @@ function ImpactReport({ analysis, onDelete }) {
             <p className="text-xs font-black uppercase tracking-wider text-indigo-600">
               {analysis.requirement_code} · v{analysis.baseline_version} → v{analysis.target_version}
             </p>
-            <h2 className="mt-2 text-2xl font-black text-slate-900">{analysis.requirement_title}</h2>
+            <h2 className="atlas-metric-value">{analysis.requirement_title}</h2>
           </div>
           <div className="text-right">
             <SeverityBadge severity={analysis.severity} />
@@ -355,7 +365,7 @@ function ImpactReport({ analysis, onDelete }) {
             {(differences.unified_diff || []).join("\n")}
           </pre>
         )}
-        <button
+        <button type="button"
           onClick={() => onDelete(analysis.id)}
           className="mt-5 rounded-lg bg-red-50 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-100"
         >
@@ -424,8 +434,8 @@ function SeverityBadge({ severity }) {
 
 function Metric({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</p>
+    <div className="atlas-metric-card">
+      <p className="atlas-metric-label">{label}</p>
       <p className="mt-2 break-words text-2xl font-black capitalize text-slate-900">{value}</p>
     </div>
   );

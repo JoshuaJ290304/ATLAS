@@ -8,7 +8,7 @@ export function PageHeader({ eyebrow, title, description, actions, children }) {
         <h1>{title}</h1>
         {description && <p>{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+      {actions && <div className="atlas-page-actions">{actions}</div>}
       {children}
     </section>
   );

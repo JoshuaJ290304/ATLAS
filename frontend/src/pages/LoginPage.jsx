@@ -58,6 +58,7 @@ export default function LoginPage() {
             }}
             className="atlas-input"
             placeholder="you@example.com"
+            maxLength={320}
           />
           <FieldError>{errors.email}</FieldError>
         </label>
@@ -74,11 +75,12 @@ export default function LoginPage() {
             }}
             className="atlas-input"
             placeholder="Your password"
+            maxLength={128}
           />
           <FieldError>{errors.password}</FieldError>
         </label>
         {error && <Alert type="error">{error}</Alert>}
-        <button disabled={submitting} className="atlas-button-primary w-full">
+        <button type="submit" disabled={submitting} className="atlas-button-primary w-full">
           {submitting ? "Signing in..." : "Log in securely"}
         </button>
       </form>
