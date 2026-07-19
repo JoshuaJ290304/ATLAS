@@ -43,3 +43,6 @@ storage/vector/*
 !storage/vector/.gitkeep
 storage/models/*
 !storage/models/.gitkeep
+
+backups/
+clean-atlas-project*.ps1
