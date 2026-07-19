@@ -9,6 +9,14 @@ from app.models.assistant import (
     KnowledgeSourceType,
 )
 from app.models.document import Document, DocumentStatus
+from app.models.governance import (
+    AuditLog,
+    BaselineRequirement,
+    ProjectBaseline,
+    RequirementComment,
+    RequirementReview,
+    ReviewStatus,
+)
 from app.models.impact import (
     ImpactAnalysis,
     ImpactSeverity,
@@ -38,6 +46,8 @@ __all__ = [
     "AssistantIndexStatus",
     "AssistantMessage",
     "AssistantMessageRole",
+    "AuditLog",
+    "BaselineRequirement",
     "Document",
     "DocumentStatus",
     "ImpactAnalysis",
@@ -45,13 +55,17 @@ __all__ = [
     "KnowledgeChunk",
     "KnowledgeSourceType",
     "Project",
+    "ProjectBaseline",
     "ProjectStatus",
     "Requirement",
+    "RequirementComment",
+    "RequirementReview",
     "RequirementChangeType",
     "RequirementSource",
     "RequirementStatus",
     "RequirementType",
     "RequirementVersion",
+    "ReviewStatus",
     "TraceLink",
     "TraceLinkSource",
     "TraceLinkStatus",

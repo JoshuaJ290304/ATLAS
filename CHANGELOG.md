@@ -1,5 +1,21 @@
 # Changelog
 
+
+## 0.8.0 — Requirement Governance and Baselines
+
+- Added a dedicated Reviews & Baselines workspace.
+- Added requirement review requests, reviewer assignment, approval and rejection decisions.
+- Added requirement discussion comments with user and timestamp attribution.
+- Added immutable baselines containing approved requirement snapshots.
+- Added baseline-to-current comparison for added, modified, removed, and unchanged requirements.
+- Added project governance audit history.
+- Added backend migration `0007_create_governance_workflow.py`.
+- Moved dashboard summary cards into the right side of the project command centre header.
+- Added the governance module to project navigation and project action cards.
+- Updated the professional footer attribution to retain “Developed by Joshua J”.
+- Added automated cleanup for the legacy milestone-seven QA demo label.
+- Updated the application release to 0.8.0.
+
 All notable changes to ATLAS are documented here. The project follows Semantic Versioning.
 
 ## [Unreleased]

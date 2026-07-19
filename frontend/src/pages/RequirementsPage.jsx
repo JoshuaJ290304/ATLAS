@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import Icon from "../components/Icon";
+import { useConfirmDialog } from "../components/ConfirmDialog";
 import ProjectNav from "../components/ProjectNav";
-import { FieldError } from "../components/UI";
+import { Alert, FieldError } from "../components/UI";
 import { apiErrorMessage, clean, validateRequired } from "../utils/validation";
 
 const EMPTY_MANUAL = {
@@ -17,6 +19,7 @@ const EMPTY_MANUAL = {
 
 export default function RequirementsPage() {
   const { projectId } = useParams();
+  const { confirm, confirmationDialog } = useConfirmDialog();
   const [project, setProject] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [requirements, setRequirements] = useState([]);
@@ -210,7 +213,11 @@ export default function RequirementsPage() {
   }
 
   async function deleteRequirement(requirement) {
-    const confirmed = window.confirm(`Delete ${requirement.code}: ${requirement.title}?`);
+    const confirmed = await confirm({
+      title: "Delete requirement?",
+      message: `${requirement.code} · ${requirement.title} and its related history will be permanently removed.`,
+      confirmLabel: "Delete requirement",
+    });
     if (!confirmed) return;
 
     setError("");
@@ -226,12 +233,13 @@ export default function RequirementsPage() {
 
   return (
     <AppShell>
+      {confirmationDialog}
       <ProjectNav projectId={projectId} />
 
       <section className="atlas-page-header">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-indigo-600">
-            Milestone 3
+            Requirement intelligence
           </p>
           <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-950">
             {project?.name || "Requirement intelligence"}
@@ -240,8 +248,15 @@ export default function RequirementsPage() {
             Detect requirement statements, classify functional and non-functional behavior, flag
             ambiguous wording, and review every record before traceability links are created.
           </p>
+          <Link
+            to={`/projects/${projectId}/governance`}
+            className="atlas-button-secondary mt-5"
+          >
+            <Icon name="governance" className="h-4 w-4" />
+            Open reviews and baselines
+          </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="atlas-header-metrics">
           <Metric label="Total" value={summary.total} />
           <Metric label="Functional" value={summary.functional} />
           <Metric label="Non-functional" value={summary.non_functional} />
@@ -250,11 +265,9 @@ export default function RequirementsPage() {
       </section>
 
       {(error || notice) && (
-        <section className="mt-6">
-          {error && <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
-          {notice && (
-            <p className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-700">{notice}</p>
-          )}
+        <section className="mt-6 space-y-3">
+          {error && <Alert type="error" onClose={() => setError("")}>{error}</Alert>}
+          {notice && <Alert type="success" onClose={() => setNotice("")}>{notice}</Alert>}
         </section>
       )}
 
@@ -303,6 +316,7 @@ export default function RequirementsPage() {
             </label>
 
             <button
+              type="submit"
               disabled={extracting || extractedDocuments.length === 0}
               className="mt-5 w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
             >
@@ -318,6 +332,7 @@ export default function RequirementsPage() {
             <h2 className="text-xl font-black text-slate-900">Add manual requirement</h2>
             <RequirementFields form={manual} setForm={setManual} errors={manualErrors} clearErrors={setManualErrors} />
             <button
+              type="submit"
               disabled={saving}
               className="mt-5 w-full rounded-xl bg-slate-900 px-4 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-60"
             >
@@ -411,6 +426,7 @@ export default function RequirementsPage() {
                     </div>
                     <RequirementFields form={editForm} setForm={setEditForm} errors={editErrors} clearErrors={setEditErrors} />
                     <button
+                      type="submit"
                       disabled={saving}
                       className="mt-5 rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white disabled:opacity-60"
                     >
@@ -625,9 +641,9 @@ function Fact({ label, value }) {
 
 function Metric({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-black text-slate-900">{value}</p>
+    <div className="atlas-metric-card">
+      <p className="atlas-metric-label">{label}</p>
+      <p className="atlas-metric-value">{value}</p>
     </div>
   );
 }

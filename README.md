@@ -2,16 +2,16 @@
 
 **AI-Assisted Requirement Traceability and Change Impact Analysis Platform**
 
-ATLAS is a full-stack MCA major project that converts software project documents into structured requirements, links requirements to technical artifacts, explains the impact of changes, answers project questions from indexed evidence, and presents project health through an analytics and reporting dashboard.
+ATLAS is a full-stack requirements engineering platform that converts software project documents into structured requirements, links requirements to technical artifacts, governs review and approval, explains the impact of changes, answers project questions from indexed evidence, and presents project health through an analytics and reporting dashboard.
 
 ## Current release
 
-**v0.7.0 — Analytics, Reporting, UI/UX, and Validation**
+**v0.8.0 — Requirement Governance, Review, and Baselines**
 
 Development branch:
 
 ```text
-feature/milestone-7-analytics-reporting
+feature/requirement-governance-and-baselines
 ```
 
 ## Project status
@@ -25,6 +25,7 @@ feature/milestone-7-analytics-reporting
 | 5 | Change-impact analysis | Completed |
 | 6 | AI project assistant | Completed |
 | 7 | Analytics, reporting, UI/UX, and validation | Completed |
+| 8 | Requirement governance, review, and baselines | Completed |
 
 ## Main capabilities
 
@@ -77,6 +78,16 @@ feature/milestone-7-analytics-reporting
 - Numbered citations
 - Semantic search and persistent conversations
 - Retrieval-only fallback when Ollama is unavailable
+
+
+### Requirement governance
+
+- Requirement review requests and reviewer assignment
+- Approval and rejection decisions with mandatory rationale
+- Timestamped requirement comments
+- Immutable approved-requirement baselines
+- Added, modified, removed, and unchanged baseline comparison
+- Governance audit history
 
 ### Analytics and reporting
 
@@ -305,3 +316,18 @@ Planned finalization work:
 - Final MCA report and demonstration script
 - Security and performance review
 - Formal release notes and repository cleanup
+
+
+## Requirement governance and baselines
+
+ATLAS 0.8.0 adds a controlled governance workflow:
+
+- Request a review for any requirement and assign an active user.
+- Record approval or rejection with a mandatory decision rationale.
+- Discuss requirement details with timestamped comments.
+- Create immutable baselines from approved requirements.
+- Compare a baseline with the current specification to identify added, modified, removed, and unchanged requirements.
+- Review an audit history of governance actions.
+
+The module is available from **Reviews & Baselines** in every project workspace.
+

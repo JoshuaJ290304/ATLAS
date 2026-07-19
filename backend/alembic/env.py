@@ -11,6 +11,8 @@ from app.core.config import settings
 from app.db.base import Base
 from app.models import (  # noqa: F401
     Artifact,
+    AuditLog,
+    BaselineRequirement,
     AssistantConversation,
     AssistantIndex,
     AssistantMessage,
@@ -18,7 +20,10 @@ from app.models import (  # noqa: F401
     ImpactAnalysis,
     KnowledgeChunk,
     Project,
+    ProjectBaseline,
     Requirement,
+    RequirementComment,
+    RequirementReview,
     RequirementVersion,
     TraceLink,
     User,

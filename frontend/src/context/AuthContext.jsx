@@ -9,20 +9,26 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    function clearSession() {
+      localStorage.removeItem("atlas_access_token");
+      setUser(null);
+    }
+
+    window.addEventListener("atlas:session-expired", clearSession);
+
     const token = localStorage.getItem("atlas_access_token");
     if (!token) {
       setLoading(false);
-      return;
+      return () => window.removeEventListener("atlas:session-expired", clearSession);
     }
 
     api
       .get("/auth/me")
       .then((response) => setUser(response.data))
-      .catch(() => {
-        localStorage.removeItem("atlas_access_token");
-        setUser(null);
-      })
+      .catch(clearSession)
       .finally(() => setLoading(false));
+
+    return () => window.removeEventListener("atlas:session-expired", clearSession);
   }, []);
 
   async function login(email, password) {

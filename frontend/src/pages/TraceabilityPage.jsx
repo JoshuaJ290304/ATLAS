@@ -3,8 +3,9 @@ import { useParams } from "react-router-dom";
 
 import api from "../api/client";
 import AppShell from "../components/AppShell";
+import { useConfirmDialog } from "../components/ConfirmDialog";
 import ProjectNav from "../components/ProjectNav";
-import { FieldError } from "../components/UI";
+import { Alert, FieldError } from "../components/UI";
 import { apiErrorMessage, clean, validateRequired } from "../utils/validation";
 
 const EMPTY_ARTIFACT = {
@@ -56,6 +57,7 @@ function emptySummary() {
 
 export default function TraceabilityPage() {
   const { projectId } = useParams();
+  const { confirm, confirmationDialog } = useConfirmDialog();
   const [project, setProject] = useState(null);
   const [requirements, setRequirements] = useState([]);
   const [artifacts, setArtifacts] = useState([]);
@@ -217,9 +219,11 @@ export default function TraceabilityPage() {
   }
 
   async function deleteArtifact(artifact) {
-    const confirmed = window.confirm(
-      `Delete ${artifact.code}: ${artifact.name}? Its trace links will also be deleted.`,
-    );
+    const confirmed = await confirm({
+      title: "Delete artifact?",
+      message: `${artifact.code} · ${artifact.name} and every related trace link will be permanently removed.`,
+      confirmLabel: "Delete artifact",
+    });
     if (!confirmed) return;
     setError("");
     try {
@@ -299,7 +303,11 @@ export default function TraceabilityPage() {
   }
 
   async function deleteLink(traceLinkId) {
-    const confirmed = window.confirm("Delete this trace link?");
+    const confirmed = await confirm({
+      title: "Delete trace link?",
+      message: "This relationship will be permanently removed from the traceability matrix and coverage calculations.",
+      confirmLabel: "Delete link",
+    });
     if (!confirmed) return;
     setError("");
     try {
@@ -313,12 +321,13 @@ export default function TraceabilityPage() {
 
   return (
     <AppShell>
+      {confirmationDialog}
       <ProjectNav projectId={projectId} />
 
-      <section className="atlas-page-header">
+      <section className="atlas-page-header atlas-trace-header">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-indigo-600">
-            Milestone 4
+            Traceability workspace
           </p>
           <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-950">
             {project?.name || "Traceability engine"}
@@ -328,7 +337,7 @@ export default function TraceabilityPage() {
             using only accepted evidence.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+        <div className="atlas-header-metrics">
           <Metric label="Requirement coverage" value={`${summary.requirement_coverage_percent}%`} />
           <Metric label="Artifact coverage" value={`${summary.artifact_coverage_percent}%`} />
           <Metric label="Accepted links" value={summary.accepted_links} />
@@ -339,15 +348,13 @@ export default function TraceabilityPage() {
 
       {(error || notice) && (
         <section className="mt-6 space-y-3">
-          {error && <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
-          {notice && (
-            <p className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-700">{notice}</p>
-          )}
+          {error && <Alert type="error" onClose={() => setError("")}>{error}</Alert>}
+          {notice && <Alert type="success" onClose={() => setNotice("")}>{notice}</Alert>}
         </section>
       )}
 
-      <section className="mt-10 grid gap-8 xl:grid-cols-[380px_1fr]">
-        <div className="space-y-6">
+      <section className="atlas-trace-layout">
+        <aside className="atlas-trace-sidebar">
           <form
             onSubmit={createArtifact}
             noValidate
@@ -359,8 +366,9 @@ export default function TraceabilityPage() {
             </p>
             <ArtifactFields form={artifactForm} setForm={setArtifactForm} errors={artifactErrors} clearErrors={setArtifactErrors} />
             <button
+              type="submit"
               disabled={saving}
-              className="mt-5 w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
+              className="atlas-button-primary atlas-button-block"
             >
               {saving ? "Saving..." : "Create artifact"}
             </button>
@@ -396,8 +404,9 @@ export default function TraceabilityPage() {
               Replace unresolved system suggestions before recalculating
             </label>
             <button
+              type="submit"
               disabled={suggesting || requirements.length === 0 || artifacts.length === 0}
-              className="mt-5 w-full rounded-xl bg-slate-900 px-4 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-50"
+              className="atlas-button-dark atlas-button-block"
             >
               {suggesting ? "Analyzing pairs..." : "Generate suggestions"}
             </button>
@@ -452,22 +461,23 @@ export default function TraceabilityPage() {
               <FieldError>{manualLinkErrors.evidence_note}</FieldError>
             </label>
             <button
+              type="submit"
               disabled={saving || requirements.length === 0 || artifacts.length === 0}
-              className="mt-5 w-full rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
+              className="atlas-button-success atlas-button-block"
             >
               Add accepted link
             </button>
           </form>
-        </div>
+        </aside>
 
-        <div className="space-y-8">
-          <section>
-            <div className="flex items-center justify-between gap-4">
+        <div className="atlas-trace-content">
+          <section className="atlas-workspace-section">
+            <div className="atlas-section-heading">
               <div>
                 <h2 className="text-2xl font-black text-slate-900">Artifact register</h2>
                 <p className="mt-1 text-sm text-slate-500">{artifacts.length} artifact(s)</p>
               </div>
-              <button onClick={loadWorkspace} className="text-sm font-bold text-indigo-700 hover:underline">
+              <button type="button" onClick={loadWorkspace} className="atlas-button-ghost atlas-button-compact">
                 Refresh
               </button>
             </div>
@@ -477,17 +487,17 @@ export default function TraceabilityPage() {
             ) : artifacts.length === 0 ? (
               <EmptyState text="Create the first API, database table, test case, or UML component." />
             ) : (
-              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <div className="atlas-artifact-grid">
                 {artifacts.map((artifact) => (
                   <article
                     key={artifact.id}
-                    className="atlas-card p-5"
+                    className="atlas-card atlas-artifact-card"
                   >
                     {editingArtifactId === artifact.id ? (
                       <form onSubmit={(event) => saveArtifact(event, artifact.id)} noValidate>
                         <ArtifactFields form={editArtifactForm} setForm={setEditArtifactForm} errors={editArtifactErrors} clearErrors={setEditArtifactErrors} />
                         <div className="mt-4 flex gap-2">
-                          <button className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">
+                          <button type="submit" className="atlas-button-primary atlas-button-compact">
                             Save
                           </button>
                           <button
@@ -496,7 +506,7 @@ export default function TraceabilityPage() {
                               setEditingArtifactId(null);
                               setEditArtifactForm(null);
                             }}
-                            className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700"
+                            className="atlas-button-secondary atlas-button-compact"
                           >
                             Cancel
                           </button>
@@ -504,7 +514,7 @@ export default function TraceabilityPage() {
                       </form>
                     ) : (
                       <>
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="atlas-artifact-heading">
                           <div>
                             <p className="text-xs font-black uppercase tracking-wider text-indigo-600">
                               {artifact.code}
@@ -521,16 +531,16 @@ export default function TraceabilityPage() {
                             {artifact.technical_details.notes}
                           </p>
                         )}
-                        <div className="mt-4 flex gap-2 border-t border-slate-100 pt-4">
-                          <button
+                        <div className="atlas-card-actions">
+                          <button type="button"
                             onClick={() => beginArtifactEdit(artifact)}
-                            className="rounded-lg bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-700"
+                            className="atlas-button-ghost atlas-button-compact"
                           >
                             Edit
                           </button>
-                          <button
+                          <button type="button"
                             onClick={() => deleteArtifact(artifact)}
-                            className="rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-700"
+                            className="atlas-button-danger atlas-button-compact"
                           >
                             Delete
                           </button>
@@ -543,8 +553,8 @@ export default function TraceabilityPage() {
             )}
           </section>
 
-          <section>
-            <div className="flex flex-wrap items-end justify-between gap-4">
+          <section className="atlas-workspace-section">
+            <div className="atlas-section-heading atlas-section-heading-wrap">
               <div>
                 <h2 className="text-2xl font-black text-slate-900">Link review queue</h2>
                 <p className="mt-1 text-sm text-slate-500">
@@ -561,20 +571,20 @@ export default function TraceabilityPage() {
             {links.length === 0 ? (
               <EmptyState text="Generate suggestions or create a manual trace link." />
             ) : (
-              <div className="mt-5 space-y-4">
+              <div className="atlas-trace-link-list">
                 {links.map((link) => {
                   const requirement = requirementById[link.requirement_id];
                   const artifact = artifactById[link.artifact_id];
                   return (
                     <article
                       key={link.id}
-                      className="atlas-card p-5"
+                      className="atlas-card atlas-trace-link-card"
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div className="min-w-0 flex-1">
+                      <div className="atlas-trace-link-layout">
+                        <div className="atlas-trace-link-main">
                           <div className="flex flex-wrap items-center gap-2">
                             <StatusBadge status={link.status} />
-                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                            <span className="atlas-metric-label">
                               {link.source}
                             </span>
                             <span className="text-xs font-bold text-slate-500">
@@ -598,26 +608,26 @@ export default function TraceabilityPage() {
                             </p>
                           )}
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="atlas-trace-actions">
                           {link.status !== "accepted" && (
-                            <button
+                            <button type="button"
                               onClick={() => updateLink(link.id, "accepted")}
-                              className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-bold text-white"
+                              className="atlas-button-success atlas-button-compact"
                             >
                               Accept
                             </button>
                           )}
                           {link.status !== "rejected" && (
-                            <button
+                            <button type="button"
                               onClick={() => updateLink(link.id, "rejected")}
-                              className="rounded-lg bg-amber-100 px-3 py-2 text-sm font-bold text-amber-800"
+                              className="atlas-button-warning atlas-button-compact"
                             >
                               Reject
                             </button>
                           )}
-                          <button
+                          <button type="button"
                             onClick={() => deleteLink(link.id)}
-                            className="rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-700"
+                            className="atlas-button-danger atlas-button-compact"
                           >
                             Delete
                           </button>
@@ -632,15 +642,15 @@ export default function TraceabilityPage() {
         </div>
       </section>
 
-      <section className="mt-10 atlas-panel">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <section className="atlas-panel atlas-trace-matrix-panel">
+        <div className="atlas-matrix-heading">
           <div>
             <h2 className="text-2xl font-black text-slate-900">Traceability matrix</h2>
             <p className="mt-1 text-sm text-slate-500">
               Rows are requirements; columns are artifacts. Suggested links do not count as coverage.
             </p>
           </div>
-          <div className="text-right text-xs text-slate-500">
+          <div className="atlas-matrix-summary">
             <p>Uncovered requirements: {summary.uncovered_requirements}</p>
             <p>Uncovered artifacts: {summary.uncovered_artifacts}</p>
           </div>
@@ -649,17 +659,17 @@ export default function TraceabilityPage() {
         {matrix.requirements.length === 0 || matrix.artifacts.length === 0 ? (
           <EmptyState text="The matrix appears after both requirements and artifacts exist." />
         ) : (
-          <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200">
-            <table className="min-w-full border-collapse text-sm">
+          <div className="atlas-trace-matrix-wrap">
+            <table className="atlas-trace-matrix">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="sticky left-0 z-10 min-w-64 border-b border-r border-slate-200 bg-slate-50 p-3 text-left font-black text-slate-700">
+                  <th className="atlas-matrix-corner">
                     Requirement
                   </th>
                   {matrix.artifacts.map((artifact) => (
                     <th
                       key={artifact.id}
-                      className="min-w-40 border-b border-slate-200 p-3 text-center align-bottom"
+                      className="atlas-matrix-artifact-head"
                     >
                       <p className="text-xs font-black text-indigo-600">{artifact.code}</p>
                       <p className="mt-1 font-bold text-slate-800">{artifact.name}</p>
@@ -673,14 +683,14 @@ export default function TraceabilityPage() {
               <tbody>
                 {matrix.requirements.map((requirement) => (
                   <tr key={requirement.id} className="border-b border-slate-100 last:border-0">
-                    <th className="sticky left-0 z-10 border-r border-slate-200 bg-white p-3 text-left">
+                    <th className="atlas-matrix-requirement">
                       <p className="text-xs font-black text-indigo-600">{requirement.code}</p>
                       <p className="mt-1 font-semibold text-slate-800">{requirement.title}</p>
                     </th>
                     {matrix.artifacts.map((artifact) => {
                       const cell = matrixCellByPair[`${requirement.id}:${artifact.id}`];
                       return (
-                        <td key={artifact.id} className="p-3 text-center">
+                        <td key={artifact.id} className="atlas-matrix-cell">
                           {cell ? (
                             <div>
                               <StatusBadge status={cell.status} />
@@ -801,29 +811,24 @@ function SelectField({ label, value, onChange, options, blankLabel = "Select", e
 
 function Metric({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-black text-slate-900">{value}</p>
+    <div className="atlas-metric-card">
+      <p className="atlas-metric-label">{label}</p>
+      <p className="atlas-metric-value">{value}</p>
     </div>
   );
 }
 
 function EmptyState({ text }) {
   return (
-    <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
+    <div className="atlas-inline-empty">
       {text}
     </div>
   );
 }
 
 function StatusBadge({ status }) {
-  const styles = {
-    suggested: "bg-indigo-50 text-indigo-700",
-    accepted: "bg-emerald-50 text-emerald-700",
-    rejected: "bg-amber-50 text-amber-800",
-  };
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-black capitalize ${styles[status]}`}>
+    <span className={`atlas-status-badge atlas-status-${status}`}>
       {status}
     </span>
   );
@@ -831,8 +836,9 @@ function StatusBadge({ status }) {
 
 function StatusPill({ status, count }) {
   return (
-    <span className="rounded-full bg-slate-100 px-3 py-2 capitalize text-slate-700">
-      {status}: {count}
+    <span className={`atlas-status-pill atlas-status-pill-${status}`}>
+      <span>{status}</span>
+      <strong>{count}</strong>
     </span>
   );
 }

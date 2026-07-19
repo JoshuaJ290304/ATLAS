@@ -38,3 +38,35 @@ class User(TimestampMixin, Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+    assigned_requirement_reviews = relationship(
+        "RequirementReview",
+        foreign_keys="RequirementReview.reviewer_id",
+        back_populates="reviewer",
+        passive_deletes=True,
+    )
+
+    requested_requirement_reviews = relationship(
+        "RequirementReview",
+        foreign_keys="RequirementReview.requested_by_id",
+        back_populates="requested_by",
+        passive_deletes=True,
+    )
+
+    requirement_comments = relationship(
+        "RequirementComment",
+        back_populates="author",
+        passive_deletes=True,
+    )
+
+    created_baselines = relationship(
+        "ProjectBaseline",
+        back_populates="created_by",
+        passive_deletes=True,
+    )
+
+    audit_logs = relationship(
+        "AuditLog",
+        back_populates="actor",
+        passive_deletes=True,
+    )

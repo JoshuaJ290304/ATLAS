@@ -76,6 +76,7 @@ export default function RegisterPage() {
             }}
             className="atlas-input"
             placeholder="Joshua J"
+            maxLength={120}
           />
           <FieldError>{errors.name}</FieldError>
         </label>
@@ -92,6 +93,7 @@ export default function RegisterPage() {
             }}
             className="atlas-input"
             placeholder="you@example.com"
+            maxLength={320}
           />
           <FieldError>{errors.email}</FieldError>
         </label>
@@ -108,6 +110,7 @@ export default function RegisterPage() {
             }}
             className="atlas-input"
             placeholder="At least 8 characters"
+            maxLength={128}
           />
           <div className="mt-2 grid grid-cols-4 gap-1.5" aria-label={`Password strength ${strength} of 4`}>
             {[1, 2, 3, 4].map((item) => (
@@ -130,11 +133,12 @@ export default function RegisterPage() {
             }}
             className="atlas-input"
             placeholder="Repeat your password"
+            maxLength={128}
           />
           <FieldError>{errors.confirmPassword}</FieldError>
         </label>
         {error && <Alert type="error">{error}</Alert>}
-        <button disabled={submitting} className="atlas-button-primary w-full">
+        <button type="submit" disabled={submitting} className="atlas-button-primary w-full">
           {submitting ? "Creating account..." : "Create secure account"}
         </button>
       </form>

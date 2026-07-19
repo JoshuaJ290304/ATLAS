@@ -5,8 +5,10 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import AssistantPage from "./pages/AssistantPage";
 import DashboardPage from "./pages/DashboardPage";
 import DocumentsPage from "./pages/DocumentsPage";
+import GovernancePage from "./pages/GovernancePage";
 import ImpactAnalysisPage from "./pages/ImpactAnalysisPage";
 import LoginPage from "./pages/LoginPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import RegisterPage from "./pages/RegisterPage";
 import RequirementsPage from "./pages/RequirementsPage";
 import TraceabilityPage from "./pages/TraceabilityPage";
@@ -59,6 +61,15 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/projects/:projectId/governance"
+            element={
+              <ProtectedRoute>
+                <GovernancePage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/projects/:projectId/impact"
             element={
@@ -75,6 +86,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<ProtectedRoute><NotFoundPage /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
