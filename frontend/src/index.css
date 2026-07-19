@@ -1157,3 +1157,107 @@ body { line-height: 1.5; }
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ATLAS 0.8.1 governance completeness */
+.atlas-priority-badge,
+.atlas-baseline-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: capitalize;
+}
+.atlas-priority-badge.is-low {
+  background: #f1f5f9;
+  color: #475569;
+}
+.atlas-priority-badge.is-medium {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.atlas-priority-badge.is-high {
+  background: #fff7ed;
+  color: #c2410c;
+}
+.atlas-priority-badge.is-critical {
+  background: #fff1f2;
+  color: #be123c;
+}
+.atlas-baseline-status.is-active {
+  background: #ecfdf5;
+  color: #047857;
+}
+.atlas-baseline-status.is-archived {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.atlas-baseline-requirement-list {
+  display: grid;
+  max-height: 260px;
+  gap: 8px;
+  margin-top: 10px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+  padding: 10px;
+}
+.atlas-baseline-requirement-option {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 10px;
+  cursor: pointer;
+}
+.atlas-baseline-requirement-option:hover {
+  background: #eef2ff;
+}
+.atlas-baseline-requirement-option input {
+  margin-top: 3px;
+}
+.atlas-baseline-requirement-option span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.atlas-baseline-requirement-option strong {
+  color: #3730a3;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+.atlas-baseline-requirement-option small {
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.atlas-baseline-compare-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+  margin: 20px 0 4px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: #eff6ff;
+  padding: 16px;
+}
+.atlas-audit-details {
+  color: #475569 !important;
+  font-size: 11px !important;
+}
+
+@media (max-width: 820px) {
+  .atlas-baseline-compare-form {
+    grid-template-columns: 1fr;
+  }
+}
