@@ -22,6 +22,7 @@ from app.models.requirement import Requirement, RequirementStatus
 from app.models.user import User
 from app.schemas.governance import (
     AuditLogRead,
+    BaselineComparisonCreate,
     BaselineComparisonRead,
     BaselineCreate,
     BaselineRead,
@@ -55,6 +56,8 @@ def _review_read(review: RequirementReview) -> RequirementReviewRead:
         reviewer=_user_reference(review.reviewer),
         requested_by=_user_reference(review.requested_by),
         status=review.status,
+        priority=review.priority,
+        due_date=review.due_date,
         request_note=review.request_note,
         decision_note=review.decision_note,
         decided_at=review.decided_at,
@@ -82,6 +85,7 @@ def _baseline_summary(baseline: ProjectBaseline) -> BaselineSummaryRead:
         name=baseline.name,
         version_label=baseline.version_label,
         description=baseline.description,
+        status=baseline.status,
         requirement_count=baseline.requirement_count,
         created_by=_user_reference(baseline.created_by),
         created_at=baseline.created_at,
@@ -319,6 +323,8 @@ async def request_requirement_review(
         reviewer_id=reviewer.id,
         requested_by_id=current_user.id,
         status=ReviewStatus.PENDING,
+        priority=payload.priority,
+        due_date=payload.due_date,
         request_note=payload.request_note,
     )
     db.add(review)
@@ -341,6 +347,9 @@ async def request_requirement_review(
             "requirement_code": requirement.code,
             "reviewer_id": str(reviewer.id),
             "reviewer_name": reviewer.name,
+            "priority": review.priority.value,
+            "due_date": review.due_date.isoformat() if review.due_date else None,
+            "request_note": review.request_note,
         },
     )
     await db.commit()
@@ -449,7 +458,10 @@ async def create_requirement_comment(
         action="comment_added",
         entity_type="requirement",
         entity_id=requirement_id,
-        details={"requirement_code": requirement.code},
+        details={
+            "requirement_code": requirement.code,
+            "comment": comment.body,
+        },
     )
     await db.commit()
 
@@ -504,19 +516,31 @@ async def create_baseline(
             detail="A baseline with this version label already exists",
         )
 
-    requirement_result = await db.execute(
-        select(Requirement)
-        .where(
-            Requirement.project_id == project_id,
-            Requirement.status == RequirementStatus.APPROVED,
+    requirement_statement = select(Requirement).where(
+        Requirement.project_id == project_id,
+        Requirement.status == RequirementStatus.APPROVED,
+    )
+    selected_ids = list(dict.fromkeys(payload.requirement_ids or []))
+    if selected_ids:
+        requirement_statement = requirement_statement.where(
+            Requirement.id.in_(selected_ids)
         )
-        .order_by(Requirement.code.asc())
+
+    requirement_result = await db.execute(
+        requirement_statement.order_by(Requirement.code.asc())
     )
     requirements = list(requirement_result.scalars().all())
+
     if not requirements:
         raise HTTPException(
             status_code=409,
-            detail="Approve at least one requirement before creating a baseline",
+            detail="Select at least one approved requirement before creating a baseline",
+        )
+
+    if selected_ids and len(requirements) != len(selected_ids):
+        raise HTTPException(
+            status_code=422,
+            detail="Every selected requirement must belong to this project and be approved",
         )
 
     baseline = ProjectBaseline(
@@ -525,6 +549,7 @@ async def create_baseline(
         name=payload.name,
         version_label=payload.version_label,
         description=payload.description,
+        status=payload.status,
         requirement_count=len(requirements),
     )
     db.add(baseline)
@@ -551,7 +576,9 @@ async def create_baseline(
         details={
             "name": baseline.name,
             "version_label": baseline.version_label,
+            "status": baseline.status.value,
             "requirement_count": baseline.requirement_count,
+            "requirement_codes": [requirement.code for requirement in requirements],
         },
     )
     await db.commit()
@@ -602,6 +629,63 @@ async def compare_baseline(
         baseline_id=baseline.id,
         baseline_name=baseline.name,
         version_label=baseline.version_label,
+        target_is_current=True,
+        added=comparison["added"],
+        modified=comparison["modified"],
+        removed=comparison["removed"],
+        unchanged=comparison["unchanged"],
+        added_count=len(comparison["added"]),
+        modified_count=len(comparison["modified"]),
+        removed_count=len(comparison["removed"]),
+        unchanged_count=len(comparison["unchanged"]),
+    )
+
+
+@router.post(
+    "/baseline-comparisons",
+    response_model=BaselineComparisonRead,
+)
+async def compare_two_baselines(
+    project_id: UUID,
+    payload: BaselineComparisonCreate,
+    db: DbSession,
+    current_user: CurrentUser,
+) -> BaselineComparisonRead:
+    await get_owned_project(db, project_id, current_user.id)
+    source = await _load_baseline(db, project_id, payload.source_baseline_id)
+    target = await _load_baseline(db, project_id, payload.target_baseline_id)
+
+    comparison = compare_baseline_snapshots(
+        [item.snapshot_data for item in source.items],
+        [item.snapshot_data for item in target.items],
+    )
+
+    _add_audit(
+        db,
+        project_id=project_id,
+        actor_id=current_user.id,
+        action="baseline_comparison_performed",
+        entity_type="baseline",
+        entity_id=source.id,
+        details={
+            "source_baseline_id": str(source.id),
+            "source_name": source.name,
+            "source_version_label": source.version_label,
+            "target_baseline_id": str(target.id),
+            "target_name": target.name,
+            "target_version_label": target.version_label,
+        },
+    )
+    await db.commit()
+
+    return BaselineComparisonRead(
+        baseline_id=source.id,
+        baseline_name=source.name,
+        version_label=source.version_label,
+        target_baseline_id=target.id,
+        target_baseline_name=target.name,
+        target_version_label=target.version_label,
+        target_is_current=False,
         added=comparison["added"],
         modified=comparison["modified"],
         removed=comparison["removed"],

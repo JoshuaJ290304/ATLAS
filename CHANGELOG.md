@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.8.1 — Governance Input Completeness
+
+### Added
+
+- Added review priority (`Low`, `Medium`, `High`, and `Critical`).
+- Added optional review due dates with client-side past-date validation.
+- Added explicit approved-requirement selection when creating a baseline.
+- Added baseline status (`Active` or `Archived`).
+- Added baseline-to-baseline comparison in addition to baseline-to-current comparison.
+- Added audit entries for baseline comparisons.
+- Expanded audit details to show review context, priority, due date, comments, decision reasons, baseline status, and requirement counts.
+- Added Alembic migration `0008_expand_governance_fields.py`.
+
+### Changed
+
+- Baseline creation now validates that every selected requirement belongs to the project and is approved.
+- Review cards now display priority and due date.
+- Baseline cards now display their governance status.
+- Updated application and frontend versions to `0.8.1`.
+
+### Verified
+
+- Frontend production build completed successfully.
+- Governance backend tests passed, including the new review and baseline input schemas.
+- Python syntax compilation passed for the updated backend and migration files.
 
 ## 0.8.0 — Requirement Governance and Baselines
 

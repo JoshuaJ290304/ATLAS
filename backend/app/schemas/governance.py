@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.models.governance import ReviewStatus
+from app.models.governance import BaselineStatus, ReviewPriority, ReviewStatus
 from app.schemas.validation import clean_optional_text, clean_required_text
 
 
@@ -18,6 +18,8 @@ class UserReference(BaseModel):
 
 class ReviewRequestCreate(BaseModel):
     reviewer_id: UUID
+    priority: ReviewPriority = ReviewPriority.MEDIUM
+    due_date: date | None = None
     request_note: str | None = Field(default=None, max_length=4000)
 
     @field_validator("request_note")
@@ -45,6 +47,8 @@ class RequirementReviewRead(BaseModel):
     reviewer: UserReference
     requested_by: UserReference
     status: ReviewStatus
+    priority: ReviewPriority
+    due_date: date | None
     request_note: str | None
     decision_note: str | None
     decided_at: datetime | None
@@ -75,6 +79,8 @@ class BaselineCreate(BaseModel):
     name: str = Field(min_length=2, max_length=160)
     version_label: str = Field(min_length=1, max_length=40)
     description: str | None = Field(default=None, max_length=4000)
+    status: BaselineStatus = BaselineStatus.ACTIVE
+    requirement_ids: list[UUID] | None = Field(default=None, min_length=1)
 
     @field_validator("name")
     @classmethod
@@ -92,6 +98,19 @@ class BaselineCreate(BaseModel):
         return clean_optional_text(value)
 
 
+class BaselineComparisonCreate(BaseModel):
+    source_baseline_id: UUID
+    target_baseline_id: UUID
+
+    @field_validator("target_baseline_id")
+    @classmethod
+    def different_baselines(cls, value: UUID, info):
+        source = info.data.get("source_baseline_id")
+        if source is not None and value == source:
+            raise ValueError("Choose two different baselines")
+        return value
+
+
 class BaselineRequirementRead(BaseModel):
     id: UUID
     requirement_id: UUID | None
@@ -107,6 +126,7 @@ class BaselineSummaryRead(BaseModel):
     name: str
     version_label: str
     description: str | None
+    status: BaselineStatus
     requirement_count: int
     created_by: UserReference
     created_at: datetime
@@ -128,6 +148,10 @@ class BaselineComparisonRead(BaseModel):
     baseline_id: UUID
     baseline_name: str
     version_label: str
+    target_baseline_id: UUID | None = None
+    target_baseline_name: str | None = None
+    target_version_label: str | None = None
+    target_is_current: bool = True
     added: list[BaselineChangeRead]
     modified: list[BaselineChangeRead]
     removed: list[BaselineChangeRead]
