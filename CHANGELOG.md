@@ -1,3 +1,13 @@
+﻿## [0.9.0] — Test Case Intelligence
+
+### Added
+- Test case, test step, and test case version models.
+- Requirement-to-test traceability and coverage summary.
+- Manual authoring and AI-assisted scenario generation.
+- Review status, priority, reviewer notes, and rejection validation.
+- Responsive Test Case Intelligence workspace with search and filters.
+- Alembic revision 0009 and backend schema tests.
+
 # Changelog
 
 ## 0.8.1 — Governance Input Completeness
@@ -167,3 +177,4 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Protected project CRUD
 - Docker Compose environment
 - Alembic migration `0001`
+

@@ -1,4 +1,4 @@
-# ATLAS
+﻿# ATLAS
 
 **AI-Assisted Requirement Traceability and Change Impact Analysis Platform**
 
@@ -332,4 +332,12 @@ ATLAS 0.8.1 completes the controlled governance workflow:
 - Review an audit history of governance actions.
 
 The module is available from **Reviews & Baselines** in every project workspace.
+
+
+
+## Milestone 9 — Test Case Intelligence
+
+ATLAS 0.9.0 adds a traceable test engineering workspace with manual and AI-assisted test case authoring, numbered steps, review status, priorities, requirement coverage, and immutable version snapshots.
+
+Project route: `/projects/{project_id}/test-cases`
 

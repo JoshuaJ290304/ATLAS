@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     projects,
     requirements,
     traceability,
+    test_cases,
 )
 
 api_router = APIRouter()
@@ -20,6 +21,7 @@ api_router.include_router(projects.router)
 api_router.include_router(documents.router)
 api_router.include_router(requirements.router)
 api_router.include_router(governance.router)
+api_router.include_router(test_cases.router)
 
 api_router.include_router(traceability.artifact_router)
 api_router.include_router(traceability.trace_router)

@@ -2,6 +2,7 @@ const paths = {
   atlas: <><path d="M12 3 3.8 20h3.7l1.4-3.3h6.2l1.4 3.3h3.7L12 3Z"/><path d="m10.1 13.8 1.9-4.5 1.9 4.5h-3.8Z"/></>,
   home: <><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></>,
   document: <><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5"/><path d="M9 12h6M9 16h6"/></>,
+  test: <><path d="M5 4h14v16H5z"/><path d="m8 9 1.5 1.5L12 8M8 14h8M8 17h6"/></>,
   requirement: <><path d="M5 4h14v16H5z"/><path d="m8 9 1.5 1.5L12 8M8 15h8"/></>,
   governance: <><path d="M7 3h10v4H7z"/><path d="M5 7h14v14H5z"/><path d="m8 13 2 2 5-5"/><path d="M8 18h8"/></>,
   baseline: <><path d="M4 5h16v14H4z"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="M8 14h3M8 17h7"/></>,
