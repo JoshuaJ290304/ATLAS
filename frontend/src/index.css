@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -1261,3 +1261,199 @@ body { line-height: 1.5; }
     grid-template-columns: 1fr;
   }
 }
+
+/* Milestone 9 — Test Case Intelligence */
+.atlas-chip{display:inline-flex;align-items:center;gap:.45rem;border:1px solid var(--atlas-border,#dbe2ea);border-radius:999px;padding:.5rem .75rem;font-size:.8rem;text-transform:capitalize;background:var(--atlas-surface,#fff)}
+.atlas-step-builder{display:grid;gap:.75rem;border:1px solid var(--atlas-border,#dbe2ea);border-radius:1rem;padding:1rem;background:rgba(148,163,184,.06)}
+.atlas-step-row{display:grid;grid-template-columns:2rem minmax(0,1fr) minmax(0,1fr) auto;gap:.75rem;align-items:center}
+.atlas-step-row>strong{display:grid;place-items:center;width:2rem;height:2rem;border-radius:999px;background:rgba(79,70,229,.12);color:#4f46e5}
+.atlas-test-card{border:1px solid var(--atlas-border,#dbe2ea);border-radius:1rem;padding:1.1rem;background:var(--atlas-surface,#fff)}
+.atlas-test-card h3{margin:.7rem 0 .35rem;font-size:1.05rem;font-weight:750}
+.atlas-test-card>ol li{display:grid;gap:.2rem;border-left:3px solid rgba(79,70,229,.3);padding:.55rem .8rem;background:rgba(148,163,184,.06);border-radius:.35rem}
+.atlas-test-card>ol span{font-size:.86rem;color:var(--atlas-muted,#64748b)}
+@media(max-width:760px){.atlas-step-row{grid-template-columns:2rem 1fr auto}.atlas-step-row input:nth-of-type(2){grid-column:2/4}}
+
+
+/* ATLAS 0.9.0 — Test Case Intelligence UI alignment */
+.atlas-test-summary { align-items: stretch; }
+
+.atlas-test-workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, .78fr) minmax(0, 1.72fr);
+  align-items: start;
+  gap: 22px;
+}
+
+.atlas-test-generator {
+  position: sticky;
+  top: 94px;
+}
+
+.atlas-test-generator .atlas-panel-heading,
+.atlas-test-authoring .atlas-panel-heading,
+.atlas-test-repository .atlas-panel-heading {
+  align-items: flex-start;
+}
+
+.atlas-test-generator .atlas-panel-heading p:not(.atlas-eyebrow),
+.atlas-test-authoring .atlas-panel-heading p:not(.atlas-eyebrow),
+.atlas-test-repository .atlas-panel-heading p:not(.atlas-eyebrow) {
+  margin: 7px 0 0;
+  max-width: 720px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.atlas-test-generator > .grid {
+  grid-template-columns: 1fr !important;
+}
+
+.atlas-test-generator .atlas-chip {
+  flex: 1 1 calc(50% - 8px);
+  justify-content: flex-start;
+  min-width: 120px;
+}
+
+.atlas-test-generator .atlas-button {
+  width: 100%;
+  justify-content: center;
+}
+
+.atlas-test-authoring form {
+  margin-top: 2px;
+}
+
+.atlas-test-authoring .atlas-field > span {
+  display: inline-block;
+  margin-bottom: 7px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .015em;
+}
+
+.atlas-test-authoring textarea.atlas-input {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.atlas-step-builder {
+  margin-top: 2px;
+  border-color: #dbeafe;
+  background: linear-gradient(145deg, #f8fafc, #eff6ff);
+}
+
+.atlas-step-builder > div:first-child {
+  gap: 14px;
+}
+
+.atlas-step-builder h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.atlas-step-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  padding: 10px;
+}
+
+.atlas-test-repository-heading {
+  gap: 20px;
+}
+
+.atlas-test-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.35fr) minmax(160px, .65fr);
+  width: min(100%, 520px);
+  gap: 10px;
+}
+
+.atlas-test-card {
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 8px 26px rgba(15, 23, 42, .045);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.atlas-test-card:hover {
+  transform: translateY(-1px);
+  border-color: #c7d2fe;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, .075);
+}
+
+.atlas-test-card h3 {
+  margin-top: 12px;
+  color: #0f172a;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.atlas-test-card > div > div:first-child > p {
+  max-width: 850px;
+  color: #64748b;
+  line-height: 1.65;
+}
+
+.atlas-test-card > ol li {
+  grid-template-columns: minmax(0, 1fr);
+  border-left-width: 4px;
+  padding: 10px 12px;
+}
+
+@media (max-width: 1100px) {
+  .atlas-test-workspace { grid-template-columns: 1fr; }
+  .atlas-test-generator { position: static; }
+  .atlas-test-generator > .grid { grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr) auto !important; }
+  .atlas-test-generator .atlas-button { width: auto; }
+}
+
+@media (max-width: 820px) {
+  .atlas-test-generator > .grid { grid-template-columns: 1fr !important; }
+  .atlas-test-generator .atlas-button { width: 100%; }
+  .atlas-test-repository-heading { display: grid; grid-template-columns: 1fr; }
+  .atlas-test-filters { width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .atlas-test-workspace { gap: 16px; }
+  .atlas-test-generator,
+  .atlas-test-authoring,
+  .atlas-test-repository { padding: 18px 14px; }
+  .atlas-test-filters { grid-template-columns: 1fr; }
+  .atlas-test-generator .atlas-chip { flex-basis: 100%; }
+  .atlas-step-row { grid-template-columns: 34px minmax(0, 1fr) auto; }
+  .atlas-step-row input:nth-of-type(2) { grid-column: 2 / 4; }
+  .atlas-test-authoring form > .flex:last-child { flex-direction: column; }
+  .atlas-test-authoring form > .flex:last-child .atlas-button { width: 100%; justify-content: center; }
+}
+
+
+
+/* ATLAS 0.9.0 — Test Cases header alignment fix */
+.atlas-test-case-header {
+  margin-bottom: 24px;
+}
+
+.atlas-test-case-header .atlas-header-metrics {
+  align-self: center;
+}
+
+.atlas-metric-detail {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+@media (min-width: 1121px) {
+  .atlas-test-case-header .atlas-header-metrics {
+    grid-template-columns: repeat(4, minmax(118px, 1fr));
+  }
+}
+
