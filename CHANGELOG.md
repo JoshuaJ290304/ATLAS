@@ -1,4 +1,4 @@
-## [0.9.0-dev] — Test Case Intelligence
+﻿## [0.9.0] — Test Case Intelligence
 
 ### Added
 - Test case, test step, and test case version models.
@@ -177,3 +177,4 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Protected project CRUD
 - Docker Compose environment
 - Alembic migration `0001`
+

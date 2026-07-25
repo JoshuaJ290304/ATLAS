@@ -1,4 +1,4 @@
-# ATLAS
+﻿# ATLAS
 
 **AI-Assisted Requirement Traceability and Change Impact Analysis Platform**
 
@@ -340,3 +340,4 @@ The module is available from **Reviews & Baselines** in every project workspace.
 ATLAS 0.9.0 adds a traceable test engineering workspace with manual and AI-assisted test case authoring, numbered steps, review status, priorities, requirement coverage, and immutable version snapshots.
 
 Project route: `/projects/{project_id}/test-cases`
+
