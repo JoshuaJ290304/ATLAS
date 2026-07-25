@@ -12,6 +12,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import RegisterPage from "./pages/RegisterPage";
 import RequirementsPage from "./pages/RequirementsPage";
 import TraceabilityPage from "./pages/TraceabilityPage";
+import TestCasesPage from "./pages/TestCasesPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 export default function App() {
@@ -42,6 +43,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <RequirementsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId/test-cases"
+            element={
+              <ProtectedRoute>
+                <TestCasesPage />
               </ProtectedRoute>
             }
           />

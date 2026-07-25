@@ -125,3 +125,8 @@ class Project(TimestampMixin, Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+# Milestone 9 relationship is attached after class declaration to preserve migration compatibility.
+Project.test_cases = relationship(
+    "TestCase", back_populates="project", cascade="all, delete-orphan", passive_deletes=True
+)

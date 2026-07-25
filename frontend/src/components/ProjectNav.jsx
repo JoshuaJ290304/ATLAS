@@ -6,6 +6,7 @@ const items = [
   { key: "documents", label: "Documents", icon: "document" },
   { key: "requirements", label: "Requirements", icon: "requirement" },
   { key: "traceability", label: "Traceability", icon: "trace" },
+  { key: "test-cases", label: "Test Cases", icon: "test" },
   { key: "governance", label: "Reviews & Baselines", icon: "governance" },
   { key: "impact", label: "Impact", icon: "impact" },
   { key: "assistant", label: "AI Assistant", icon: "assistant" },

@@ -32,6 +32,15 @@ from app.models.requirement import (
     RequirementStatus,
     RequirementType,
 )
+from app.models.test_case import (
+    TestCase,
+    TestCasePriority,
+    TestCaseSource,
+    TestCaseStatus,
+    TestCaseType,
+    TestCaseVersion,
+    TestStep,
+)
 from app.models.trace_link import (
     TraceLink,
     TraceLinkSource,
@@ -70,6 +79,13 @@ __all__ = [
     "RequirementType",
     "RequirementVersion",
     "ReviewStatus",
+    "TestCase",
+    "TestCasePriority",
+    "TestCaseSource",
+    "TestCaseStatus",
+    "TestCaseType",
+    "TestCaseVersion",
+    "TestStep",
     "TraceLink",
     "TraceLinkSource",
     "TraceLinkStatus",
