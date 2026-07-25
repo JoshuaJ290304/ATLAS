@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from enum import StrEnum
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
+    Date,
     DateTime,
     Enum,
     ForeignKey,
@@ -26,6 +27,18 @@ class ReviewStatus(StrEnum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
+
+
+class ReviewPriority(StrEnum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+class BaselineStatus(StrEnum):
+    ACTIVE = "active"
+    ARCHIVED = "archived"
 
 
 class RequirementReview(TimestampMixin, Base):
@@ -69,6 +82,16 @@ class RequirementReview(TimestampMixin, Base):
         default=ReviewStatus.PENDING,
         nullable=False,
     )
+    priority: Mapped[ReviewPriority] = mapped_column(
+        Enum(
+            ReviewPriority,
+            name="governance_review_priority",
+            values_callable=lambda values: [value.value for value in values],
+        ),
+        default=ReviewPriority.MEDIUM,
+        nullable=False,
+    )
+    due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     request_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     decision_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -142,6 +165,15 @@ class ProjectBaseline(TimestampMixin, Base):
     name: Mapped[str] = mapped_column(String(160), nullable=False)
     version_label: Mapped[str] = mapped_column(String(40), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[BaselineStatus] = mapped_column(
+        Enum(
+            BaselineStatus,
+            name="governance_baseline_status",
+            values_callable=lambda values: [value.value for value in values],
+        ),
+        default=BaselineStatus.ACTIVE,
+        nullable=False,
+    )
     requirement_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     project = relationship("Project", back_populates="baselines")

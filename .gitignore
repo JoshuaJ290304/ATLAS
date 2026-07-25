@@ -43,6 +43,7 @@ storage/vector/*
 !storage/vector/.gitkeep
 storage/models/*
 !storage/models/.gitkeep
+<<<<<<< HEAD
 
 backups/
 clean-atlas-project*.ps1
@@ -53,3 +54,12 @@ atlas-migrate-old-db-to-new*.ps1
 ATLAS_*_Patch/
 *.zip
 *.dump
+=======
+backups/
+ATLAS_*_Patch/
+clean-atlas-project*.ps1
+atlas-migrate-old-db-to-new*.ps1
+*.zip
+*.dump
+.env.backup
+>>>>>>> feature/milestone-8-reviews-baselines

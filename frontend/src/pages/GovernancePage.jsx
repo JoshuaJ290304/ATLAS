@@ -12,6 +12,8 @@ import { apiErrorMessage, clean, validateRequired } from "../utils/validation";
 const EMPTY_REVIEW = {
   requirement_id: "",
   reviewer_id: "",
+  priority: "medium",
+  due_date: "",
   request_note: "",
 };
 
@@ -19,6 +21,13 @@ const EMPTY_BASELINE = {
   name: "",
   version_label: "",
   description: "",
+  status: "active",
+  requirement_ids: [],
+};
+
+const EMPTY_COMPARISON = {
+  source_baseline_id: "",
+  target_baseline_id: "",
 };
 
 const EMPTY_SUMMARY = {
@@ -56,6 +65,7 @@ export default function GovernancePage() {
   const [baselineForm, setBaselineForm] = useState(EMPTY_BASELINE);
   const [baselineErrors, setBaselineErrors] = useState({});
   const [comparison, setComparison] = useState(null);
+  const [comparisonForm, setComparisonForm] = useState(EMPTY_COMPARISON);
 
   const [selectedRequirementId, setSelectedRequirementId] = useState("");
   const [comments, setComments] = useState([]);
@@ -109,6 +119,26 @@ export default function GovernancePage() {
         reviewer_id:
           current.reviewer_id || reviewersResponse.data[0]?.id || "",
       }));
+
+      const approvedIds = requirementsResponse.data
+        .filter((requirement) => requirement.status === "approved")
+        .map((requirement) => requirement.id);
+      setBaselineForm((current) => ({
+        ...current,
+        requirement_ids:
+          current.requirement_ids.length > 0
+            ? current.requirement_ids.filter((id) => approvedIds.includes(id))
+            : approvedIds,
+      }));
+
+      if (baselinesResponse.data.length >= 2) {
+        setComparisonForm((current) => ({
+          source_baseline_id:
+            current.source_baseline_id || baselinesResponse.data[1]?.id || "",
+          target_baseline_id:
+            current.target_baseline_id || baselinesResponse.data[0]?.id || "",
+        }));
+      }
     } catch (requestError) {
       setError(apiErrorMessage(requestError, "Could not load governance data."));
     } finally {
@@ -134,11 +164,22 @@ export default function GovernancePage() {
     [reviews],
   );
 
+  const approvedRequirements = useMemo(
+    () => requirements.filter((requirement) => requirement.status === "approved"),
+    [requirements],
+  );
+
   async function requestReview(event) {
     event.preventDefault();
     const nextErrors = {
       requirement_id: reviewForm.requirement_id ? "" : "Select a requirement.",
       reviewer_id: reviewForm.reviewer_id ? "" : "Select a reviewer.",
+      priority: reviewForm.priority ? "" : "Select a priority.",
+      due_date:
+        reviewForm.due_date &&
+        reviewForm.due_date < new Date().toISOString().slice(0, 10)
+          ? "Due date cannot be in the past."
+          : "",
       request_note:
         reviewForm.request_note.length > 4000
           ? "Request note must be at most 4000 characters."
@@ -156,10 +197,17 @@ export default function GovernancePage() {
         `/projects/${projectId}/governance/requirements/${reviewForm.requirement_id}/reviews`,
         {
           reviewer_id: reviewForm.reviewer_id,
+          priority: reviewForm.priority,
+          due_date: reviewForm.due_date || null,
           request_note: clean(reviewForm.request_note) || null,
         },
       );
-      setReviewForm((current) => ({ ...current, request_note: "" }));
+      setReviewForm((current) => ({
+        ...current,
+        priority: "medium",
+        due_date: "",
+        request_note: "",
+      }));
       setNotice("Requirement review requested.");
       await loadWorkspace({ preserveMessage: true });
     } catch (requestError) {
@@ -250,6 +298,10 @@ export default function GovernancePage() {
         baselineForm.description.length > 4000
           ? "Description must be at most 4000 characters."
           : "",
+      requirement_ids:
+        baselineForm.requirement_ids.length > 0
+          ? ""
+          : "Select at least one approved requirement.",
     };
     Object.keys(nextErrors).forEach((key) => !nextErrors[key] && delete nextErrors[key]);
     setBaselineErrors(nextErrors);
@@ -263,8 +315,13 @@ export default function GovernancePage() {
         name: clean(baselineForm.name),
         version_label: clean(baselineForm.version_label),
         description: clean(baselineForm.description) || null,
+        status: baselineForm.status,
+        requirement_ids: baselineForm.requirement_ids,
       });
-      setBaselineForm(EMPTY_BASELINE);
+      setBaselineForm({
+        ...EMPTY_BASELINE,
+        requirement_ids: approvedRequirements.map((requirement) => requirement.id),
+      });
       setNotice("Approved requirements captured in a new baseline.");
       setActiveTab("baselines");
       await loadWorkspace({ preserveMessage: true });
@@ -275,7 +332,7 @@ export default function GovernancePage() {
     }
   }
 
-  async function compareBaseline(baseline) {
+  async function compareWithCurrent(baseline) {
     setSaving(`compare:${baseline.id}`);
     setError("");
     try {
@@ -286,6 +343,38 @@ export default function GovernancePage() {
       setActiveTab("baselines");
     } catch (requestError) {
       setError(apiErrorMessage(requestError, "Could not compare the baseline."));
+    } finally {
+      setSaving("");
+    }
+  }
+
+  async function compareBaselines(event) {
+    event.preventDefault();
+    if (
+      !comparisonForm.source_baseline_id ||
+      !comparisonForm.target_baseline_id
+    ) {
+      setError("Select a source and target baseline.");
+      return;
+    }
+    if (comparisonForm.source_baseline_id === comparisonForm.target_baseline_id) {
+      setError("Choose two different baselines.");
+      return;
+    }
+
+    setSaving("baseline-comparison");
+    setError("");
+    try {
+      const response = await api.post(
+        `/projects/${projectId}/governance/baseline-comparisons`,
+        comparisonForm,
+      );
+      setComparison(response.data);
+      setNotice("Baseline comparison completed and recorded in the audit history.");
+      await loadWorkspace({ preserveMessage: true });
+      setActiveTab("baselines");
+    } catch (requestError) {
+      setError(apiErrorMessage(requestError, "Could not compare the baselines."));
     } finally {
       setSaving("");
     }
@@ -402,6 +491,43 @@ export default function GovernancePage() {
                 <FieldError>{reviewErrors.reviewer_id}</FieldError>
               </label>
 
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <label className="atlas-label">
+                  Priority
+                  <select
+                    className="atlas-select"
+                    value={reviewForm.priority}
+                    aria-invalid={Boolean(reviewErrors.priority)}
+                    onChange={(event) => {
+                      setReviewForm({ ...reviewForm, priority: event.target.value });
+                      setReviewErrors({ ...reviewErrors, priority: "" });
+                    }}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                  <FieldError>{reviewErrors.priority}</FieldError>
+                </label>
+
+                <label className="atlas-label">
+                  Due date <span className="font-normal text-slate-400">(optional)</span>
+                  <input
+                    type="date"
+                    className="atlas-input"
+                    min={new Date().toISOString().slice(0, 10)}
+                    value={reviewForm.due_date}
+                    aria-invalid={Boolean(reviewErrors.due_date)}
+                    onChange={(event) => {
+                      setReviewForm({ ...reviewForm, due_date: event.target.value });
+                      setReviewErrors({ ...reviewErrors, due_date: "" });
+                    }}
+                  />
+                  <FieldError>{reviewErrors.due_date}</FieldError>
+                </label>
+              </div>
+
               <label className="atlas-label mt-4">
                 Review context <span className="font-normal text-slate-400">(optional)</span>
                 <textarea
@@ -491,6 +617,76 @@ export default function GovernancePage() {
                 <FieldError>{baselineErrors.description}</FieldError>
               </label>
 
+              <label className="atlas-label mt-4">
+                Status
+                <select
+                  className="atlas-select"
+                  value={baselineForm.status}
+                  onChange={(event) =>
+                    setBaselineForm({ ...baselineForm, status: event.target.value })
+                  }
+                >
+                  <option value="active">Active</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </label>
+
+              <fieldset className="mt-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <legend className="atlas-label">Included approved requirements</legend>
+                  <button
+                    type="button"
+                    className="text-xs font-bold text-indigo-700 hover:text-indigo-900"
+                    onClick={() =>
+                      setBaselineForm({
+                        ...baselineForm,
+                        requirement_ids:
+                          baselineForm.requirement_ids.length === approvedRequirements.length
+                            ? []
+                            : approvedRequirements.map((requirement) => requirement.id),
+                      })
+                    }
+                  >
+                    {baselineForm.requirement_ids.length === approvedRequirements.length
+                      ? "Clear all"
+                      : "Select all"}
+                  </button>
+                </div>
+                <div className="atlas-baseline-requirement-list">
+                  {approvedRequirements.length === 0 ? (
+                    <p className="atlas-comment-empty">
+                      Approve at least one requirement before creating a baseline.
+                    </p>
+                  ) : (
+                    approvedRequirements.map((requirement) => (
+                      <label key={requirement.id} className="atlas-baseline-requirement-option">
+                        <input
+                          type="checkbox"
+                          checked={baselineForm.requirement_ids.includes(requirement.id)}
+                          onChange={(event) => {
+                            const nextIds = event.target.checked
+                              ? [...baselineForm.requirement_ids, requirement.id]
+                              : baselineForm.requirement_ids.filter(
+                                  (id) => id !== requirement.id,
+                                );
+                            setBaselineForm({
+                              ...baselineForm,
+                              requirement_ids: nextIds,
+                            });
+                            setBaselineErrors({ ...baselineErrors, requirement_ids: "" });
+                          }}
+                        />
+                        <span>
+                          <strong>{requirement.code}</strong>
+                          <small>{requirement.title}</small>
+                        </span>
+                      </label>
+                    ))
+                  )}
+                </div>
+                <FieldError>{baselineErrors.requirement_ids}</FieldError>
+              </fieldset>
+
               <button
                 type="submit"
                 disabled={
@@ -565,6 +761,17 @@ export default function GovernancePage() {
                                 Reviewer <strong>{review.reviewer.name}</strong> · requested by{" "}
                                 {review.requested_by.name}
                               </p>
+                              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-bold text-slate-600">
+                                <span className={`atlas-priority-badge is-${review.priority}`}>
+                                  {review.priority}
+                                </span>
+                                <span>
+                                  Due{" "}
+                                  {review.due_date
+                                    ? new Date(`${review.due_date}T00:00:00`).toLocaleDateString()
+                                    : "not set"}
+                                </span>
+                              </div>
                             </div>
                             <time dateTime={review.created_at}>
                               {new Date(review.created_at).toLocaleDateString()}
@@ -724,6 +931,63 @@ export default function GovernancePage() {
                     </div>
                   </div>
 
+                  {baselines.length >= 2 && (
+                    <form onSubmit={compareBaselines} className="atlas-baseline-compare-form">
+                      <label className="atlas-label">
+                        Source baseline
+                        <select
+                          className="atlas-select"
+                          value={comparisonForm.source_baseline_id}
+                          onChange={(event) =>
+                            setComparisonForm({
+                              ...comparisonForm,
+                              source_baseline_id: event.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Select source baseline</option>
+                          {baselines.map((baseline) => (
+                            <option key={baseline.id} value={baseline.id}>
+                              {baseline.version_label} · {baseline.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="atlas-label">
+                        Target baseline
+                        <select
+                          className="atlas-select"
+                          value={comparisonForm.target_baseline_id}
+                          onChange={(event) =>
+                            setComparisonForm({
+                              ...comparisonForm,
+                              target_baseline_id: event.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Select target baseline</option>
+                          {baselines.map((baseline) => (
+                            <option key={baseline.id} value={baseline.id}>
+                              {baseline.version_label} · {baseline.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <button
+                        type="submit"
+                        disabled={saving === "baseline-comparison"}
+                        className="atlas-button-primary self-end"
+                      >
+                        <Icon name="compare" className="h-4 w-4" />
+                        {saving === "baseline-comparison"
+                          ? "Comparing..."
+                          : "Compare baselines"}
+                      </button>
+                    </form>
+                  )}
+
                   {baselines.length === 0 ? (
                     <EmptyState
                       icon="baseline"
@@ -739,7 +1003,12 @@ export default function GovernancePage() {
                               <Icon name="baseline" className="h-5 w-5" />
                             </span>
                             <div className="min-w-0">
-                              <p>{baseline.version_label}</p>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p>{baseline.version_label}</p>
+                                <span className={`atlas-baseline-status is-${baseline.status}`}>
+                                  {baseline.status}
+                                </span>
+                              </div>
                               <h3>{baseline.name}</h3>
                             </div>
                           </div>
@@ -754,12 +1023,12 @@ export default function GovernancePage() {
                           <div className="atlas-card-actions">
                             <button
                               type="button"
-                              onClick={() => compareBaseline(baseline)}
+                              onClick={() => compareWithCurrent(baseline)}
                               disabled={saving === `compare:${baseline.id}`}
                               className="atlas-button-secondary"
                             >
                               <Icon name="compare" className="h-4 w-4" />
-                              Compare
+                              Compare with current
                             </button>
                             <button
                               type="button"
@@ -823,6 +1092,11 @@ export default function GovernancePage() {
                               ? ` ${log.details.version_label}`
                               : ""}
                           </p>
+                          {formatAuditDetails(log.details) && (
+                            <p className="atlas-audit-details">
+                              {formatAuditDetails(log.details)}
+                            </p>
+                          )}
                         </div>
                       </article>
                     ))}
@@ -865,9 +1139,20 @@ function BaselineComparison({ comparison }) {
         <div>
           <p className="atlas-eyebrow">Change comparison</p>
           <h2>
-            {comparison.baseline_name} · {comparison.version_label}
+            {comparison.version_label}
+            {" → "}
+            {comparison.target_is_current
+              ? "Current requirements"
+              : comparison.target_version_label}
           </h2>
-          <p>Current requirements compared with the selected approved snapshot.</p>
+          <p>
+            {comparison.baseline_name}
+            {" compared with "}
+            {comparison.target_is_current
+              ? "the current project specification"
+              : comparison.target_baseline_name}
+            .
+          </p>
         </div>
       </div>
 
@@ -913,6 +1198,32 @@ function BaselineComparison({ comparison }) {
       )}
     </section>
   );
+}
+
+function formatAuditDetails(details = {}) {
+  const parts = [];
+
+  if (details.reviewer_name) parts.push(`Reviewer: ${details.reviewer_name}`);
+  if (details.priority) parts.push(`Priority: ${details.priority}`);
+  if (details.due_date) {
+    parts.push(
+      `Due: ${new Date(`${details.due_date}T00:00:00`).toLocaleDateString()}`,
+    );
+  }
+  if (details.request_note) parts.push(`Context: ${details.request_note}`);
+  if (details.decision_note) parts.push(`Reason: ${details.decision_note}`);
+  if (details.comment) parts.push(`Comment: ${details.comment}`);
+  if (details.requirement_count !== undefined) {
+    parts.push(`Requirements: ${details.requirement_count}`);
+  }
+  if (details.status) parts.push(`Status: ${details.status}`);
+  if (details.source_version_label && details.target_version_label) {
+    parts.push(
+      `Compared ${details.source_version_label} with ${details.target_version_label}`,
+    );
+  }
+
+  return parts.join(" · ");
 }
 
 function auditIcon(action) {

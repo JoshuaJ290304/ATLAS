@@ -6,12 +6,12 @@ ATLAS is a full-stack requirements engineering platform that converts software p
 
 ## Current release
 
-**v0.8.0 — Requirement Governance, Review, and Baselines**
+**v0.8.1 — Governance Input Completeness**
 
 Development branch:
 
 ```text
-feature/requirement-governance-and-baselines
+feature/milestone-8-reviews-baselines
 ```
 
 ## Project status
@@ -294,6 +294,8 @@ No Milestone 7 migration required
 | `v0.5.0` | Change-impact analysis |
 | `v0.6.0` | AI project assistant |
 | `v0.7.0` | Analytics, reporting, UI/UX, and validation |
+| `v0.8.0` | Requirement governance, reviews, and baselines |
+| `v0.8.1` | Review priority/due dates, selected baseline scope, status, and baseline comparison |
 | `v1.0.0` | Stable final release |
 
 ## Current limitations
@@ -320,13 +322,13 @@ Planned finalization work:
 
 ## Requirement governance and baselines
 
-ATLAS 0.8.0 adds a controlled governance workflow:
+ATLAS 0.8.1 completes the controlled governance workflow:
 
-- Request a review for any requirement and assign an active user.
+- Request a review for any requirement, assign an active user, set priority, and optionally set a due date.
 - Record approval or rejection with a mandatory decision rationale.
 - Discuss requirement details with timestamped comments.
-- Create immutable baselines from approved requirements.
-- Compare a baseline with the current specification to identify added, modified, removed, and unchanged requirements.
+- Create immutable baselines from explicitly selected approved requirements and record their active or archived status.
+- Compare two baselines, or compare a baseline with the current specification, to identify added, modified, removed, and unchanged requirements.
 - Review an audit history of governance actions.
 
 The module is available from **Reviews & Baselines** in every project workspace.

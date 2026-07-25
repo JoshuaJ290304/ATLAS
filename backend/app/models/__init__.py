@@ -12,9 +12,11 @@ from app.models.document import Document, DocumentStatus
 from app.models.governance import (
     AuditLog,
     BaselineRequirement,
+    BaselineStatus,
     ProjectBaseline,
     RequirementComment,
     RequirementReview,
+    ReviewPriority,
     ReviewStatus,
 )
 from app.models.impact import (
@@ -48,6 +50,7 @@ __all__ = [
     "AssistantMessageRole",
     "AuditLog",
     "BaselineRequirement",
+    "BaselineStatus",
     "Document",
     "DocumentStatus",
     "ImpactAnalysis",
@@ -60,6 +63,7 @@ __all__ = [
     "Requirement",
     "RequirementComment",
     "RequirementReview",
+    "ReviewPriority",
     "RequirementChangeType",
     "RequirementSource",
     "RequirementStatus",
