@@ -62,24 +62,24 @@ export default function AdminUsersPage() {
       </div>
 
       <AdminSection title="User directory" description="Search by name or email and filter by role or account status." className="mt-6">
-        <form onSubmit={submitSearch} className="admin-filter-bar">
-          <label className="relative flex-1">
+        <form onSubmit={submitSearch} className="admin-filter-bar admin-filter-bar-users">
+          <label className="admin-filter-search">
             <Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input className="atlas-input !mt-0 !pl-10" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search existing users" />
           </label>
-          <select className="atlas-select !mt-0" value={role} onChange={(event) => setRole(event.target.value)} aria-label="Filter role">
+          <select className="atlas-select !mt-0 admin-filter-control" value={role} onChange={(event) => setRole(event.target.value)} aria-label="Filter role">
             <option value="">All roles</option><option value="admin">Administrators</option><option value="user">Users</option>
           </select>
-          <select className="atlas-select !mt-0" value={status} onChange={(event) => setStatus(event.target.value)} aria-label="Filter status">
+          <select className="atlas-select !mt-0 admin-filter-control" value={status} onChange={(event) => setStatus(event.target.value)} aria-label="Filter status">
             <option value="">All statuses</option><option value="active">Active</option><option value="suspended">Suspended</option>
           </select>
-          <button className="atlas-button-primary" type="submit"><Icon name="search" className="h-4 w-4" />Search</button>
+          <button className="atlas-button-primary admin-filter-submit" type="submit"><Icon name="search" className="h-4 w-4" />Search</button>
         </form>
 
         {loading ? <LoadingState label="Loading existing users..." /> : users.length === 0 ? (
           <EmptyState icon="users" title="No matching users" description="Adjust the search or account filters." />
         ) : (
-          <AdminTable>
+          <AdminTable className="admin-table-users" label="Existing ATLAS users">
             <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Last login</th><th>Projects</th><th>Artifacts</th><th /></tr></thead>
             <tbody>
               {users.map((user) => (
@@ -87,10 +87,10 @@ export default function AdminUsersPage() {
                   <td><Link className="admin-table-link" to={`/admin/users/${user.id}`}>{user.name}<small>{user.email}</small></Link></td>
                   <td><AdminBadge value={user.role} /></td>
                   <td><AdminBadge value={user.account_status} /></td>
-                  <td>{formatDate(user.last_login_at, true)}</td>
-                  <td>{user.project_count}</td>
-                  <td><span className="admin-artifact-count">{user.document_count} docs · {user.requirement_count} reqs · {user.test_case_count} tests</span></td>
-                  <td><Link to={`/admin/users/${user.id}`} className="atlas-button-secondary !px-3 !py-2">View<Icon name="arrowRight" className="h-4 w-4" /></Link></td>
+                  <td className="admin-cell-nowrap">{formatDate(user.last_login_at, true)}</td>
+                  <td className="admin-cell-number">{user.project_count}</td>
+                  <td className="admin-cell-artifacts"><span className="admin-artifact-count">{user.document_count} docs · {user.requirement_count} reqs · {user.test_case_count} tests</span></td>
+                  <td className="admin-cell-action"><Link to={`/admin/users/${user.id}`} className="atlas-button-secondary admin-row-action !px-3 !py-2">View<Icon name="arrowRight" className="h-4 w-4" /></Link></td>
                 </tr>
               ))}
             </tbody>

@@ -1,4 +1,22 @@
-﻿## [0.11.0] — Administration and Platform Operations
+## [1.0.0-rc.1] — Stabilization Candidate 1
+
+### Fixed
+- Aligned Admin Users, Projects, and Audit search/filter toolbars with consistent control heights and non-wrapping action buttons.
+- Added responsive one-, two-, and four-column filter layouts for desktop, tablet, and mobile widths.
+- Prevented Admin table headers, emails, IP addresses, dates, status badges, and action labels from breaking vertically.
+- Added explicit minimum widths and accessible horizontal scrolling for administration data tables.
+- Reworked project archive and ownership-transfer controls into a stable two-row operations grid.
+- Standardized row actions and updated Admin-owned project tables for responsive viewing.
+
+### Accessibility
+- Added labelled, keyboard-focusable scroll regions around administration tables.
+- Preserved visible focus states and full-width touch targets on smaller screens.
+
+### Release candidate
+- Synchronized the frontend and displayed product version with `1.0.0-rc.1`.
+- Full Docker build, regression testing, security hardening, and final release documentation remain part of the v1.0.0 stabilization phase.
+
+## [0.11.0] — Administration and Platform Operations
 
 ### Added
 - Administrator-only FastAPI authorization dependency and protected React routes.

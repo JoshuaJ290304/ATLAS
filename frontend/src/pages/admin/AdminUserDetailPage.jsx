@@ -112,7 +112,7 @@ export default function AdminUserDetailPage() {
 
           <AdminSection title="Owned projects" description="Projects and current artifact totals belonging to this existing user.">
             {user.projects.length === 0 ? <p className="text-sm text-slate-500">This user does not own any projects.</p> : (
-              <AdminTable>
+              <AdminTable className="admin-table-user-projects" label="Projects owned by this user">
                 <thead><tr><th>Project</th><th>Status</th><th>Documents</th><th>Requirements</th><th>Test cases</th><th>Releases</th><th>Updated</th></tr></thead>
                 <tbody>{user.projects.map((project) => (
                   <tr key={project.id}><td><span className="admin-table-link">{project.name}<small>{project.id}</small></span></td><td><AdminBadge value={project.status} /></td><td>{project.document_count}</td><td>{project.requirement_count}</td><td>{project.test_case_count}</td><td>{project.release_candidate_count}</td><td>{formatDate(project.updated_at)}</td></tr>

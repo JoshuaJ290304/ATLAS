@@ -20,8 +20,12 @@ export function AdminSection({ title, description, actions, children, className 
   );
 }
 
-export function AdminTable({ children }) {
-  return <div className="admin-table-wrap"><table className="admin-table">{children}</table></div>;
+export function AdminTable({ children, className = "", label = "Administration data" }) {
+  return (
+    <div className="admin-table-wrap" tabIndex="0" role="region" aria-label={label}>
+      <table className={`admin-table ${className}`.trim()}>{children}</table>
+    </div>
+  );
 }
 
 export function formatDate(value, includeTime = false) {
