@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.core.security import hash_password, verify_password
 from app.models.password_reset import PasswordResetToken
 from app.models.user import User
+from app.services.admin import get_platform_settings
 from app.services.password_recovery import (
     generate_password_reset_token,
     hash_password_reset_token,
@@ -34,11 +35,7 @@ async def create_password_reset_request(
     email: str,
     requested_ip: str | None,
 ) -> tuple[User, str] | None:
-    """Create a one-use reset token without revealing whether an account exists.
-
-    The caller always returns the same public response. ``None`` therefore means either that the
-    address is unknown/inactive or that the per-account cooldown is still active.
-    """
+    """Create a one-use reset token without revealing whether an account exists."""
 
     user_result = await db.execute(
         select(User).where(User.email == email.lower()).with_for_update()
@@ -62,7 +59,6 @@ async def create_password_reset_request(
         if recent_result.scalar_one_or_none() is not None:
             return None
 
-    # A newly issued token invalidates all older unused links for this account.
     await db.execute(
         update(PasswordResetToken)
         .where(
@@ -72,11 +68,12 @@ async def create_password_reset_request(
         .values(used_at=now)
     )
 
+    platform = await get_platform_settings(db)
     raw_token = generate_password_reset_token()
     reset_token = PasswordResetToken(
         user_id=user.id,
         token_hash=hash_password_reset_token(raw_token),
-        expires_at=now + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES),
+        expires_at=now + timedelta(minutes=platform.password_reset_expiry_minutes),
         requested_ip=requested_ip,
     )
     db.add(reset_token)
@@ -88,7 +85,7 @@ async def reset_password_with_token(
     db: AsyncSession,
     raw_token: str,
     new_password: str,
-) -> bool:
+) -> User | None:
     now = datetime.now(UTC).replace(microsecond=0)
     token_hash = hash_password_reset_token(raw_token)
 
@@ -103,17 +100,18 @@ async def reset_password_with_token(
         or reset_token.used_at is not None
         or reset_token.expires_at <= now
     ):
-        return False
+        return None
 
     user = await db.get(User, reset_token.user_id, with_for_update=True)
     if user is None or not user.is_active:
-        return False
+        return None
 
     user.password_hash = hash_password(new_password)
     user.password_changed_at = now
+    user.last_password_reset_at = now
+    user.session_version += 1
     reset_token.used_at = now
 
-    # Revoke any other outstanding reset links for the same account.
     await db.execute(
         update(PasswordResetToken)
         .where(
@@ -124,4 +122,4 @@ async def reset_password_with_token(
         .values(used_at=now)
     )
     await db.commit()
-    return True
+    return user

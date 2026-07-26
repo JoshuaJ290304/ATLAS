@@ -12,6 +12,7 @@ from app.api.dependencies import CurrentUser, DbSession
 from app.api.v1.endpoints.projects import get_owned_project
 from app.models.document import Document, DocumentStatus
 from app.schemas.document import DocumentRead, DocumentTextRead
+from app.services.admin import get_platform_settings
 from app.services.documents import (
     extract_document,
     resolve_stored_path,
@@ -51,7 +52,13 @@ async def upload_document(
     file: Annotated[UploadFile, File()],
 ) -> Document:
     await get_owned_project(db, project_id, current_user.id)
-    stored = await store_upload(file, project_id)
+    platform = await get_platform_settings(db)
+    stored = await store_upload(
+        file,
+        project_id,
+        max_size_mb=platform.max_upload_size_mb,
+        extensions=set(platform.allowed_document_extensions),
+    )
     try:
         validate_file_signature(stored.storage_path, stored.extension)
     except HTTPException:

@@ -6,12 +6,12 @@ ATLAS is a full-stack requirements engineering platform that converts software p
 
 ## Current release
 
-**v0.10.0 — Release Readiness and Quality Gates**
+**v0.11.0-dev — Administration and Platform Operations**
 
 Development branch:
 
 ```text
-feature/milestone-10-release-readiness
+feature/milestone-11-administration
 ```
 
 ## Project status
@@ -27,7 +27,8 @@ feature/milestone-10-release-readiness
 | 7 | Analytics, reporting, UI/UX, and validation | Completed |
 | 8 | Requirement governance, review, and baselines | Completed |
 | 9 | Test Case Intelligence | Completed |
-| 10 | Release readiness and quality gates | In development |
+| 10 | Release readiness and quality gates | Completed |
+| 11 | Administration and platform operations | In development |
 
 ## Main capabilities
 
@@ -108,6 +109,18 @@ feature/milestone-10-release-readiness
 - Weighted readiness score with Ready, At Risk, and Blocked classifications
 - Release review, approval/rejection, publication lock, and audit events
 - Candidate comparison plus JSON and CSV readiness reports
+
+
+### Administration and platform operations
+
+- Protected administrator-only routes enforced by FastAPI and the React router
+- Live directory of all existing ATLAS users with real project and artifact totals
+- Role management, suspension/reactivation, session invalidation, and password-recovery triggers
+- Final-active-administrator safeguards
+- Platform-wide project oversight, archive/restore, and audited ownership transfer
+- Authentication and administrative audit log with CSV and JSON export
+- Database, migration, AI, SMTP, storage, and document-processing health checks
+- Persisted registration, maintenance, AI, session, password-reset, and upload policies
 
 ### Analytics and reporting
 

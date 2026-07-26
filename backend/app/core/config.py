@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     APP_NAME: str = "ATLAS API"
+    APP_VERSION: str = "0.11.0-dev"
     API_V1_PREFIX: str = "/api/v1"
     DEBUG: bool = False
 

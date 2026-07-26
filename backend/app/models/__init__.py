@@ -1,3 +1,4 @@
+from app.models.admin import AuditSeverity, PlatformAuditLog, PlatformSettings
 from app.models.artifact import Artifact, ArtifactType
 from app.models.assistant import (
     AssistantConversation,
@@ -58,6 +59,9 @@ from app.models.trace_link import (
 from app.models.user import User, UserRole
 
 __all__ = [
+    "PlatformSettings",
+    "PlatformAuditLog",
+    "AuditSeverity",
     "Artifact",
     "ArtifactType",
     "AssistantConversation",
