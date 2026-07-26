@@ -19,6 +19,14 @@ services:
       timeout: 5s
       retries: 10
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: atlas-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   backend:
     build: ./backend
     container_name: atlas-backend
@@ -37,6 +45,15 @@ services:
       TRANSFORMERS_CACHE: /app/storage/models/huggingface
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:4b-instruct}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      PASSWORD_RESET_EXPIRE_MINUTES: ${PASSWORD_RESET_EXPIRE_MINUTES:-30}
+      PASSWORD_RESET_COOLDOWN_SECONDS: ${PASSWORD_RESET_COOLDOWN_SECONDS:-60}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-no-reply@atlas.local}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-ATLAS}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
+      SMTP_USE_SSL: ${SMTP_USE_SSL:-false}
     volumes:
       - ./storage/uploads:/app/storage/uploads
       - ./storage/vector:/app/storage/vector
@@ -44,6 +61,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     command: >
       sh -c "alembic upgrade head &&
       uvicorn app.main:app --host 0.0.0.0 --port 8000"
@@ -64,6 +83,7 @@ services:
       context: ./frontend
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api/v1}
+        VITE_MAIL_PREVIEW_URL: ${VITE_MAIL_PREVIEW_URL-http://localhost:8025}
     container_name: atlas-frontend
     restart: unless-stopped
     ports:

@@ -19,6 +19,7 @@ from app.models import (  # noqa: F401
     Document,
     ImpactAnalysis,
     KnowledgeChunk,
+    PasswordResetToken,
     Project,
     ProjectBaseline,
     Requirement,

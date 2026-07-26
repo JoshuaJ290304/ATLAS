@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import api from "../api/client";
 import AppShell from "../components/AppShell";
 import Icon from "../components/Icon";
+import { PRODUCT } from "../config/product";
 import { Alert, EmptyState, FieldError, LoadingState, PageHeader, StatCard } from "../components/UI";
 import { apiErrorMessage, clean, validateRequired } from "../utils/validation";
 
@@ -13,8 +14,10 @@ const PROJECT_ACTIONS = [
   { key: "traceability", label: "Traceability", caption: "Link artifacts", icon: "trace", iconClass: "text-emerald-600", cardClass: "hover:border-emerald-200 hover:bg-emerald-50" },
   { key: "governance", label: "Reviews", caption: "Approve & baseline", icon: "governance", iconClass: "text-sky-600", cardClass: "hover:border-sky-200 hover:bg-sky-50" },
   { key: "impact", label: "Impact", caption: "Assess change risk", icon: "impact", iconClass: "text-amber-600", cardClass: "hover:border-amber-200 hover:bg-amber-50" },
+  { key: "test-cases", label: "Test Cases", caption: "Design & verify", icon: "test", iconClass: "text-fuchsia-600", cardClass: "hover:border-fuchsia-200 hover:bg-fuchsia-50" },
   { key: "assistant", label: "AI Assistant", caption: "Ask with sources", icon: "assistant", iconClass: "text-cyan-600", cardClass: "hover:border-cyan-200 hover:bg-cyan-50" },
   { key: "analytics", label: "Analytics", caption: "Health & reports", icon: "analytics", iconClass: "text-rose-600", cardClass: "hover:border-rose-200 hover:bg-rose-50" },
+  { key: "releases", label: "Release Readiness", caption: "Evaluate quality gates", icon: "release", iconClass: "text-teal-600", cardClass: "hover:border-teal-200 hover:bg-teal-50" },
 ];
 
 export default function DashboardPage() {
@@ -92,8 +95,8 @@ export default function DashboardPage() {
       >
         <div className="atlas-dashboard-summary" aria-label="Platform summary">
           <StatCard label="Projects" value={projects.length} detail="Owned workspaces" icon="home" tone="indigo" />
-          <StatCard label="Platform" value="0.8.0" detail="Current release" icon="analytics" tone="violet" />
-          <StatCard label="Capabilities" value="07" detail="Connected workflows" icon="trace" tone="emerald" />
+          <StatCard label="Platform" value={PRODUCT.version} detail="Current release" icon="analytics" tone="violet" />
+          <StatCard label="Capabilities" value="09" detail="Connected workflows" icon="trace" tone="emerald" />
           <StatCard label="Security" value="Protected" detail="Client and API validation" icon="shield" tone="cyan" />
         </div>
       </PageHeader>

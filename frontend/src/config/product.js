@@ -1,4 +1,4 @@
-export const PRODUCT = Object.freeze({
+﻿export const PRODUCT = Object.freeze({
   name: "ATLAS",
   version: "0.10.0-dev",
   tagline: "Engineering intelligence platform",
@@ -6,3 +6,4 @@ export const PRODUCT = Object.freeze({
   copyrightYear: 2026,
   developer: "Joshua J",
 });
+
