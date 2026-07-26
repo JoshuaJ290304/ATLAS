@@ -97,13 +97,21 @@ async def aggregate_counts_by_owner(db: AsyncSession) -> dict[str, dict[UUID, in
 async def aggregate_counts_by_project(db: AsyncSession) -> dict[str, dict[UUID, int]]:
     result: dict[str, dict[UUID, int]] = {}
     specifications = {
-        "documents": select(Document.project_id, func.count(Document.id)).group_by(Document.project_id),
+        "documents": select(Document.project_id, func.count(Document.id)).group_by(
+            Document.project_id
+        ),
         "failed_documents": select(Document.project_id, func.count(Document.id))
         .where(Document.status == DocumentStatus.FAILED)
         .group_by(Document.project_id),
-        "requirements": select(Requirement.project_id, func.count(Requirement.id)).group_by(Requirement.project_id),
-        "test_cases": select(TestCase.project_id, func.count(TestCase.id)).group_by(TestCase.project_id),
-        "releases": select(ReleaseCandidate.project_id, func.count(ReleaseCandidate.id)).group_by(ReleaseCandidate.project_id),
+        "requirements": select(Requirement.project_id, func.count(Requirement.id)).group_by(
+            Requirement.project_id
+        ),
+        "test_cases": select(TestCase.project_id, func.count(TestCase.id)).group_by(
+            TestCase.project_id
+        ),
+        "releases": select(ReleaseCandidate.project_id, func.count(ReleaseCandidate.id)).group_by(
+            ReleaseCandidate.project_id
+        ),
         "high_risk": select(ImpactAnalysis.project_id, func.count(ImpactAnalysis.id))
         .where(ImpactAnalysis.severity.in_([ImpactSeverity.HIGH, ImpactSeverity.CRITICAL]))
         .group_by(ImpactAnalysis.project_id),
@@ -156,7 +164,9 @@ async def check_smtp() -> tuple[str, str]:
 
 async def read_alembic_revision(db: AsyncSession) -> str | None:
     try:
-        return (await db.execute(text("SELECT version_num FROM alembic_version LIMIT 1"))).scalar_one_or_none()
+        return (
+            await db.execute(text("SELECT version_num FROM alembic_version LIMIT 1"))
+        ).scalar_one_or_none()
     except Exception:
         return None
 
@@ -167,18 +177,27 @@ async def platform_totals(db: AsyncSession) -> dict[str, int]:
         "active_users": select(func.count(User.id)).where(User.is_active.is_(True)),
         "administrators": select(func.count(User.id)).where(User.role == UserRole.ADMIN),
         "projects": select(func.count(Project.id)),
-        "active_projects": select(func.count(Project.id)).where(Project.status == ProjectStatus.ACTIVE),
+        "active_projects": select(func.count(Project.id)).where(
+            Project.status == ProjectStatus.ACTIVE
+        ),
         "documents": select(func.count(Document.id)),
-        "processed_documents": select(func.count(Document.id)).where(Document.status == DocumentStatus.EXTRACTED),
-        "failed_documents": select(func.count(Document.id)).where(Document.status == DocumentStatus.FAILED),
+        "processed_documents": select(func.count(Document.id)).where(
+            Document.status == DocumentStatus.EXTRACTED
+        ),
+        "failed_documents": select(func.count(Document.id)).where(
+            Document.status == DocumentStatus.FAILED
+        ),
         "requirements": select(func.count(Requirement.id)),
         "test_cases": select(func.count(TestCase.id)),
         "release_candidates": select(func.count(ReleaseCandidate.id)),
-        "ready_ai_indexes": select(func.count(AssistantIndex.id)).where(AssistantIndex.status == AssistantIndexStatus.READY),
+        "ready_ai_indexes": select(func.count(AssistantIndex.id)).where(
+            AssistantIndex.status == AssistantIndexStatus.READY
+        ),
         "ai_indexes": select(func.count(AssistantIndex.id)),
         "critical_events": select(func.count(PlatformAuditLog.id)).where(
             PlatformAuditLog.severity == AuditSeverity.CRITICAL,
-            PlatformAuditLog.created_at >= datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0),
+            PlatformAuditLog.created_at
+            >= datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0),
         ),
     }
     totals: dict[str, int] = {}

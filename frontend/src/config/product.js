@@ -1,6 +1,6 @@
 export const PRODUCT = Object.freeze({
   name: "ATLAS",
-  version: "1.0.0-rc.1",
+  version: "1.0.0-rc.2",
   tagline: "Engineering intelligence platform",
   description: "Requirement traceability, change intelligence, and source-grounded project knowledge.",
   copyrightYear: 2026,

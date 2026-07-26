@@ -4,7 +4,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
 import { Alert, FieldError } from "../components/UI";
 import { useAuth } from "../context/AuthContext";
-import { apiErrorMessage, clean, validateEmail, validatePassword } from "../utils/validation";
+import { apiErrorMessage, clean, validateEmail, validateLoginPassword } from "../utils/validation";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function LoginPage() {
   function validate() {
     const next = {
       email: validateEmail(form.email),
-      password: validatePassword(form.password),
+      password: validateLoginPassword(form.password),
     };
     Object.keys(next).forEach((key) => !next[key] && delete next[key]);
     setErrors(next);

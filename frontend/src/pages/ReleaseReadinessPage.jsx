@@ -318,7 +318,7 @@ export default function ReleaseReadinessPage() {
               <form onSubmit={submit} className="grid gap-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="atlas-field"><span>Release name</span><input className="atlas-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="ATLAS Production Release" /></label>
-                  <label className="atlas-field"><span>Version</span><input className="atlas-input" value={form.version_label} onChange={(e) => setForm({ ...form, version_label: e.target.value })} placeholder="1.0.0-rc.1" /></label>
+                  <label className="atlas-field"><span>Version</span><input className="atlas-input" value={form.version_label} onChange={(e) => setForm({ ...form, version_label: e.target.value })} placeholder="1.0.0" /></label>
                   <label className="atlas-field"><span>Release owner</span><input className="atlas-input" value={form.release_owner} onChange={(e) => setForm({ ...form, release_owner: e.target.value })} placeholder="Joshua J" /></label>
                   <label className="atlas-field"><span>Target date</span><input type="date" className="atlas-input" value={form.target_date} onChange={(e) => setForm({ ...form, target_date: e.target.value })} /></label>
                 </div>

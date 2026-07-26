@@ -206,8 +206,7 @@ def build_impact_graph(
     requirements_touching_direct = {
         link.requirement_id
         for link in accepted
-        if link.artifact_id in direct_artifact_ids
-        and link.requirement_id != changed_requirement_id
+        if link.artifact_id in direct_artifact_ids and link.requirement_id != changed_requirement_id
     }
 
     transitive: dict[UUID, dict[str, object]] = {}
@@ -233,8 +232,7 @@ def build_impact_graph(
                 continue
             direct_code = (
                 artifact_by_id[bridge_direct_links[0].artifact_id].code
-                if bridge_direct_links
-                and bridge_direct_links[0].artifact_id in artifact_by_id
+                if bridge_direct_links and bridge_direct_links[0].artifact_id in artifact_by_id
                 else "linked artifact"
             )
             candidate = _impact_artifact(

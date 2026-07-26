@@ -1,3 +1,32 @@
+## [1.0.0-rc.2] — Production Stabilization Candidate 2
+
+### Security
+- Added persistent PostgreSQL-backed rate limiting for login, registration, password-recovery requests, and reset confirmation.
+- Added HMAC-derived rate-limit identifiers so plaintext emails and IP addresses are not stored in the rate-limit table.
+- Added JWT issuer, audience, not-before, unique token ID, and strict required-claim validation.
+- Added production startup validation that rejects default secrets, default database passwords, debug mode, enabled API docs, and wildcard CORS.
+- Added trusted-host validation, explicit CORS methods/headers, API security headers, request IDs, and production HSTS.
+- Hardened DOCX processing against encrypted archives, unsafe paths, corruption, excessive expansion, compression bombs, extraction timeouts, and excessive extracted text.
+- Preserved compatibility for existing valid login passwords while keeping strong-password rules for registration and reset.
+
+### Deployment
+- Added database-aware readiness and liveness endpoints.
+- Added Docker health checks for backend and frontend services.
+- Runs the backend image as a non-root user.
+- Added Nginx security headers, health endpoint, gzip, long-lived hashed-asset caching, and no-store application-shell caching.
+- Added development and production environment templates with explicit security settings.
+
+### Performance
+- Added route-level React lazy loading to split the frontend bundle by workspace.
+
+### Documentation
+- Added installation, user, administrator, architecture, backup/restore, security, testing, demonstration, and known-limitations guides.
+- Updated migration history and release documentation for revision `0013`.
+
+### Release candidate
+- Synchronized backend, frontend, product, Compose, and environment-template versions to `1.0.0-rc.2`.
+- Final `v1.0.0` remains dependent on the complete target-machine regression, fresh-install, upgrade, and demonstration checks.
+
 ## [1.0.0-rc.1] — Stabilization Candidate 1
 
 ### Fixed

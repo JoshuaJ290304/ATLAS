@@ -205,9 +205,7 @@ def build_project_drafts(
 
     for analysis in impact_analyses:
         direct_names = ", ".join(item.get("name", "") for item in analysis.direct_artifacts)
-        transitive_names = ", ".join(
-            item.get("name", "") for item in analysis.transitive_artifacts
-        )
+        transitive_names = ", ".join(item.get("name", "") for item in analysis.transitive_artifacts)
         content = (
             f"Impact analysis for {analysis.requirement_code}: {analysis.requirement_title}\n"
             f"Versions: {analysis.baseline_version} to {analysis.target_version}\n"
@@ -245,8 +243,7 @@ def build_grounded_prompt(
     context_blocks = []
     for index, citation in enumerate(citations, start=1):
         context_blocks.append(
-            f"[{index}] {citation.source_type.value}: {citation.source_label}\n"
-            f"{citation.excerpt}"
+            f"[{index}] {citation.source_type.value}: {citation.source_label}\n{citation.excerpt}"
         )
     context = "\n\n".join(context_blocks) or "No project evidence was retrieved."
     system = (

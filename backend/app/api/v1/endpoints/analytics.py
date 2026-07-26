@@ -46,9 +46,7 @@ async def export_project_analytics(
         return Response(
             content=payload,
             media_type="application/json",
-            headers={
-                "Content-Disposition": f'attachment; filename="{safe_name}-analytics.json"'
-            },
+            headers={"Content-Disposition": f'attachment; filename="{safe_name}-analytics.json"'},
         )
 
     if export_format == "csv":
@@ -64,8 +62,16 @@ async def export_project_analytics(
             ("requirements", "functional", analytics.requirements.functional),
             ("requirements", "non_functional", analytics.requirements.non_functional),
             ("requirements", "ambiguous", analytics.requirements.ambiguous),
-            ("traceability", "requirement_coverage_percent", analytics.traceability.requirement_coverage_percent),
-            ("traceability", "artifact_coverage_percent", analytics.traceability.artifact_coverage_percent),
+            (
+                "traceability",
+                "requirement_coverage_percent",
+                analytics.traceability.requirement_coverage_percent,
+            ),
+            (
+                "traceability",
+                "artifact_coverage_percent",
+                analytics.traceability.artifact_coverage_percent,
+            ),
             ("traceability", "accepted_links", analytics.traceability.accepted),
             ("traceability", "suggested_links", analytics.traceability.suggested),
             ("traceability", "rejected_links", analytics.traceability.rejected),
@@ -78,18 +84,14 @@ async def export_project_analytics(
         return StreamingResponse(
             iter([buffer.getvalue()]),
             media_type="text/csv",
-            headers={
-                "Content-Disposition": f'attachment; filename="{safe_name}-analytics.csv"'
-            },
+            headers={"Content-Disposition": f'attachment; filename="{safe_name}-analytics.csv"'},
         )
 
     content = _render_html_report(analytics)
     return Response(
         content=content,
         media_type="text/html",
-        headers={
-            "Content-Disposition": f'attachment; filename="{safe_name}-project-report.html"'
-        },
+        headers={"Content-Disposition": f'attachment; filename="{safe_name}-project-report.html"'},
     )
 
 

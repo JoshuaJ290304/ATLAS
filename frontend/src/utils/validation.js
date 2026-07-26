@@ -19,6 +19,13 @@ export function validateEmail(value) {
   return "";
 }
 
+
+export function validateLoginPassword(value) {
+  if (!value) return "Password is required.";
+  if (value.length > 128) return "Password must be at most 128 characters.";
+  return "";
+}
+
 export function passwordRules(value) {
   const messages = [];
   if (value.length < 8) messages.push("at least 8 characters");

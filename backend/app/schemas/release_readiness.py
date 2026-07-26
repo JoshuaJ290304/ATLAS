@@ -14,7 +14,9 @@ from app.models.release_readiness import (
 
 class ReleaseCandidateCreate(BaseModel):
     name: str = Field(min_length=3, max_length=180)
-    version_label: str = Field(min_length=1, max_length=40, pattern=r"^[0-9A-Za-z][0-9A-Za-z._+-]*$")
+    version_label: str = Field(
+        min_length=1, max_length=40, pattern=r"^[0-9A-Za-z][0-9A-Za-z._+-]*$"
+    )
     description: str | None = Field(default=None, max_length=5000)
     target_date: date | None = None
     release_owner: str = Field(min_length=2, max_length=160)

@@ -1,3 +1,4 @@
+import zipfile
 from pathlib import Path
 
 import fitz
@@ -56,3 +57,26 @@ def test_validate_file_signature_rejects_fake_pdf(tmp_path: Path) -> None:
         validate_file_signature(path, ".pdf")
 
     assert error.value.status_code == 422
+
+
+def test_clean_filename_rejects_control_characters_and_excessive_length() -> None:
+    assert clean_filename("unsafe\x00name.pdf") == "unsafename.pdf"
+    with pytest.raises(HTTPException) as exc_info:
+        clean_filename("a" * 252 + ".pdf")
+    assert exc_info.value.status_code == 400
+
+
+def test_docx_signature_rejects_unsafe_compression_ratio(tmp_path: Path) -> None:
+    path = tmp_path / "compressed.docx"
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", "<Types />")
+        archive.writestr("word/document.xml", "A" * 200_000)
+
+    with pytest.raises(HTTPException) as exc_info:
+        validate_file_signature(
+            path,
+            ".docx",
+            max_docx_uncompressed_mb=1,
+            max_docx_compression_ratio=5,
+        )
+    assert exc_info.value.status_code == 422

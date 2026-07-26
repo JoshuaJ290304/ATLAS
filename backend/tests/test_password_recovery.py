@@ -4,11 +4,11 @@ import pytest
 from pydantic import ValidationError
 
 from app.schemas.auth import ResetPasswordRequest
+from app.services.email import build_password_reset_url
 from app.services.password_recovery import (
     generate_password_reset_token,
     hash_password_reset_token,
 )
-from app.services.email import build_password_reset_url
 
 
 def test_reset_tokens_are_random_and_only_hashes_are_persistable() -> None:

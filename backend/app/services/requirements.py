@@ -211,7 +211,7 @@ def _is_heading(text: str) -> bool:
     words = text.split()
     if len(words) > 10 or STRONG_REQUIREMENT.search(text) or WEAK_REQUIREMENT.search(text):
         return False
-    if text.endswith(('.', ';')):
+    if text.endswith((".", ";")):
         return False
     return text.isupper() or text.istitle()
 

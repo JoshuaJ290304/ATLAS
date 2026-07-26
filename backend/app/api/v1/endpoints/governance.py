@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, Response, status
@@ -212,9 +213,7 @@ async def governance_summary(
         )
     )
     comments = await db.scalar(
-        select(func.count(RequirementComment.id)).where(
-            RequirementComment.project_id == project_id
-        )
+        select(func.count(RequirementComment.id)).where(RequirementComment.project_id == project_id)
     )
     baselines = await db.scalar(
         select(func.count(ProjectBaseline.id)).where(ProjectBaseline.project_id == project_id)
@@ -222,20 +221,12 @@ async def governance_summary(
 
     return GovernanceSummaryRead(
         pending_reviews=int(pending_reviews or 0),
-        approved_requirements=int(
-            requirement_counts.get(RequirementStatus.APPROVED, 0)
-        ),
-        rejected_requirements=int(
-            requirement_counts.get(RequirementStatus.REJECTED, 0)
-        ),
-        in_review_requirements=int(
-            requirement_counts.get(RequirementStatus.REVIEWED, 0)
-        ),
+        approved_requirements=int(requirement_counts.get(RequirementStatus.APPROVED, 0)),
+        rejected_requirements=int(requirement_counts.get(RequirementStatus.REJECTED, 0)),
+        in_review_requirements=int(requirement_counts.get(RequirementStatus.REVIEWED, 0)),
         comments=int(comments or 0),
         baselines=int(baselines or 0),
-        approved_baseline_candidates=int(
-            requirement_counts.get(RequirementStatus.APPROVED, 0)
-        ),
+        approved_baseline_candidates=int(requirement_counts.get(RequirementStatus.APPROVED, 0)),
     )
 
 
@@ -257,7 +248,10 @@ async def list_reviews(
     project_id: UUID,
     db: DbSession,
     current_user: CurrentUser,
-    review_status: ReviewStatus | None = Query(default=None, alias="status"),
+    review_status: Annotated[
+        ReviewStatus | None,
+        Query(alias="status"),
+    ] = None,
 ) -> list[RequirementReviewRead]:
     await get_owned_project(db, project_id, current_user.id)
     statement = (
@@ -522,13 +516,9 @@ async def create_baseline(
     )
     selected_ids = list(dict.fromkeys(payload.requirement_ids or []))
     if selected_ids:
-        requirement_statement = requirement_statement.where(
-            Requirement.id.in_(selected_ids)
-        )
+        requirement_statement = requirement_statement.where(Requirement.id.in_(selected_ids))
 
-    requirement_result = await db.execute(
-        requirement_statement.order_by(Requirement.code.asc())
-    )
+    requirement_result = await db.execute(requirement_statement.order_by(Requirement.code.asc()))
     requirements = list(requirement_result.scalars().all())
 
     if not requirements:
@@ -617,8 +607,7 @@ async def compare_baseline(
         .order_by(Requirement.code.asc())
     )
     current_snapshots = [
-        requirement_snapshot(requirement)
-        for requirement in current_result.scalars().all()
+        requirement_snapshot(requirement) for requirement in current_result.scalars().all()
     ]
     comparison = compare_baseline_snapshots(
         [item.snapshot_data for item in baseline.items],

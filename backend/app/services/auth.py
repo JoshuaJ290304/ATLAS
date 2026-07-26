@@ -95,11 +95,7 @@ async def reset_password_with_token(
         .with_for_update()
     )
     reset_token = result.scalar_one_or_none()
-    if (
-        reset_token is None
-        or reset_token.used_at is not None
-        or reset_token.expires_at <= now
-    ):
+    if reset_token is None or reset_token.used_at is not None or reset_token.expires_at <= now:
         return None
 
     user = await db.get(User, reset_token.user_id, with_for_update=True)

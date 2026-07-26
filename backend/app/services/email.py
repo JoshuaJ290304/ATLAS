@@ -55,7 +55,13 @@ def send_password_reset_email(recipient_email: str, recipient_name: str, token: 
             <p>Hello {safe_name},</p>
             <p>A password reset was requested for your ATLAS account.</p>
             <p>
-              <a href="{safe_url}" style="display:inline-block;padding:12px 18px;background:#4f46e5;color:#fff;text-decoration:none;border-radius:8px;font-weight:700">
+              <a
+                href="{safe_url}"
+                style="display:inline-block; padding:12px 18px;
+                       background:#4f46e5; color:#fff;
+                       text-decoration:none; border-radius:8px;
+                       font-weight:700"
+              >
                 Reset password
               </a>
             </p>

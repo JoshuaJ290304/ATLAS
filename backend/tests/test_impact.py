@@ -141,8 +141,7 @@ def test_risk_assessment_is_reproducible() -> None:
         version(
             version=2,
             description=(
-                "The system shall encrypt password reset tokens and expire them "
-                "in 15 minutes."
+                "The system shall encrypt password reset tokens and expire them in 15 minutes."
             ),
             requirement_type=RequirementType.NON_FUNCTIONAL,
             non_functional_category="security",
@@ -156,20 +155,30 @@ def test_risk_assessment_is_reproducible() -> None:
     ]
     transitive = [{"artifact_type": "uml_component"}, {"artifact_type": "test_case"}]
 
-    first = assess_risk(comparison, version(
-        version=2,
-        requirement_type=RequirementType.NON_FUNCTIONAL,
-        non_functional_category="security",
-        status=RequirementStatus.APPROVED,
-        ambiguity_score=2,
-    ), direct, transitive)
-    second = assess_risk(comparison, version(
-        version=2,
-        requirement_type=RequirementType.NON_FUNCTIONAL,
-        non_functional_category="security",
-        status=RequirementStatus.APPROVED,
-        ambiguity_score=2,
-    ), direct, transitive)
+    first = assess_risk(
+        comparison,
+        version(
+            version=2,
+            requirement_type=RequirementType.NON_FUNCTIONAL,
+            non_functional_category="security",
+            status=RequirementStatus.APPROVED,
+            ambiguity_score=2,
+        ),
+        direct,
+        transitive,
+    )
+    second = assess_risk(
+        comparison,
+        version(
+            version=2,
+            requirement_type=RequirementType.NON_FUNCTIONAL,
+            non_functional_category="security",
+            status=RequirementStatus.APPROVED,
+            ambiguity_score=2,
+        ),
+        direct,
+        transitive,
+    )
 
     assert first == second
     assert first.risk_score >= 50

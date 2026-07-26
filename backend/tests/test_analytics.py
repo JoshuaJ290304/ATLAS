@@ -44,11 +44,7 @@ def test_health_score_identifies_missing_foundations() -> None:
 
 
 def test_health_score_penalizes_ambiguity_and_high_risk() -> None:
-    healthy = calculate_project_health(
-        HealthInputs(1, 1, 10, 10, 0, 4, 100, 100, 2, 0, True)
-    )
-    weaker = calculate_project_health(
-        HealthInputs(1, 1, 10, 4, 7, 4, 50, 25, 2, 2, False)
-    )
+    healthy = calculate_project_health(HealthInputs(1, 1, 10, 10, 0, 4, 100, 100, 2, 0, True))
+    weaker = calculate_project_health(HealthInputs(1, 1, 10, 4, 7, 4, 50, 25, 2, 2, False))
     assert weaker.score < healthy.score
     assert weaker.factors[1].score < healthy.factors[1].score

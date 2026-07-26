@@ -9,7 +9,7 @@ from app.schemas.validation import clean_required_text, validate_password_streng
 
 class UserCreate(BaseModel):
     name: str = Field(min_length=2, max_length=120)
-    email: EmailStr
+    email: EmailStr = Field(max_length=320)
     password: str = Field(min_length=8, max_length=128)
 
     @field_validator("name")
@@ -31,7 +31,7 @@ class UserCreate(BaseModel):
 class UserRead(BaseModel):
     id: UUID
     name: str
-    email: EmailStr
+    email: EmailStr = Field(max_length=320)
     role: UserRole
     is_active: bool
     created_at: datetime

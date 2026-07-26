@@ -82,7 +82,9 @@ def test_near_threshold_coverage_is_warning_not_blocker() -> None:
     evidence["traceability_percent"] = 75.0
 
     result = evaluate(evidence)
-    trace_gate = next(gate for gate in result["gate_results"] if gate["key"] == "traceability_coverage")
+    trace_gate = next(
+        gate for gate in result["gate_results"] if gate["key"] == "traceability_coverage"
+    )
 
     assert trace_gate["status"] == "warning"
     assert not any(blocker["gate"] == "traceability_coverage" for blocker in result["blockers"])
@@ -114,14 +116,18 @@ def test_release_comparison_reports_selection_and_gate_changes() -> None:
         "selected_test_case_ids": ["t1"],
         "readiness_score": 62.5,
         "readiness_label": "blocked",
-        "gate_results": [{"key": "coverage", "name": "Coverage", "status": "failed", "measured_value": 50}],
+        "gate_results": [
+            {"key": "coverage", "name": "Coverage", "status": "failed", "measured_value": 50}
+        ],
     }
     target = {
         "selected_requirement_ids": ["r1", "r2", "r3"],
         "selected_test_case_ids": ["t1", "t2"],
         "readiness_score": 90.0,
         "readiness_label": "ready",
-        "gate_results": [{"key": "coverage", "name": "Coverage", "status": "passed", "measured_value": 100}],
+        "gate_results": [
+            {"key": "coverage", "name": "Coverage", "status": "passed", "measured_value": 100}
+        ],
     }
 
     comparison = compare_release_snapshots(source, target)
