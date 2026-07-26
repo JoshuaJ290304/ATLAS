@@ -34,6 +34,7 @@ from app.schemas.assistant import (
     SemanticSearchRead,
     SemanticSearchRequest,
 )
+from app.services.admin import get_platform_settings
 from app.services.assistant import (
     build_project_drafts,
     build_retrieval_fallback,
@@ -96,6 +97,12 @@ async def ensure_ready_index(db: DbSession, project_id: UUID) -> AssistantIndex:
     return index
 
 
+async def ensure_ai_enabled(db: DbSession) -> None:
+    platform = await get_platform_settings(db)
+    if not platform.ai_generation_enabled:
+        raise HTTPException(status_code=503, detail="AI generation is disabled by a platform administrator")
+
+
 @router.get("/status", response_model=AssistantStatusRead)
 async def read_assistant_status(
     project_id: UUID,
@@ -125,6 +132,7 @@ async def rebuild_project_index(
     current_user: CurrentUser,
 ) -> AssistantIndex:
     await get_owned_project(db, project_id, current_user.id)
+    await ensure_ai_enabled(db)
     index = await get_or_create_index(db, project_id)
     index.status = AssistantIndexStatus.INDEXING
     index.last_error = None
@@ -209,6 +217,7 @@ async def semantic_search(
     current_user: CurrentUser,
 ) -> SemanticSearchRead:
     await get_owned_project(db, project_id, current_user.id)
+    await ensure_ai_enabled(db)
     await ensure_ready_index(db, project_id)
     results = await query_project(project_id, payload.query.strip(), payload.top_k)
     return SemanticSearchRead(
@@ -225,6 +234,7 @@ async def ask_project_assistant(
     current_user: CurrentUser,
 ) -> AssistantAskRead:
     await get_owned_project(db, project_id, current_user.id)
+    await ensure_ai_enabled(db)
     await ensure_ready_index(db, project_id)
     question = payload.question.strip()
     citations = await query_project(project_id, question, payload.top_k)

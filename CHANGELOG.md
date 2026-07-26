@@ -1,4 +1,27 @@
-﻿## [0.10.0] — Release Readiness and Quality Gates
+﻿## [0.11.0] — Administration and Platform Operations
+
+### Added
+- Administrator-only FastAPI authorization dependency and protected React routes.
+- Live management of all existing user records, including real project, document, requirement, test-case, and release-candidate totals.
+- User role changes, suspension/reactivation, session invalidation, and administrator-triggered password recovery.
+- Safeguards preventing demotion or suspension of the final active administrator.
+- Platform-wide project oversight with archive, restore, and audited ownership transfer.
+- Platform audit records for registration, login success/failure, password recovery, roles, sessions, projects, and settings.
+- CSV and JSON audit exports.
+- System health for database, Alembic, backend, Ollama, SMTP, AI indexes, storage, and failed documents.
+- Persisted operational settings for registration, maintenance mode, AI operations, session duration, password-reset expiry, and document upload policy.
+- Alembic revision `0012` preserving every existing user ID, password hash, role, project, and ownership relationship.
+- Responsive administration dashboard, user directory, user detail, project oversight, audit, system, and settings pages.
+
+### Security
+- Session-version claims invalidate all issued tokens after suspension, role-sensitive changes, password reset, or an explicit administrator action.
+- Normal users receive HTTP 403 on all administrator endpoints.
+- Password hashes, reset-token hashes, JWT secrets, SMTP credentials, and database credentials are never returned by admin APIs.
+
+### Development status
+- Version remains `0.11.0` until migration, backend tests, frontend build, and complete admin smoke testing pass.
+
+## [0.10.0] — Release Readiness and Quality Gates
 
 ### Added
 - Release-candidate management with baseline, requirement, and test-case selection.
@@ -192,6 +215,7 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Protected project CRUD
 - Docker Compose environment
 - Alembic migration `0001`
+
 
 
 

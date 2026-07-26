@@ -36,6 +36,7 @@ services:
     ports:
       - "8000:8000"
     environment:
+      APP_VERSION: ${APP_VERSION:-0.11.0-dev}
       UPLOAD_ROOT: /app/storage/uploads
       MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
       ALLOWED_DOCUMENT_EXTENSIONS: ${ALLOWED_DOCUMENT_EXTENSIONS:-.pdf,.docx}

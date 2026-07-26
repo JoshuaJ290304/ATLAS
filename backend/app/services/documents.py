@@ -53,10 +53,11 @@ def allowed_extensions() -> set[str]:
     }
 
 
-def validate_extension(filename: str) -> str:
+def validate_extension(filename: str, extensions: set[str] | None = None) -> str:
+    configured = extensions or allowed_extensions()
     extension = Path(filename).suffix.lower()
-    if extension not in allowed_extensions():
-        allowed = ", ".join(sorted(allowed_extensions()))
+    if extension not in configured:
+        allowed = ", ".join(sorted(configured))
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=f"Unsupported file type. Allowed extensions: {allowed}",
@@ -110,12 +111,19 @@ def remove_project_upload_directory(project_id: UUID) -> None:
         shutil.rmtree(directory)
 
 
-async def store_upload(upload: UploadFile, project_id: UUID) -> StoredUpload:
+async def store_upload(
+    upload: UploadFile,
+    project_id: UUID,
+    *,
+    max_size_mb: int | None = None,
+    extensions: set[str] | None = None,
+) -> StoredUpload:
     original_filename = clean_filename(upload.filename)
-    extension = validate_extension(original_filename)
+    extension = validate_extension(original_filename, extensions)
     stored_filename = f"{uuid4().hex}{extension}"
     destination = project_upload_directory(project_id) / stored_filename
-    max_bytes = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+    effective_max_mb = max_size_mb or settings.MAX_UPLOAD_SIZE_MB
+    max_bytes = effective_max_mb * 1024 * 1024
     size_bytes = 0
     checksum = hashlib.sha256()
 
@@ -126,7 +134,7 @@ async def store_upload(upload: UploadFile, project_id: UUID) -> StoredUpload:
                 if size_bytes > max_bytes:
                     raise HTTPException(
                         status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                        detail=f"File exceeds the {settings.MAX_UPLOAD_SIZE_MB} MB limit",
+                        detail=f"File exceeds the {effective_max_mb} MB limit",
                     )
                 checksum.update(chunk)
                 output.write(chunk)

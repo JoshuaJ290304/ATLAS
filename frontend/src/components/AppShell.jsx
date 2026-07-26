@@ -46,6 +46,13 @@ export default function AppShell({ children }) {
               <span aria-hidden="true" />
               <span>Protected session</span>
             </div>
+
+            {user?.role === "admin" && (
+              <Link to="/admin" className="atlas-button-secondary">
+                <Icon name="shield" className="h-4 w-4" />
+                <span className="hidden md:inline">Admin</span>
+              </Link>
+            )}
             <div className="atlas-account-copy">
               <p>{user?.name}</p>
               <span>{user?.email}</span>
