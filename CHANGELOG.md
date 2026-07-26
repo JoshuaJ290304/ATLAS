@@ -1,4 +1,4 @@
-﻿## [0.10.0-dev] — Release Readiness and Quality Gates
+﻿## [0.10.0] — Release Readiness and Quality Gates
 
 ### Added
 - Release-candidate management with baseline, requirement, and test-case selection.
@@ -11,7 +11,7 @@
 - Responsive Release Readiness workspace aligned with the ATLAS project design system.
 
 ### Development status
-- Version remains `0.10.0-dev` until migration, backend tests, frontend build, and browser smoke tests pass.
+- Version remains `0.10.0` until migration, backend tests, frontend build, and browser smoke tests pass.
 
 ## [0.9.0] — Test Case Intelligence
 
@@ -192,4 +192,5 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Protected project CRUD
 - Docker Compose environment
 - Alembic migration `0001`
+
 
