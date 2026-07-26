@@ -1,182 +1,147 @@
-﻿# ATLAS
+# ATLAS
 
 **AI-Assisted Requirement Traceability and Change Impact Analysis Platform**
 
-ATLAS is a full-stack requirements engineering platform that converts software project documents into structured requirements, links requirements to technical artifacts, governs review and approval, explains the impact of changes, answers project questions from indexed evidence, and presents project health through an analytics and reporting dashboard.
+ATLAS is a full-stack software engineering platform for transforming project documents into structured requirements, connecting those requirements to technical artifacts, governing review and approval, analyzing change impact, generating traceable test cases, evaluating release readiness, and answering project questions from indexed evidence.
 
-## Current release
+## Release
 
-**v1.0.0 — Production Stabilization Candidate 2**
+**Current stable version:** `v1.0.0`
 
-Development branch:
+ATLAS v1.0.0 is the first stable platform release. It includes production-oriented security controls, responsive user and administrator interfaces, database migrations through `0013`, automated backend tests, lint validation, health checks, backup and restore tooling, and deployment documentation.
+
+## Why ATLAS
+
+Software requirements, design artifacts, APIs, database objects, test cases, release evidence, and project decisions are often stored in separate tools. This makes traceability difficult to maintain and increases the risk of missing affected components when requirements change.
+
+ATLAS provides a connected workflow:
 
 ```text
-release/v1.0.0
+Documents
+   ↓
+Requirements
+   ↓
+Reviews and Baselines
+   ↓
+Traceability
+   ↓
+Change Impact
+   ↓
+Test Cases
+   ↓
+Release Readiness
+   ↓
+Analytics and Audit
 ```
 
-## Project status
+## Core capabilities
 
-| Milestone | Module | Status |
-|---|---|---|
-| 1 | Authentication and project management | Completed |
-| 2 | Document upload and text extraction | Completed |
-| 3 | Requirement intelligence | Completed |
-| 4 | Traceability engine | Completed |
-| 5 | Change-impact analysis | Completed |
-| 6 | AI project assistant | Completed |
-| 7 | Analytics, reporting, UI/UX, and validation | Completed |
-| 8 | Requirement governance, review, and baselines | Completed |
-| 9 | Test Case Intelligence | Completed |
-| 10 | Release readiness and quality gates | Completed |
-| 11 | Administration and platform operations | Completed |
+### Authentication and account security
 
-## Main capabilities
+- Secure registration and login
+- Argon2 password hashing
+- JWT authentication with issuer, audience, expiry, token ID, and session-version validation
+- Secure password recovery with one-time, expiring reset links
+- Session invalidation after password reset, suspension, or administrative action
+- Persistent rate limiting for authentication and recovery endpoints
+- Role-based access control for users and administrators
 
-### Authentication and project management
+### Project and document management
 
-- Registration with strong-password validation and persistent abuse rate limits
-- Argon2 password hashing and strict JWT issuer/audience/session validation
-- Single-use password recovery with session invalidation
-- Owner-isolated project CRUD and backend-enforced administrator authorization
-- Duplicate project-name protection
-- Responsive project dashboard with direct access to every module
-
-### Document intelligence
-
+- Owner-isolated project management
 - PDF and DOCX upload
-- File extension, size, and binary-signature validation
-- SHA-256 checksum and project-isolated storage
-- Text extraction using PyMuPDF and `python-docx`
-- Document metadata, download, and deletion
+- File size, extension, binary signature, and archive safety validation
+- SHA-256 duplicate detection
+- Corrupted, encrypted, unsafe, and compression-bomb document rejection
+- Text extraction with project-scoped storage and processing status
 
 ### Requirement intelligence
 
-- Deterministic requirement extraction
+- Requirement extraction from uploaded documents
 - Functional and non-functional classification
-- Non-functional categories
-- Confidence and ambiguity scores
-- Manual creation, review status, editing, and immutable version snapshots
+- Non-functional requirement categories
+- Confidence and ambiguity scoring
+- Manual requirement creation and editing
+- Immutable requirement version history
+- Requirement status and review workflow
+
+### Governance and baselines
+
+- Reviewer assignment, priority, and due dates
+- Comments, approval, rejection, and decision rationale
+- Immutable requirement baselines
+- Active and archived baseline states
+- Baseline-to-current and baseline-to-baseline comparison
+- Governance audit history
 
 ### Traceability
 
-- API, database-table, test-case, and UML-component artifacts
+- API, database, UML, document, and test artifacts
 - Manual and explainable suggested links
-- Accept/reject workflow
+- Accept and reject workflow
 - Requirement and artifact coverage
-- Traceability matrix
+- Traceability matrix and uncovered-item identification
 
 ### Change-impact analysis
 
 - Requirement version comparison
 - Direct and transitive affected artifacts
-- Explainable 0–100 risk score
+- Explainable risk scoring
 - Low, medium, high, and critical severity
 - Persistent impact reports and history
+- Linked test-case review signals after requirement changes
 
 ### AI project assistant
 
-- Project-isolated semantic index
+- Project-isolated semantic indexing
 - Sentence Transformer embeddings
 - Persistent ChromaDB storage
 - Ollama-based grounded answers
-- Numbered citations
-- Semantic search and persistent conversations
-- Retrieval-only fallback when Ollama is unavailable
-
-
-### Requirement governance
-
-- Requirement review requests and reviewer assignment
-- Approval and rejection decisions with mandatory rationale
-- Timestamped requirement comments
-- Immutable approved-requirement baselines
-- Added, modified, removed, and unchanged baseline comparison
-- Governance audit history
-
+- Numbered evidence citations
+- Semantic search and conversation history
+- Retrieval-only fallback when generation is unavailable
 
 ### Test Case Intelligence
 
-- Manual and AI-assisted test-case authoring
-- Numbered steps and expected results
+- Manual and AI-assisted test-case creation
+- Preconditions, test data, numbered steps, and expected results
+- Functional, negative, boundary, security, performance, integration, and regression test types
 - Requirement-to-test traceability
-- Draft, review, approval, rejection, and needs-review states
+- Draft, review, approval, rejection, needs-review, and archive states
 - Test-case version history and approved coverage analytics
 
-### Release readiness and quality gates
+### Release Readiness and Quality Gates
 
 - Release-candidate planning with selected baselines, requirements, and test cases
-- Configurable traceability, test-coverage, impact-risk, and overdue-review thresholds
-- Ten explainable quality gates with Passed, Failed, Warning, and Not Evaluated outcomes
-- Weighted readiness score with Ready, At Risk, and Blocked classifications
-- Release review, approval/rejection, publication lock, and audit events
-- Candidate comparison plus JSON and CSV readiness reports
-
-
-### Administration and platform operations
-
-- Protected administrator-only routes enforced by FastAPI and the React router
-- Live directory of all existing ATLAS users with real project and artifact totals
-- Role management, suspension/reactivation, session invalidation, and password-recovery triggers
-- Final-active-administrator safeguards
-- Platform-wide project oversight, archive/restore, and audited ownership transfer
-- Authentication and administrative audit log with CSV and JSON export
-- Database, migration, AI, SMTP, storage, and document-processing health checks
-- Persisted registration, maintenance, AI, session, password-reset, and upload policies
+- Configurable traceability, approved-test, impact-risk, and overdue-review thresholds
+- Explainable quality-gate outcomes
+- Weighted readiness score
+- Ready, At Risk, Blocked, and Not Evaluated classifications
+- Review, sign-off, publication locking, and immutable release snapshots
+- Release comparison and JSON/CSV reports
 
 ### Analytics and reporting
 
-- Project-health score from 0 to 100
-- Explainable health factors and improvement priorities
-- Document extraction statistics
-- Requirement type, status, category, review, and ambiguity analytics
-- Artifact inventory analytics
-- Traceability coverage and link-status analytics
+- Explainable project-health score
+- Requirement, ambiguity, review, and category analytics
+- Traceability and test-coverage analytics
 - Impact-risk and severity analytics
-- Assistant index and usage statistics
+- Assistant-index and usage statistics
 - Recent project activity
-- Standalone HTML report download
-- CSV and JSON exports
+- HTML, JSON, and CSV exports
 
-## UI/UX improvements in v0.7.0
+### Administration and platform operations
 
-- Unified visual design system across all modules
-- Responsive project navigation and project action grid
-- Consistent cards, typography, spacing, buttons, inputs, alerts, and tables
-- Polished authentication experience
-- Mobile-friendly layouts and horizontal navigation
-- Loading, empty, success, warning, and error states
-- Keyboard-visible focus states and readable contrast
-- Reduced-motion support
-
-## Validation model
-
-ATLAS validates data in both React and FastAPI.
-
-### Frontend validation
-
-- Required fields and blank-space prevention
-- Minimum and maximum lengths
-- Email format
-- Strong password rules and password confirmation
-- PDF/DOCX type and 10 MB size checks
-- Non-functional category requirement
-- Artifact and requirement form validation
-- Requirement-version ordering for impact analysis
-- Assistant search and question length checks
-- Inline field-specific errors
-- Disabled submit buttons during requests
-
-### Backend validation
-
-- Pydantic field limits and enum validation
-- Trimmed and normalized text
-- Strong registration password rules
-- Duplicate project and artifact name checks
-- Non-functional category enforcement
-- Trace-confidence ranges
-- Impact baseline/target ordering
-- File binary-signature and size validation
-- Project ownership enforcement on every module
+- Administrator-only routes enforced in the backend and frontend
+- Live directory of existing users and their project/artifact totals
+- Role management, suspension, activation, and session invalidation
+- Secure password-recovery triggers
+- Final-active-administrator protection
+- Platform-wide project oversight
+- Project archive, restore, and audited ownership transfer
+- Authentication and administrative audit logs
+- Database, migration, AI, email, storage, and processing health views
+- Configurable platform settings
 
 ## Technology stack
 
@@ -190,45 +155,85 @@ ATLAS validates data in both React and FastAPI.
 | Embeddings | Sentence Transformers |
 | Vector database | ChromaDB |
 | Local LLM | Ollama |
-| Security | JWT, Argon2 |
+| Security | JWT, Argon2, HMAC-based rate-limit identifiers |
 | Deployment | Docker Compose, Nginx |
 | Quality | Pytest, Ruff |
 
+## Architecture
+
+```mermaid
+flowchart TD
+    U[User or Administrator] --> F[React Frontend]
+    F --> N[Nginx]
+    N --> A[FastAPI API]
+    A --> P[(PostgreSQL)]
+    A --> V[(ChromaDB Storage)]
+    A --> O[Ollama]
+    A --> M[SMTP / Mailpit]
+    A --> S[Project Upload Storage]
+```
+
+ATLAS uses project-scoped authorization in the API. The frontend never acts as the authoritative source for permissions, risk, readiness, or coverage calculations.
+
 ## Prerequisites
 
-- Docker Desktop using Linux containers and WSL 2
+- Docker Desktop with Linux containers
+- Docker Compose
 - Git
-- Visual Studio Code
-- Ollama for generated AI answers
+- Ollama for locally generated AI answers
 
-## Environment setup
+## Quick start
+
+### 1. Clone the repository
+
+```powershell
+git clone https://github.com/JoshuaJ290304/ATLAS.git
+cd ATLAS
+```
+
+### 2. Create the environment file
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Replace `JWT_SECRET_KEY` with a long private value. Keep the existing database and assistant settings from `.env.example`.
+Set a strong private `JWT_SECRET_KEY` and review the database, CORS, upload, session, email, and AI settings before startup.
 
-Never commit `.env`, uploaded files, vector data, or downloaded models.
+Never commit `.env`, uploaded files, vector data, downloaded models, database dumps, or backups.
 
-## Run with Docker
+### 3. Start ATLAS
 
 ```powershell
 docker compose up --build -d
 docker compose ps
 ```
 
-Open:
+### 4. Open the services
 
-- Frontend: `http://localhost:5173`
-- Swagger: `http://localhost:8000/docs`
-- Health: `http://localhost:8000/api/v1/health`
+- Application: `http://localhost:5173`
+- Backend liveness: `http://localhost:8000/api/v1/health/live`
+- Backend readiness: `http://localhost:8000/api/v1/health/ready`
+- Frontend health: `http://localhost:5173/healthz`
+- Local email inbox: `http://localhost:8025`
 
-View logs:
+API documentation may be enabled in a development environment and should remain disabled in hardened production configuration.
+
+## Ollama setup
+
+Install Ollama on the host, then pull the configured model:
 
 ```powershell
-docker compose logs --tail=200 postgres backend frontend
+ollama pull qwen3:4b-instruct
+ollama list
 ```
+
+For Docker Desktop on Windows, configure:
+
+```env
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+```
+
+ATLAS can provide retrieval-only evidence when Ollama is unavailable and fallback is enabled.
 
 ## Database migrations
 
@@ -239,161 +244,133 @@ docker compose logs --tail=200 postgres backend frontend
 | `0003` | Requirements |
 | `0004` | Artifacts and trace links |
 | `0005` | Requirement snapshots and impact reports |
-| `0006` | AI assistant knowledge and conversation records |
-| `0007` | Requirement governance and baselines |
-| `0008` | Governance input completeness |
+| `0006` | AI assistant indexes and conversations |
+| `0007` | Requirement reviews and baselines |
+| `0008` | Governance completeness fields |
 | `0009` | Test Case Intelligence |
-| `0010` | Release readiness and quality gates |
-| `0011` | Secure password recovery |
-| `0012` | Administration and platform operations |
-| `0013` | Persistent authentication rate limiting |
+| `0010` | Release Readiness and Quality Gates |
+| `0011` | Password recovery |
+| `0012` | Administration and platform controls |
+| `0013` | Persistent security rate limits |
 
-## Analytics workflow
-
-1. Open a project.
-2. Select **Analytics** from the project card or project navigation.
-3. Review the health score and factor explanations.
-4. Inspect requirement, artifact, traceability, impact, and assistant charts.
-5. Review recent project activity.
-6. Download an HTML, CSV, or JSON report.
-
-### Analytics API
-
-Base path:
-
-```text
-/api/v1/projects/{project_id}/analytics
-```
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/analytics` | Read complete live project analytics |
-| GET | `/analytics/export?format=html` | Download standalone HTML report |
-| GET | `/analytics/export?format=csv` | Download metric rows as CSV |
-| GET | `/analytics/export?format=json` | Download complete analytics as JSON |
-
-## Project-health scoring
-
-The score is deterministic and explainable:
-
-| Factor | Maximum |
-|---|---:|
-| Document readiness | 15 |
-| Requirement quality | 20 |
-| Traceability coverage | 30 |
-| Impact-analysis discipline | 15 |
-| Artifact inventory | 10 |
-| AI knowledge-index readiness | 10 |
-| **Total** | **100** |
-
-The dashboard presents each factor, its score, and the specific action that improves it.
-
-## Ollama setup
-
-For Ollama installed on Windows:
+Check the current revision:
 
 ```powershell
-ollama pull qwen3:4b-instruct
-ollama list
+docker compose exec -T backend sh -lc 'alembic current 2>/dev/null'
 ```
 
-Use:
-
-```env
-OLLAMA_BASE_URL=http://host.docker.internal:11434
-```
-
-The assistant still provides retrieval-only evidence if Ollama is unavailable and fallback is enabled.
-
-## Testing
+Apply pending migrations:
 
 ```powershell
-docker compose exec backend pytest -q
-docker compose exec backend ruff check .
+docker compose exec -T backend alembic upgrade head
+```
+
+## Verification
+
+Run the complete backend test suite:
+
+```powershell
+docker compose exec -T backend pytest -q -p no:cacheprovider
+```
+
+Run Ruff in the non-root backend container:
+
+```powershell
+docker compose exec -T backend sh -lc \
+  'mkdir -p /tmp/ruff-cache && RUFF_CACHE_DIR=/tmp/ruff-cache ruff check .'
+```
+
+Build the production frontend image:
+
+```powershell
 docker compose build frontend
 ```
 
-The stable release is approved only after the full backend suite, Ruff checks, frontend production build, Nginx validation, migration check, and end-to-end browser workflow pass on the target Docker environment. See `docs/TESTING_REPORT.md`.
+Validate Nginx:
 
-## Versioning
+```powershell
+docker compose exec -T frontend nginx -t
+```
+
+Expected stable-release verification:
+
+```text
+64 backend tests passed
+Ruff checks passed
+Alembic revision 0013
+Frontend production build passed
+Backend and frontend health checks returned HTTP 200
+```
+
+## Backup and restore
+
+Create a database and source backup:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\backup_atlas.ps1
+```
+
+Restore from a verified backup:
+
+```powershell
+.\scripts\restore_atlas.ps1
+```
+
+Review [Backup and Restore](docs/BACKUP_RESTORE.md) before restoring data.
+
+## Documentation
+
+- [Installation Guide](docs/INSTALLATION.md)
+- [User Guide](docs/USER_GUIDE.md)
+- [Administrator Guide](docs/ADMIN_GUIDE.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Security](docs/SECURITY.md)
+- [Testing Report](docs/TESTING_REPORT.md)
+- [Backup and Restore](docs/BACKUP_RESTORE.md)
+- [Known Limitations](docs/KNOWN_LIMITATIONS.md)
+- [Demonstration Script](docs/DEMO_SCRIPT.md)
+- [Changelog](CHANGELOG.md)
+
+## Security notes
+
+- Do not use default secrets or database passwords in production.
+- Restrict CORS and trusted hosts to approved domains.
+- Keep debug mode and public API documentation disabled in production.
+- Use HTTPS and preserve the provided security headers.
+- Back up PostgreSQL before upgrades.
+- Review uploaded-document controls and storage permissions before public deployment.
+- Do not expose SMTP, JWT, database, or AI service credentials through the UI or logs.
+
+## Known limitations
+
+- Scanned PDFs require OCR, which is not included.
+- PDF citations identify pages and extracted evidence rather than exact page coordinates.
+- AI output depends on the configured local model and should be reviewed against cited evidence.
+- Git hosting, issue-tracker synchronization, source-code parsing, and CI/CD integrations are not included in v1.0.0.
+- Multi-organization tenancy and real-time collaborative editing are not included.
+
+See [Known Limitations](docs/KNOWN_LIMITATIONS.md) for additional details.
+
+## Release history
 
 | Version | Description |
 |---|---|
-| `v0.1.0` | Authentication and projects |
-| `v0.2.0` | Document upload and extraction |
+| `v0.1.0` | Authentication, projects, and platform foundation |
+| `v0.2.0` | Document processing |
 | `v0.3.0` | Requirement intelligence |
 | `v0.4.0` | Traceability engine |
 | `v0.5.0` | Change-impact analysis |
 | `v0.6.0` | AI project assistant |
-| `v0.7.0` | Analytics, reporting, UI/UX, and validation |
-| `v0.8.0` | Requirement governance, reviews, and baselines |
+| `v0.7.0` | Analytics, reporting, UI, and validation |
+| `v0.8.0` | Reviews and baselines |
 | `v0.8.1` | Governance completeness |
 | `v0.9.0` | Test Case Intelligence |
-| `v0.10.0` | Release readiness and quality gates |
+| `v0.10.0` | Release Readiness and Quality Gates |
 | `v0.10.1` | Dashboard modules and secure password recovery |
 | `v0.11.0` | Administration and platform operations |
-| `v1.0.0` | Security, deployment, documentation, and performance stabilization |
-| `v1.0.0` | Stable final release |
+| `v1.0.0` | Stable platform release |
 
-## Current limitations
+## License
 
-- Scanned PDFs require OCR, which is not implemented.
-- Exact PDF page-coordinate citations are not available.
-- Indexing, extraction, and analytics are synchronous and intended for student/small-team projects.
-- Generated AI answers must be verified against cited project evidence.
-- Browser bearer tokens are stored in `localStorage`; secure HttpOnly cookie authentication is recommended for a public internet deployment.
-- Mailpit and the exposed Docker development ports are intended for local development.
-
-See `docs/KNOWN_LIMITATIONS.md` for the complete list.
-
-## Next release
-
-### v1.0.0 — Stable release
-
-Remaining release work is validation only:
-
-- full Docker regression suite
-- fresh-install and v0.11.0 upgrade verification
-- end-to-end acceptance demonstration
-- final version change from `1.0.0` to `1.0.0`
-- merge, tag, and release notes
-
-
-## Documentation
-
-- `docs/INSTALLATION.md` — development and production setup
-- `docs/USER_GUIDE.md` — complete user workflow
-- `docs/ADMIN_GUIDE.md` — platform administration
-- `docs/ARCHITECTURE.md` — components, data, and security boundaries
-- `docs/BACKUP_RESTORE.md` — database and file recovery
-- `docs/SECURITY.md` — security controls and deployment requirements
-- `docs/TESTING_REPORT.md` — release validation checklist
-- `docs/DEMO_SCRIPT.md` — final demonstration flow
-- `docs/KNOWN_LIMITATIONS.md` — declared constraints
-
-
-## Requirement governance and baselines
-
-ATLAS 0.8.1 completes the controlled governance workflow:
-
-- Request a review for any requirement, assign an active user, set priority, and optionally set a due date.
-- Record approval or rejection with a mandatory decision rationale.
-- Discuss requirement details with timestamped comments.
-- Create immutable baselines from explicitly selected approved requirements and record their active or archived status.
-- Compare two baselines, or compare a baseline with the current specification, to identify added, modified, removed, and unchanged requirements.
-- Review an audit history of governance actions.
-
-The module is available from **Reviews & Baselines** in every project workspace.
-
-
-
-## Milestone 9 — Test Case Intelligence
-
-ATLAS 0.9.0 adds a traceable test engineering workspace with manual and AI-assisted test case authoring, numbered steps, review status, priorities, requirement coverage, and immutable version snapshots.
-
-Project route: `/projects/{project_id}/test-cases`
-
-
-
-
-
+See [LICENSE](LICENSE) for the repository license terms.
