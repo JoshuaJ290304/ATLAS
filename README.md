@@ -1,4 +1,4 @@
-# ATLAS
+﻿# ATLAS
 
 **AI-Assisted Requirement Traceability and Change Impact Analysis Platform**
 
@@ -6,7 +6,7 @@ ATLAS is a full-stack requirements engineering platform that converts software p
 
 ## Current release
 
-**v1.0.0-rc.2 — Production Stabilization Candidate 2**
+**v1.0.0 — Production Stabilization Candidate 2**
 
 Development branch:
 
@@ -332,7 +332,7 @@ The stable release is approved only after the full backend suite, Ruff checks, f
 | `v0.10.0` | Release readiness and quality gates |
 | `v0.10.1` | Dashboard modules and secure password recovery |
 | `v0.11.0` | Administration and platform operations |
-| `v1.0.0-rc.2` | Security, deployment, documentation, and performance stabilization |
+| `v1.0.0` | Security, deployment, documentation, and performance stabilization |
 | `v1.0.0` | Stable final release |
 
 ## Current limitations
@@ -355,7 +355,7 @@ Remaining release work is validation only:
 - full Docker regression suite
 - fresh-install and v0.11.0 upgrade verification
 - end-to-end acceptance demonstration
-- final version change from `1.0.0-rc.2` to `1.0.0`
+- final version change from `1.0.0` to `1.0.0`
 - merge, tag, and release notes
 
 
@@ -392,6 +392,7 @@ The module is available from **Reviews & Baselines** in every project workspace.
 ATLAS 0.9.0 adds a traceable test engineering workspace with manual and AI-assisted test case authoring, numbered steps, review status, priorities, requirement coverage, and immutable version snapshots.
 
 Project route: `/projects/{project_id}/test-cases`
+
 
 
 

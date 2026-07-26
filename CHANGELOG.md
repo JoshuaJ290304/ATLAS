@@ -1,4 +1,4 @@
-## [1.0.0-rc.2] — Production Stabilization Candidate 2
+﻿## [1.0.0] — Production Stabilization Candidate 2
 
 ### Security
 - Added persistent PostgreSQL-backed rate limiting for login, registration, password-recovery requests, and reset confirmation.
@@ -24,7 +24,7 @@
 - Updated migration history and release documentation for revision `0013`.
 
 ### Release candidate
-- Synchronized backend, frontend, product, Compose, and environment-template versions to `1.0.0-rc.2`.
+- Synchronized backend, frontend, product, Compose, and environment-template versions to `1.0.0`.
 - Final `v1.0.0` remains dependent on the complete target-machine regression, fresh-install, upgrade, and demonstration checks.
 
 ## [1.0.0-rc.1] — Stabilization Candidate 1
@@ -262,6 +262,7 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Protected project CRUD
 - Docker Compose environment
 - Alembic migration `0001`
+
 
 
 
