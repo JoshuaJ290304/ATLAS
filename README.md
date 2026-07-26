@@ -6,7 +6,7 @@ ATLAS is a full-stack requirements engineering platform that converts software p
 
 ## Current release
 
-**v0.11.0-dev — Administration and Platform Operations**
+**v0.11.0 — Administration and Platform Operations**
 
 Development branch:
 
@@ -373,6 +373,7 @@ The module is available from **Reviews & Baselines** in every project workspace.
 ATLAS 0.9.0 adds a traceable test engineering workspace with manual and AI-assisted test case authoring, numbered steps, review status, priorities, requirement coverage, and immutable version snapshots.
 
 Project route: `/projects/{project_id}/test-cases`
+
 
 
 

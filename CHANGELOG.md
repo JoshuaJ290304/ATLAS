@@ -1,4 +1,4 @@
-﻿## [0.11.0-dev] — Administration and Platform Operations
+﻿## [0.11.0] — Administration and Platform Operations
 
 ### Added
 - Administrator-only FastAPI authorization dependency and protected React routes.
@@ -19,7 +19,7 @@
 - Password hashes, reset-token hashes, JWT secrets, SMTP credentials, and database credentials are never returned by admin APIs.
 
 ### Development status
-- Version remains `0.11.0-dev` until migration, backend tests, frontend build, and complete admin smoke testing pass.
+- Version remains `0.11.0` until migration, backend tests, frontend build, and complete admin smoke testing pass.
 
 ## [0.10.0] — Release Readiness and Quality Gates
 
@@ -215,6 +215,7 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Protected project CRUD
 - Docker Compose environment
 - Alembic migration `0001`
+
 
 
 
