@@ -1,4 +1,4 @@
-# ATLAS
+﻿# ATLAS
 
 **AI-Assisted Requirement Traceability and Change Impact Analysis Platform**
 
@@ -6,9 +6,9 @@ ATLAS is a full-stack software engineering platform for transforming project doc
 
 ## Release
 
-**Current stable version:** `v1.0.0`
+**Current stable version:** `v1.0.1`
 
-ATLAS v1.0.0 is the first stable platform release. It includes production-oriented security controls, responsive user and administrator interfaces, database migrations through `0013`, automated backend tests, lint validation, health checks, backup and restore tooling, and deployment documentation.
+ATLAS v1.0.1 is the first stable platform release. It includes production-oriented security controls, responsive user and administrator interfaces, database migrations through `0013`, automated backend tests, lint validation, health checks, backup and restore tooling, and deployment documentation.
 
 ## Why ATLAS
 
@@ -347,7 +347,7 @@ Review [Backup and Restore](docs/BACKUP_RESTORE.md) before restoring data.
 - Scanned PDFs require OCR, which is not included.
 - PDF citations identify pages and extracted evidence rather than exact page coordinates.
 - AI output depends on the configured local model and should be reviewed against cited evidence.
-- Git hosting, issue-tracker synchronization, source-code parsing, and CI/CD integrations are not included in v1.0.0.
+- Git hosting, issue-tracker synchronization, source-code parsing, and CI/CD integrations are not included in v1.0.1.
 - Multi-organization tenancy and real-time collaborative editing are not included.
 
 See [Known Limitations](docs/KNOWN_LIMITATIONS.md) for additional details.
@@ -369,8 +369,9 @@ See [Known Limitations](docs/KNOWN_LIMITATIONS.md) for additional details.
 | `v0.10.0` | Release Readiness and Quality Gates |
 | `v0.10.1` | Dashboard modules and secure password recovery |
 | `v0.11.0` | Administration and platform operations |
-| `v1.0.0` | Stable platform release |
+| `v1.0.1` | Stable platform release |
 
 ## License
 
 See [LICENSE](LICENSE) for the repository license terms.
+
