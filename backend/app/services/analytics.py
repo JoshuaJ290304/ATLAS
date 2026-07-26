@@ -132,8 +132,7 @@ def calculate_project_health(values: HealthInputs) -> ProjectHealthRead:
     )
 
     traceability_score = round(
-        15 * (values.requirement_coverage / 100)
-        + 15 * (values.artifact_coverage / 100),
+        15 * (values.requirement_coverage / 100) + 15 * (values.artifact_coverage / 100),
         1,
     )
     factors.append(
@@ -240,56 +239,36 @@ def _factor_status(score: float, maximum: float) -> str:
     return "missing"
 
 
-async def build_project_analytics(
-    db: AsyncSession, project: Project
-) -> ProjectAnalyticsRead:
+async def build_project_analytics(db: AsyncSession, project: Project) -> ProjectAnalyticsRead:
     documents = list(
-        (
-            await db.execute(
-                select(Document).where(Document.project_id == project.id)
-            )
-        )
+        (await db.execute(select(Document).where(Document.project_id == project.id)))
         .scalars()
         .all()
     )
     requirements = list(
-        (
-            await db.execute(
-                select(Requirement).where(Requirement.project_id == project.id)
-            )
-        )
+        (await db.execute(select(Requirement).where(Requirement.project_id == project.id)))
         .scalars()
         .all()
     )
     artifacts = list(
-        (
-            await db.execute(select(Artifact).where(Artifact.project_id == project.id))
-        )
+        (await db.execute(select(Artifact).where(Artifact.project_id == project.id)))
         .scalars()
         .all()
     )
     links = list(
-        (
-            await db.execute(select(TraceLink).where(TraceLink.project_id == project.id))
-        )
+        (await db.execute(select(TraceLink).where(TraceLink.project_id == project.id)))
         .scalars()
         .all()
     )
     impacts = list(
-        (
-            await db.execute(
-                select(ImpactAnalysis).where(ImpactAnalysis.project_id == project.id)
-            )
-        )
+        (await db.execute(select(ImpactAnalysis).where(ImpactAnalysis.project_id == project.id)))
         .scalars()
         .all()
     )
     conversations = list(
         (
             await db.execute(
-                select(AssistantConversation).where(
-                    AssistantConversation.project_id == project.id
-                )
+                select(AssistantConversation).where(AssistantConversation.project_id == project.id)
             )
         )
         .scalars()
@@ -342,9 +321,7 @@ async def build_project_analytics(
     artifact_coverage = _percent(linked_artifacts, len(artifacts))
 
     risk_scores = [item.risk_score for item in impacts]
-    assistant_ready = bool(
-        assistant_index and assistant_index.status == AssistantIndexStatus.READY
-    )
+    assistant_ready = bool(assistant_index and assistant_index.status == AssistantIndexStatus.READY)
 
     health = calculate_project_health(
         HealthInputs(
@@ -358,8 +335,7 @@ async def build_project_analytics(
             artifact_coverage=artifact_coverage,
             impact_total=len(impacts),
             high_or_critical_impacts=sum(
-                item.severity in {ImpactSeverity.HIGH, ImpactSeverity.CRITICAL}
-                for item in impacts
+                item.severity in {ImpactSeverity.HIGH, ImpactSeverity.CRITICAL} for item in impacts
             ),
             assistant_index_ready=assistant_ready,
         )

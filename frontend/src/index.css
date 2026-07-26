@@ -1785,3 +1785,296 @@ body { line-height: 1.5; }
   .admin-nav { grid-template-columns: repeat(6, 1fr); }
   .admin-nav a { padding: 8px 5px; }
 }
+
+/* ATLAS 1.0.0 RC1 — Administration layout stabilization */
+.admin-topbar-actions {
+  flex-wrap: wrap;
+  min-width: max-content;
+}
+.admin-topbar-actions > .atlas-button-primary,
+.admin-topbar-actions > .atlas-button-secondary,
+.admin-topbar-actions > .atlas-button-danger,
+.admin-topbar-actions > .atlas-button-ghost {
+  flex: none;
+  white-space: nowrap;
+}
+
+.admin-filter-bar {
+  display: grid;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.admin-filter-bar-users {
+  grid-template-columns: minmax(260px, 1fr) minmax(145px, 180px) minmax(145px, 180px) minmax(112px, auto);
+}
+.admin-filter-bar-projects {
+  grid-template-columns: minmax(300px, 1fr) minmax(165px, 210px) minmax(112px, auto);
+}
+.admin-filter-bar-audit {
+  grid-template-columns: minmax(280px, 1.25fr) minmax(190px, .75fr) minmax(165px, 190px) minmax(112px, auto);
+}
+.admin-filter-search {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+.admin-filter-bar .atlas-input,
+.admin-filter-bar .atlas-select,
+.admin-filter-bar .atlas-button-primary,
+.admin-filter-bar .atlas-button-secondary {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  height: 44px;
+  margin-top: 0;
+}
+.admin-filter-bar .atlas-select {
+  min-width: 0;
+}
+.admin-filter-submit {
+  min-width: 112px !important;
+  padding-inline: 18px;
+  white-space: nowrap;
+}
+
+.admin-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+.admin-table-wrap:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, .22);
+  outline-offset: 3px;
+}
+.admin-table {
+  table-layout: auto;
+}
+.admin-table th {
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+.admin-table td {
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.admin-cell-nowrap,
+.admin-cell-number,
+.admin-cell-ip,
+.admin-cell-action {
+  white-space: nowrap;
+}
+.admin-cell-number {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.admin-cell-ip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 11px !important;
+}
+.admin-cell-action {
+  text-align: right;
+}
+.admin-row-action {
+  min-width: 84px;
+  white-space: nowrap;
+}
+.admin-cell-artifacts {
+  min-width: 210px;
+}
+.admin-artifact-count {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.admin-table-users {
+  min-width: 1040px;
+}
+.admin-table-users th:nth-child(1),
+.admin-table-users td:nth-child(1) { min-width: 230px; }
+.admin-table-users th:nth-child(4),
+.admin-table-users td:nth-child(4) { min-width: 155px; }
+.admin-table-users th:nth-child(6),
+.admin-table-users td:nth-child(6) { min-width: 230px; }
+.admin-table-users th:last-child,
+.admin-table-users td:last-child { width: 96px; }
+
+.admin-table-projects {
+  min-width: 1320px;
+}
+.admin-table-projects th:nth-child(1),
+.admin-table-projects td:nth-child(1) { min-width: 230px; }
+.admin-table-projects th:nth-child(2),
+.admin-table-projects td:nth-child(2) { min-width: 210px; }
+.admin-table-projects th:nth-child(3),
+.admin-table-projects td:nth-child(3) { min-width: 92px; }
+.admin-table-projects th:nth-child(4),
+.admin-table-projects td:nth-child(4) { min-width: 230px; }
+.admin-table-projects th:nth-child(5),
+.admin-table-projects td:nth-child(5) { min-width: 175px; }
+.admin-table-projects th:nth-child(6),
+.admin-table-projects td:nth-child(6) { min-width: 118px; }
+.admin-table-projects th:nth-child(7),
+.admin-table-projects td:nth-child(7) { min-width: 390px; }
+.admin-project-name-cell,
+.admin-project-owner-cell,
+.admin-project-alerts-cell,
+.admin-project-operations-cell {
+  vertical-align: top !important;
+}
+.admin-project-alerts-cell {
+  line-height: 1.55;
+}
+.admin-project-actions {
+  display: grid;
+  grid-template-columns: 105px minmax(185px, 1fr) 105px;
+  gap: 8px;
+  min-width: 365px;
+  align-items: center;
+}
+.admin-project-actions > * {
+  width: 100%;
+  min-width: 0;
+  margin-top: 0 !important;
+}
+.admin-project-status-action {
+  grid-column: 1;
+  grid-row: 1;
+  white-space: nowrap;
+}
+.admin-project-owner-select {
+  grid-column: 2 / 4;
+  grid-row: 1;
+}
+.admin-project-transfer-reason {
+  grid-column: 1 / 3;
+  grid-row: 2;
+}
+.admin-project-transfer-action {
+  grid-column: 3;
+  grid-row: 2;
+  white-space: nowrap;
+}
+
+.admin-table-audit {
+  min-width: 1260px;
+}
+.admin-table-audit th:nth-child(1),
+.admin-table-audit td:nth-child(1) { min-width: 165px; }
+.admin-table-audit th:nth-child(2),
+.admin-table-audit td:nth-child(2) { min-width: 92px; }
+.admin-table-audit th:nth-child(3),
+.admin-table-audit td:nth-child(3) { min-width: 195px; }
+.admin-table-audit th:nth-child(4),
+.admin-table-audit td:nth-child(4) { min-width: 205px; }
+.admin-table-audit th:nth-child(5),
+.admin-table-audit td:nth-child(5) { min-width: 145px; }
+.admin-table-audit th:nth-child(6),
+.admin-table-audit td:nth-child(6) { min-width: 175px; }
+.admin-table-audit th:nth-child(7),
+.admin-table-audit td:nth-child(7) { min-width: 125px; }
+.admin-table-audit th:nth-child(8),
+.admin-table-audit td:nth-child(8) { min-width: 225px; }
+.admin-audit-action-cell {
+  text-transform: capitalize;
+}
+.admin-audit-email {
+  max-width: 195px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-audit-project-cell {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-json-preview {
+  max-width: 240px;
+}
+
+.admin-table-user-projects {
+  min-width: 900px;
+}
+.admin-table-user-projects th,
+.admin-table-user-projects td {
+  white-space: nowrap;
+}
+.admin-table-user-projects th:first-child,
+.admin-table-user-projects td:first-child {
+  min-width: 230px;
+  white-space: normal;
+}
+
+@media (max-width: 1180px) {
+  .admin-filter-bar-users {
+    grid-template-columns: minmax(240px, 1fr) minmax(140px, 170px) minmax(140px, 170px) 112px;
+  }
+  .admin-filter-bar-audit {
+    grid-template-columns: minmax(250px, 1fr) minmax(170px, .72fr) minmax(150px, 175px) 112px;
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-topbar {
+    align-items: flex-start;
+  }
+  .admin-topbar-actions {
+    min-width: 0;
+  }
+  .admin-filter-bar-users,
+  .admin-filter-bar-projects,
+  .admin-filter-bar-audit {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .admin-filter-search {
+    grid-column: 1 / -1;
+  }
+  .admin-filter-submit {
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-filter-bar-users,
+  .admin-filter-bar-projects,
+  .admin-filter-bar-audit {
+    grid-template-columns: 1fr;
+  }
+  .admin-filter-search,
+  .admin-filter-submit {
+    grid-column: auto;
+  }
+  .admin-filter-bar .atlas-input,
+  .admin-filter-bar .atlas-select,
+  .admin-filter-bar .atlas-button-primary,
+  .admin-filter-bar .atlas-button-secondary {
+    width: 100%;
+  }
+  .admin-topbar-actions {
+    width: 100%;
+  }
+  .admin-topbar-actions > .atlas-button-primary,
+  .admin-topbar-actions > .atlas-button-secondary,
+  .admin-topbar-actions > .atlas-button-danger,
+  .admin-topbar-actions > .atlas-button-ghost {
+    flex: 1 1 145px;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-filter-bar {
+    gap: 10px;
+  }
+  .admin-main {
+    overflow-x: clip;
+  }
+  .admin-mini-stat {
+    min-width: 0;
+  }
+}

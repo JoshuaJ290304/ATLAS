@@ -94,11 +94,15 @@ class ReleaseCandidate(TimestampMixin, Base):
     selected_test_case_ids: Mapped[list[str]] = mapped_column(JSONB, default=list, nullable=False)
 
     minimum_traceability_percent: Mapped[float] = mapped_column(Float, default=80.0, nullable=False)
-    minimum_test_coverage_percent: Mapped[float] = mapped_column(Float, default=80.0, nullable=False)
+    minimum_test_coverage_percent: Mapped[float] = mapped_column(
+        Float, default=80.0, nullable=False
+    )
     maximum_high_risk_impacts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     maximum_overdue_reviews: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     require_active_baseline: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    require_approved_requirements: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    require_approved_requirements: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
 
     readiness_score: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     readiness_label: Mapped[ReleaseReadinessLabel] = mapped_column(
@@ -136,7 +140,9 @@ class ReleaseCandidate(TimestampMixin, Base):
 class ReleaseGateEvaluation(Base):
     __tablename__ = "release_gate_evaluations"
     __table_args__ = (
-        Index("ix_release_gate_evaluations_candidate_created", "release_candidate_id", "created_at"),
+        Index(
+            "ix_release_gate_evaluations_candidate_created", "release_candidate_id", "created_at"
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
@@ -162,10 +168,14 @@ class ReleaseGateEvaluation(Base):
         ),
         nullable=False,
     )
-    gate_results: Mapped[list[dict[str, object]]] = mapped_column(JSONB, default=list, nullable=False)
+    gate_results: Mapped[list[dict[str, object]]] = mapped_column(
+        JSONB, default=list, nullable=False
+    )
     evidence: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict, nullable=False)
     blockers: Mapped[list[dict[str, object]]] = mapped_column(JSONB, default=list, nullable=False)
     recommendations: Mapped[list[str]] = mapped_column(JSONB, default=list, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     release_candidate = relationship("ReleaseCandidate", back_populates="evaluations")

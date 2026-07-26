@@ -121,16 +121,12 @@ def score_trace_candidate(
     shared_terms = sorted(requirement_tokens & artifact_tokens)
 
     if requirement_tokens and artifact_tokens:
-        overlap = len(shared_terms) / math.sqrt(
-            len(requirement_tokens) * len(artifact_tokens)
-        )
+        overlap = len(shared_terms) / math.sqrt(len(requirement_tokens) * len(artifact_tokens))
     else:
         overlap = 0.0
 
     lowered_requirement = requirement_text.lower()
-    artifact_type_cues = [
-        cue for cue in ARTIFACT_CUES[artifact_type] if cue in lowered_requirement
-    ]
+    artifact_type_cues = [cue for cue in ARTIFACT_CUES[artifact_type] if cue in lowered_requirement]
     cue_bonus = min(0.2, len(artifact_type_cues) * 0.06)
 
     name_tokens = tokenize(artifact_name)
@@ -174,9 +170,7 @@ def calculate_coverage(
     linked_artifact_ids = {link.artifact_id for link in accepted}
 
     uncovered_requirements = [
-        requirement
-        for requirement in requirements
-        if requirement.id not in linked_requirement_ids
+        requirement for requirement in requirements if requirement.id not in linked_requirement_ids
     ]
     uncovered_artifacts = [
         artifact for artifact in artifacts if artifact.id not in linked_artifact_ids
@@ -202,13 +196,9 @@ def calculate_coverage(
             linked_artifacts / artifact_total * 100 if artifact_total else 0,
             2,
         ),
-        "suggested_links": sum(
-            1 for link in links if link.status == TraceLinkStatus.SUGGESTED
-        ),
+        "suggested_links": sum(1 for link in links if link.status == TraceLinkStatus.SUGGESTED),
         "accepted_links": len(accepted),
-        "rejected_links": sum(
-            1 for link in links if link.status == TraceLinkStatus.REJECTED
-        ),
+        "rejected_links": sum(1 for link in links if link.status == TraceLinkStatus.REJECTED),
         "uncovered_requirement_codes": [item.code for item in uncovered_requirements],
         "uncovered_artifact_codes": [item.code for item in uncovered_artifacts],
     }

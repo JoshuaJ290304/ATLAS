@@ -1,3 +1,15 @@
+from datetime import date, timedelta
+from uuid import uuid4
+
+import pytest
+from pydantic import ValidationError
+
+from app.models.governance import BaselineStatus, ReviewPriority
+from app.schemas.governance import (
+    BaselineComparisonCreate,
+    BaselineCreate,
+    ReviewRequestCreate,
+)
 from app.services.governance import compare_baseline_snapshots
 
 
@@ -56,20 +68,6 @@ def test_baseline_comparison_identifies_all_change_types() -> None:
     assert comparison["modified"][0]["changed_fields"] == ["description", "version"]
     assert comparison["removed"][0]["code"] == "REQ-0003"
     assert comparison["added"][0]["code"] == "REQ-0004"
-
-
-from datetime import date, timedelta
-from uuid import uuid4
-
-import pytest
-from pydantic import ValidationError
-
-from app.models.governance import BaselineStatus, ReviewPriority
-from app.schemas.governance import (
-    BaselineComparisonCreate,
-    BaselineCreate,
-    ReviewRequestCreate,
-)
 
 
 def test_review_request_accepts_priority_due_date_and_note() -> None:

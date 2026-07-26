@@ -1,4 +1,51 @@
-﻿## [0.11.0] — Administration and Platform Operations
+﻿## [1.0.0] — Production Stabilization Candidate 2
+
+### Security
+- Added persistent PostgreSQL-backed rate limiting for login, registration, password-recovery requests, and reset confirmation.
+- Added HMAC-derived rate-limit identifiers so plaintext emails and IP addresses are not stored in the rate-limit table.
+- Added JWT issuer, audience, not-before, unique token ID, and strict required-claim validation.
+- Added production startup validation that rejects default secrets, default database passwords, debug mode, enabled API docs, and wildcard CORS.
+- Added trusted-host validation, explicit CORS methods/headers, API security headers, request IDs, and production HSTS.
+- Hardened DOCX processing against encrypted archives, unsafe paths, corruption, excessive expansion, compression bombs, extraction timeouts, and excessive extracted text.
+- Preserved compatibility for existing valid login passwords while keeping strong-password rules for registration and reset.
+
+### Deployment
+- Added database-aware readiness and liveness endpoints.
+- Added Docker health checks for backend and frontend services.
+- Runs the backend image as a non-root user.
+- Added Nginx security headers, health endpoint, gzip, long-lived hashed-asset caching, and no-store application-shell caching.
+- Added development and production environment templates with explicit security settings.
+
+### Performance
+- Added route-level React lazy loading to split the frontend bundle by workspace.
+
+### Documentation
+- Added installation, user, administrator, architecture, backup/restore, security, testing, demonstration, and known-limitations guides.
+- Updated migration history and release documentation for revision `0013`.
+
+### Release candidate
+- Synchronized backend, frontend, product, Compose, and environment-template versions to `1.0.0`.
+- Final `v1.0.0` remains dependent on the complete target-machine regression, fresh-install, upgrade, and demonstration checks.
+
+## [1.0.0-rc.1] — Stabilization Candidate 1
+
+### Fixed
+- Aligned Admin Users, Projects, and Audit search/filter toolbars with consistent control heights and non-wrapping action buttons.
+- Added responsive one-, two-, and four-column filter layouts for desktop, tablet, and mobile widths.
+- Prevented Admin table headers, emails, IP addresses, dates, status badges, and action labels from breaking vertically.
+- Added explicit minimum widths and accessible horizontal scrolling for administration data tables.
+- Reworked project archive and ownership-transfer controls into a stable two-row operations grid.
+- Standardized row actions and updated Admin-owned project tables for responsive viewing.
+
+### Accessibility
+- Added labelled, keyboard-focusable scroll regions around administration tables.
+- Preserved visible focus states and full-width touch targets on smaller screens.
+
+### Release candidate
+- Synchronized the frontend and displayed product version with `1.0.0-rc.1`.
+- Full Docker build, regression testing, security hardening, and final release documentation remain part of the v1.0.0 stabilization phase.
+
+## [0.11.0] — Administration and Platform Operations
 
 ### Added
 - Administrator-only FastAPI authorization dependency and protected React routes.
@@ -215,6 +262,7 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Protected project CRUD
 - Docker Compose environment
 - Alembic migration `0001`
+
 
 
 

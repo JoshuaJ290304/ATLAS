@@ -94,29 +94,29 @@ export default function AdminProjectsPage() {
       </div>
 
       <AdminSection title="All projects" description="Search by project name, owner name, or owner email." className="mt-6">
-        <form onSubmit={submit} className="admin-filter-bar">
-          <label className="relative flex-1"><Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><input className="atlas-input !mt-0 !pl-10" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search projects or owners" /></label>
-          <select className="atlas-select !mt-0" value={status} onChange={(event) => setStatus(event.target.value)}><option value="">All statuses</option><option value="active">Active</option><option value="archived">Archived</option></select>
-          <button className="atlas-button-primary" type="submit"><Icon name="search" className="h-4 w-4" />Search</button>
+        <form onSubmit={submit} className="admin-filter-bar admin-filter-bar-projects">
+          <label className="admin-filter-search"><Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><input className="atlas-input !mt-0 !pl-10" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search projects or owners" /></label>
+          <select className="atlas-select !mt-0 admin-filter-control" value={status} onChange={(event) => setStatus(event.target.value)}><option value="">All statuses</option><option value="active">Active</option><option value="archived">Archived</option></select>
+          <button className="atlas-button-primary admin-filter-submit" type="submit"><Icon name="search" className="h-4 w-4" />Search</button>
         </form>
 
         {loading ? <LoadingState label="Loading platform projects..." /> : projects.length === 0 ? <EmptyState icon="home" title="No matching projects" description="Adjust the search or status filter." /> : (
-          <AdminTable>
+          <AdminTable className="admin-table-projects" label="All ATLAS projects">
             <thead><tr><th>Project</th><th>Owner</th><th>Status</th><th>Artifacts</th><th>Alerts</th><th>Updated</th><th>Operations</th></tr></thead>
             <tbody>{projects.map((project) => (
               <tr key={project.id}>
-                <td><span className="admin-table-link">{project.name}<small>{project.description || "No description"}</small></span></td>
-                <td><Link to={`/admin/users/${project.owner_id}`} className="admin-table-link">{project.owner_name}<small>{project.owner_email}</small></Link></td>
-                <td><AdminBadge value={project.status} /></td>
-                <td><span className="admin-artifact-count">{project.document_count} docs · {project.requirement_count} reqs · {project.test_case_count} tests · {project.release_candidate_count} releases</span></td>
-                <td>{project.failed_document_count || project.high_risk_impact_count ? <span className="text-xs font-black text-rose-600">{project.failed_document_count} failed docs · {project.high_risk_impact_count} high-risk impacts</span> : <span className="text-xs font-bold text-emerald-600">No current alerts</span>}</td>
-                <td>{formatDate(project.updated_at)}</td>
-                <td>
+                <td className="admin-project-name-cell"><span className="admin-table-link">{project.name}<small>{project.description || "No description"}</small></span></td>
+                <td className="admin-project-owner-cell"><Link to={`/admin/users/${project.owner_id}`} className="admin-table-link">{project.owner_name}<small>{project.owner_email}</small></Link></td>
+                <td className="admin-cell-nowrap"><AdminBadge value={project.status} /></td>
+                <td className="admin-cell-artifacts"><span className="admin-artifact-count">{project.document_count} docs · {project.requirement_count} reqs · {project.test_case_count} tests · {project.release_candidate_count} releases</span></td>
+                <td className="admin-project-alerts-cell">{project.failed_document_count || project.high_risk_impact_count ? <span className="text-xs font-black text-rose-600">{project.failed_document_count} failed docs · {project.high_risk_impact_count} high-risk impacts</span> : <span className="text-xs font-bold text-emerald-600">No current alerts</span>}</td>
+                <td className="admin-cell-nowrap">{formatDate(project.updated_at)}</td>
+                <td className="admin-project-operations-cell">
                   <div className="admin-project-actions">
-                    <button type="button" disabled={busyId === project.id} onClick={() => changeStatus(project)} className="atlas-button-secondary !px-3 !py-2">{project.status === "active" ? "Archive" : "Restore"}</button>
-                    <select value={transferOwner[project.id] || ""} onChange={(event) => setTransferOwner((current) => ({ ...current, [project.id]: event.target.value }))} className="atlas-select !mt-0 !py-2" aria-label={`New owner for ${project.name}`}><option value="">New owner</option>{users.filter((user) => user.id !== project.owner_id).map((user) => <option key={user.id} value={user.id}>{user.name} ({user.email})</option>)}</select>
-                    <input value={transferReason[project.id] || ""} onChange={(event) => setTransferReason((current) => ({ ...current, [project.id]: event.target.value }))} className="atlas-input !mt-0 !py-2" placeholder="Transfer reason" maxLength={1000} />
-                    <button type="button" disabled={busyId === project.id} onClick={() => transfer(project)} className="atlas-button-secondary !px-3 !py-2">Transfer</button>
+                    <button type="button" disabled={busyId === project.id} onClick={() => changeStatus(project)} className="atlas-button-secondary admin-project-status-action !px-3 !py-2">{project.status === "active" ? "Archive" : "Restore"}</button>
+                    <select value={transferOwner[project.id] || ""} onChange={(event) => setTransferOwner((current) => ({ ...current, [project.id]: event.target.value }))} className="atlas-select admin-project-owner-select !mt-0 !py-2" aria-label={`New owner for ${project.name}`}><option value="">New owner</option>{users.filter((user) => user.id !== project.owner_id).map((user) => <option key={user.id} value={user.id}>{user.name} ({user.email})</option>)}</select>
+                    <input value={transferReason[project.id] || ""} onChange={(event) => setTransferReason((current) => ({ ...current, [project.id]: event.target.value }))} className="atlas-input admin-project-transfer-reason !mt-0 !py-2" placeholder="Transfer reason" maxLength={1000} />
+                    <button type="button" disabled={busyId === project.id} onClick={() => transfer(project)} className="atlas-button-secondary admin-project-transfer-action !px-3 !py-2">Transfer</button>
                   </div>
                 </td>
               </tr>

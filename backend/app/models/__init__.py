@@ -41,6 +41,7 @@ from app.models.requirement import (
     RequirementStatus,
     RequirementType,
 )
+from app.models.security import SecurityRateLimitEvent
 from app.models.test_case import (
     TestCase,
     TestCasePriority,
@@ -87,6 +88,7 @@ __all__ = [
     "ReleaseCandidateStatus",
     "ReleaseGateEvaluation",
     "ReleaseReadinessLabel",
+    "SecurityRateLimitEvent",
     "Requirement",
     "RequirementComment",
     "RequirementReview",

@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 # Python
 __pycache__/
@@ -44,15 +45,7 @@ storage/vector/*
 storage/models/*
 !storage/models/.gitkeep
 
-backups/
-clean-atlas-project*.ps1
-
-# Local backups and temporary utilities
-.env.backup
-atlas-migrate-old-db-to-new*.ps1
-ATLAS_*_Patch/
-*.zip
-*.dump
+# Local backups, archives, and migration helpers
 backups/
 ATLAS_*_Patch/
 clean-atlas-project*.ps1

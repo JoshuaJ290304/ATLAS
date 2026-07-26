@@ -9,7 +9,7 @@ class Token(BaseModel):
 
 
 class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
+    email: EmailStr = Field(max_length=320)
 
     @field_validator("email")
     @classmethod

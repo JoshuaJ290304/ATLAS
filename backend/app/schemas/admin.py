@@ -26,8 +26,8 @@ class AdminDashboardRead(BaseModel):
     total_requirements: int
     total_test_cases: int
     total_release_candidates: int
-    recent_registrations: list["AdminUserSummary"]
-    recent_actions: list["PlatformAuditRead"]
+    recent_registrations: list[AdminUserSummary]
+    recent_actions: list[PlatformAuditRead]
 
 
 class AdminUserSummary(BaseModel):
@@ -64,7 +64,7 @@ class AdminUserProjectRead(BaseModel):
 
 class AdminUserDetail(AdminUserSummary):
     projects: list[AdminUserProjectRead] = Field(default_factory=list)
-    recent_activity: list["PlatformAuditRead"] = Field(default_factory=list)
+    recent_activity: list[PlatformAuditRead] = Field(default_factory=list)
 
 
 class AdminRoleUpdate(BaseModel):

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from app.models.requirement import Requirement
-
 
 BASELINE_COMPARE_FIELDS = (
     "title",
@@ -34,14 +33,8 @@ def compare_baseline_snapshots(
     baseline_snapshots: Iterable[dict[str, object]],
     current_snapshots: Iterable[dict[str, object]],
 ) -> dict[str, object]:
-    baseline_by_code = {
-        str(snapshot["code"]): snapshot
-        for snapshot in baseline_snapshots
-    }
-    current_by_code = {
-        str(snapshot["code"]): snapshot
-        for snapshot in current_snapshots
-    }
+    baseline_by_code = {str(snapshot["code"]): snapshot for snapshot in baseline_snapshots}
+    current_by_code = {str(snapshot["code"]): snapshot for snapshot in current_snapshots}
 
     added: list[dict[str, object]] = []
     modified: list[dict[str, object]] = []
@@ -62,9 +55,7 @@ def compare_baseline_snapshots(
             continue
 
         changed_fields = [
-            field
-            for field in BASELINE_COMPARE_FIELDS
-            if baseline.get(field) != current.get(field)
+            field for field in BASELINE_COMPARE_FIELDS if baseline.get(field) != current.get(field)
         ]
         if changed_fields:
             modified.append(

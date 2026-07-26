@@ -1,17 +1,23 @@
 from __future__ import annotations
+
 from datetime import datetime
 from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
 from app.models.test_case import TestCasePriority, TestCaseSource, TestCaseStatus, TestCaseType
+
 
 class TestStepCreate(BaseModel):
     action: str = Field(min_length=2, max_length=2000)
     expected_result: str = Field(min_length=2, max_length=2000)
 
+
 class TestStepRead(TestStepCreate):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     position: int
+
 
 class TestCaseCreate(BaseModel):
     requirement_id: UUID | None = None
@@ -36,8 +42,10 @@ class TestCaseCreate(BaseModel):
             raise ValueError("Rejection reason is required for rejected test cases")
         return self
 
+
 class TestCaseUpdate(TestCaseCreate):
     change_note: str | None = Field(default=None, max_length=500)
+
 
 class TestCaseRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -63,6 +71,7 @@ class TestCaseRead(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+
 class TestCaseSummary(BaseModel):
     total: int
     approved: int
@@ -73,6 +82,9 @@ class TestCaseSummary(BaseModel):
     covered_requirements: int
     coverage_percent: float
 
+
 class TestCaseGenerateRequest(BaseModel):
     requirement_id: UUID
-    test_types: list[TestCaseType] = Field(default_factory=lambda: [TestCaseType.FUNCTIONAL], min_length=1, max_length=8)
+    test_types: list[TestCaseType] = Field(
+        default_factory=lambda: [TestCaseType.FUNCTIONAL], min_length=1, max_length=8
+    )

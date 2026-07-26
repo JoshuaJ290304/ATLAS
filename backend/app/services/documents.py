@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import re
 import shutil
 import zipfile
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from uuid import UUID, uuid4
 
 import fitz
@@ -15,6 +16,7 @@ from fastapi import HTTPException, UploadFile, status
 from app.core.config import settings
 
 CHUNK_SIZE = 1024 * 1024
+CONTROL_CHARACTERS = re.compile(r"[\x00-\x1f\x7f]")
 MEDIA_TYPES = {
     ".pdf": "application/pdf",
     ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -40,8 +42,11 @@ class ExtractionResult:
 
 def clean_filename(filename: str | None) -> str:
     cleaned = Path((filename or "").replace("\\", "/")).name.strip()
+    cleaned = CONTROL_CHARACTERS.sub("", cleaned)
     if not cleaned or cleaned in {".", ".."}:
         raise HTTPException(status_code=400, detail="A valid filename is required")
+    if len(cleaned) > 255:
+        raise HTTPException(status_code=400, detail="Filename must be 255 characters or fewer")
     return cleaned
 
 
@@ -87,7 +92,77 @@ def resolve_stored_path(storage_path: str) -> Path:
     return candidate
 
 
-def validate_file_signature(path: Path, extension: str) -> None:
+def _validate_docx_archive(
+    path: Path,
+    *,
+    max_uncompressed_mb: int,
+    max_compression_ratio: int,
+) -> None:
+    if not zipfile.is_zipfile(path):
+        raise HTTPException(status_code=422, detail="The file is not a valid DOCX document")
+
+    max_uncompressed_bytes = max_uncompressed_mb * 1024 * 1024
+    total_uncompressed = 0
+    total_compressed = 0
+
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = set(archive.namelist())
+            if "word/document.xml" not in names or "[Content_Types].xml" not in names:
+                raise HTTPException(
+                    status_code=422,
+                    detail="The file is not a valid DOCX document",
+                )
+
+            for member in archive.infolist():
+                member_path = PurePosixPath(member.filename)
+                if member.flag_bits & 0x1:
+                    raise HTTPException(
+                        status_code=422,
+                        detail="Encrypted DOCX files are not supported",
+                    )
+                if member_path.is_absolute() or ".." in member_path.parts:
+                    raise HTTPException(
+                        status_code=422,
+                        detail="The DOCX archive contains an unsafe path",
+                    )
+                total_uncompressed += member.file_size
+                total_compressed += member.compress_size
+                if total_uncompressed > max_uncompressed_bytes:
+                    raise HTTPException(
+                        status_code=422,
+                        detail=("The DOCX expands beyond the configured uncompressed-size limit"),
+                    )
+
+            if total_uncompressed and total_compressed == 0:
+                raise HTTPException(
+                    status_code=422,
+                    detail="The DOCX archive has an unsafe compression profile",
+                )
+            if total_compressed:
+                compression_ratio = total_uncompressed / total_compressed
+                if compression_ratio > max_compression_ratio:
+                    raise HTTPException(
+                        status_code=422,
+                        detail="The DOCX archive has an unsafe compression ratio",
+                    )
+
+            if archive.testzip() is not None:
+                raise HTTPException(status_code=422, detail="The DOCX archive is corrupted")
+    except zipfile.BadZipFile as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="The file is not a valid DOCX document",
+        ) from exc
+
+
+def validate_file_signature(
+    path: Path,
+    extension: str,
+    *,
+    max_docx_uncompressed_mb: int | None = None,
+    max_docx_compression_ratio: int | None = None,
+) -> None:
     if extension == ".pdf":
         with path.open("rb") as source:
             if source.read(5) != b"%PDF-":
@@ -95,11 +170,13 @@ def validate_file_signature(path: Path, extension: str) -> None:
         return
 
     if extension == ".docx":
-        if not zipfile.is_zipfile(path):
-            raise HTTPException(status_code=422, detail="The file is not a valid DOCX document")
-        with zipfile.ZipFile(path) as archive:
-            if "word/document.xml" not in archive.namelist():
-                raise HTTPException(status_code=422, detail="The file is not a valid DOCX document")
+        _validate_docx_archive(
+            path,
+            max_uncompressed_mb=(max_docx_uncompressed_mb or settings.MAX_DOCX_UNCOMPRESSED_MB),
+            max_compression_ratio=(
+                max_docx_compression_ratio or settings.MAX_DOCX_COMPRESSION_RATIO
+            ),
+        )
         return
 
     raise HTTPException(status_code=415, detail="Unsupported document type")
@@ -184,9 +261,22 @@ def _extract_docx(path: Path) -> ExtractionResult:
     return ExtractionResult(text="\n".join(parts).strip(), page_count=None)
 
 
+def _validate_extraction_result(result: ExtractionResult) -> ExtractionResult:
+    if len(result.text) > settings.MAX_EXTRACTED_TEXT_CHARS:
+        raise ValueError("Extracted text exceeds the configured character limit")
+    return result
+
+
 async def extract_document(path: Path, extension: str) -> ExtractionResult:
     if extension == ".pdf":
-        return await asyncio.to_thread(_extract_pdf, path)
-    if extension == ".docx":
-        return await asyncio.to_thread(_extract_docx, path)
-    raise ValueError(f"Unsupported extension: {extension}")
+        task = asyncio.to_thread(_extract_pdf, path)
+    elif extension == ".docx":
+        task = asyncio.to_thread(_extract_docx, path)
+    else:
+        raise ValueError(f"Unsupported extension: {extension}")
+
+    result = await asyncio.wait_for(
+        task,
+        timeout=settings.DOCUMENT_EXTRACTION_TIMEOUT_SECONDS,
+    )
+    return _validate_extraction_result(result)

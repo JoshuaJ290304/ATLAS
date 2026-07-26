@@ -10,10 +10,10 @@ from app.api.v1.endpoints import (
     health,
     impact,
     projects,
-    requirements,
     release_readiness,
-    traceability,
+    requirements,
     test_cases,
+    traceability,
 )
 
 api_router = APIRouter()

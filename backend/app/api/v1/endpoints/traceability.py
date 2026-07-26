@@ -281,9 +281,7 @@ async def suggest_trace_links(
             TraceLink.project_id == project_id
         )
     )
-    existing_pairs = {
-        (row.requirement_id, row.artifact_id) for row in existing_result.all()
-    }
+    existing_pairs = {(row.requirement_id, row.artifact_id) for row in existing_result.all()}
     created: list[TraceLink] = []
     skipped_existing = 0
     below_threshold = 0
@@ -410,9 +408,7 @@ async def traceability_summary(
     artifacts_result = await db.execute(
         select(Artifact).where(Artifact.project_id == project_id).order_by(Artifact.code)
     )
-    links_result = await db.execute(
-        select(TraceLink).where(TraceLink.project_id == project_id)
-    )
+    links_result = await db.execute(select(TraceLink).where(TraceLink.project_id == project_id))
     coverage = calculate_coverage(
         list(requirements_result.scalars().all()),
         list(artifacts_result.scalars().all()),
@@ -434,9 +430,7 @@ async def traceability_matrix(
     artifacts_result = await db.execute(
         select(Artifact).where(Artifact.project_id == project_id).order_by(Artifact.code)
     )
-    links_result = await db.execute(
-        select(TraceLink).where(TraceLink.project_id == project_id)
-    )
+    links_result = await db.execute(select(TraceLink).where(TraceLink.project_id == project_id))
     requirements = list(requirements_result.scalars().all())
     artifacts = list(artifacts_result.scalars().all())
     links = list(links_result.scalars().all())

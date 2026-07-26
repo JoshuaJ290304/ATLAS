@@ -137,5 +137,8 @@ class Requirement(TimestampMixin, Base):
         passive_deletes=True,
     )
 
+
 # Milestone 9 requirement-to-test traceability.
-Requirement.test_cases = relationship("TestCase", back_populates="requirement", passive_deletes=True)
+Requirement.test_cases = relationship(
+    "TestCase", back_populates="requirement", passive_deletes=True
+)

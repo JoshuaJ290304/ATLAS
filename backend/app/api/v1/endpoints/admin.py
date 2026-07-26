@@ -6,14 +6,13 @@ from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request, Response, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request, Response
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import aliased
 
 from app.api.dependencies import CurrentAdmin, DbSession
 from app.core.config import settings
 from app.models.admin import AuditSeverity, PlatformAuditLog
-from app.models.document import Document, DocumentStatus
 from app.models.project import Project, ProjectStatus
 from app.models.user import User, UserRole
 from app.schemas.admin import (
@@ -188,9 +187,7 @@ async def admin_dashboard(db: DbSession, current_admin: CurrentAdmin) -> AdminDa
     totals = await platform_totals(db)
     counts = await aggregate_counts_by_owner(db)
     recent_users = list(
-        (
-            await db.execute(select(User).order_by(User.created_at.desc()).limit(5))
-        ).scalars().all()
+        (await db.execute(select(User).order_by(User.created_at.desc()).limit(5))).scalars().all()
     )
     recent_actions, _ = await _audit_rows(db, limit=8)
     return AdminDashboardRead(
@@ -245,9 +242,13 @@ async def read_user(user_id: UUID, db: DbSession, current_admin: CurrentAdmin) -
     projects = list(
         (
             await db.execute(
-                select(Project).where(Project.owner_id == user.id).order_by(Project.updated_at.desc())
+                select(Project)
+                .where(Project.owner_id == user.id)
+                .order_by(Project.updated_at.desc())
             )
-        ).scalars().all()
+        )
+        .scalars()
+        .all()
     )
     activity, _ = await _audit_rows(db, user_id=user.id, limit=20)
     summary = _user_summary(user, counts)
@@ -284,7 +285,9 @@ async def update_user_role(
         return _user_summary(user, await aggregate_counts_by_owner(db))
     if user.role == UserRole.ADMIN and payload.role == UserRole.USER:
         if user.is_active and await _active_admin_count(db) <= 1:
-            raise HTTPException(status_code=409, detail="The final active administrator cannot be demoted")
+            raise HTTPException(
+                status_code=409, detail="The final active administrator cannot be demoted"
+            )
     old_role = user.role.value
     user.role = payload.role
     user.session_version += 1
@@ -314,14 +317,20 @@ async def update_user_status(
     if user.is_active == activate:
         return _user_summary(user, await aggregate_counts_by_owner(db))
     if not activate and user.role == UserRole.ADMIN and await _active_admin_count(db) <= 1:
-        raise HTTPException(status_code=409, detail="The final active administrator cannot be suspended")
+        raise HTTPException(
+            status_code=409, detail="The final active administrator cannot be suspended"
+        )
     if not activate and user.id == current_admin.id:
-        raise HTTPException(status_code=409, detail="Use another administrator to suspend this account")
+        raise HTTPException(
+            status_code=409, detail="Use another administrator to suspend this account"
+        )
     now = datetime.now(UTC)
     user.is_active = activate
     user.suspended_at = None if activate else now
     user.suspended_by_user_id = None if activate else current_admin.id
-    user.suspension_reason = None if activate else (payload.reason or "Suspended by an administrator")
+    user.suspension_reason = (
+        None if activate else (payload.reason or "Suspended by an administrator")
+    )
     user.session_version += 1
     await write_platform_audit(
         db,
@@ -442,7 +451,9 @@ async def update_project_status(
     project.status = payload.status
     await write_platform_audit(
         db,
-        action="admin.project_archived" if payload.status == ProjectStatus.ARCHIVED else "admin.project_restored",
+        action="admin.project_archived"
+        if payload.status == ProjectStatus.ARCHIVED
+        else "admin.project_restored",
         actor_id=current_admin.id,
         project_id=project.id,
         ip_address=request.client.host if request.client else None,
@@ -464,7 +475,9 @@ async def transfer_project(
     project = await _get_project(db, project_id, for_update=True)
     new_owner = await _get_user(db, payload.new_owner_id)
     if not new_owner.is_active:
-        raise HTTPException(status_code=409, detail="Project ownership cannot be transferred to a suspended user")
+        raise HTTPException(
+            status_code=409, detail="Project ownership cannot be transferred to a suspended user"
+        )
     duplicate = await db.execute(
         select(Project.id).where(
             Project.owner_id == new_owner.id,
@@ -473,7 +486,9 @@ async def transfer_project(
         )
     )
     if duplicate.scalar_one_or_none() is not None:
-        raise HTTPException(status_code=409, detail="The new owner already has a project with this name")
+        raise HTTPException(
+            status_code=409, detail="The new owner already has a project with this name"
+        )
     previous_owner_id = project.owner_id
     project.owner_id = new_owner.id
     await write_platform_audit(
@@ -529,24 +544,39 @@ async def export_audit_events(
     items, _ = await _audit_rows(db, limit=5000)
     if export_format == "json":
         return Response(
-            content=PlatformAuditPage(items=items, total=len(items), limit=len(items), offset=0).model_dump_json(indent=2),
+            content=PlatformAuditPage(
+                items=items, total=len(items), limit=len(items), offset=0
+            ).model_dump_json(indent=2),
             media_type="application/json",
             headers={"Content-Disposition": 'attachment; filename="atlas-platform-audit.json"'},
         )
     buffer = io.StringIO()
     writer = csv.writer(buffer)
-    writer.writerow(["timestamp", "severity", "action", "actor", "target_user", "project", "ip_address", "details"])
+    writer.writerow(
+        [
+            "timestamp",
+            "severity",
+            "action",
+            "actor",
+            "target_user",
+            "project",
+            "ip_address",
+            "details",
+        ]
+    )
     for item in items:
-        writer.writerow([
-            item.created_at.isoformat(),
-            item.severity.value,
-            item.action,
-            item.actor_email or item.actor_name or "system",
-            item.target_user_name or "",
-            item.project_name or "",
-            item.ip_address or "",
-            item.details,
-        ])
+        writer.writerow(
+            [
+                item.created_at.isoformat(),
+                item.severity.value,
+                item.action,
+                item.actor_email or item.actor_name or "system",
+                item.target_user_name or "",
+                item.project_name or "",
+                item.ip_address or "",
+                item.details,
+            ]
+        )
     return Response(
         content=buffer.getvalue(),
         media_type="text/csv",
@@ -569,10 +599,24 @@ async def system_health(db: DbSession, current_admin: CurrentAdmin) -> AdminSyst
         alembic_revision=revision,
         database_status="healthy",
         services=[
-            SystemServiceRead(key="backend", label="Backend API", status="healthy", message="FastAPI is serving authenticated requests."),
-            SystemServiceRead(key="database", label="PostgreSQL", status="healthy", message="Database connectivity is operational."),
-            SystemServiceRead(key="ai", label="Ollama", status=ollama_status, message=ollama_message),
-            SystemServiceRead(key="email", label="Email service", status=smtp_status, message=smtp_message),
+            SystemServiceRead(
+                key="backend",
+                label="Backend API",
+                status="healthy",
+                message="FastAPI is serving authenticated requests.",
+            ),
+            SystemServiceRead(
+                key="database",
+                label="PostgreSQL",
+                status="healthy",
+                message="Database connectivity is operational.",
+            ),
+            SystemServiceRead(
+                key="ai", label="Ollama", status=ollama_status, message=ollama_message
+            ),
+            SystemServiceRead(
+                key="email", label="Email service", status=smtp_status, message=smtp_message
+            ),
         ],
         storage_usage_bytes=upload_bytes + vector_bytes + model_bytes,
         upload_storage_bytes=upload_bytes,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import csv
 import io
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Response, status
@@ -109,7 +109,9 @@ async def _validate_selection(
             )
         ).scalar_one_or_none()
         if baseline is None:
-            raise HTTPException(status_code=422, detail="Selected baseline does not belong to this project")
+            raise HTTPException(
+                status_code=422, detail="Selected baseline does not belong to this project"
+            )
 
     requirements = list(
         (
@@ -119,10 +121,15 @@ async def _validate_selection(
                     Requirement.id.in_(requirement_ids),
                 )
             )
-        ).scalars().all()
+        )
+        .scalars()
+        .all()
     )
     if len(requirements) != len(requirement_ids):
-        raise HTTPException(status_code=422, detail="One or more selected requirements do not belong to this project")
+        raise HTTPException(
+            status_code=422,
+            detail="One or more selected requirements do not belong to this project",
+        )
 
     tests: list[TestCase] = []
     if test_case_ids:
@@ -134,10 +141,15 @@ async def _validate_selection(
                         TestCase.id.in_(test_case_ids),
                     )
                 )
-            ).scalars().all()
+            )
+            .scalars()
+            .all()
         )
         if len(tests) != len(test_case_ids):
-            raise HTTPException(status_code=422, detail="One or more selected test cases do not belong to this project")
+            raise HTTPException(
+                status_code=422,
+                detail="One or more selected test cases do not belong to this project",
+            )
     return baseline, requirements, tests
 
 
@@ -150,10 +162,14 @@ async def _collect_evidence(db: DbSession, item: ReleaseCandidate) -> dict[str, 
     requirement_by_id = {requirement.id: requirement for requirement in requirements}
 
     approved_requirements = [
-        requirement for requirement in requirements if requirement.status == RequirementStatus.APPROVED
+        requirement
+        for requirement in requirements
+        if requirement.status == RequirementStatus.APPROVED
     ]
     unapproved = [
-        requirement.code for requirement in requirements if requirement.status != RequirementStatus.APPROVED
+        requirement.code
+        for requirement in requirements
+        if requirement.status != RequirementStatus.APPROVED
     ]
     critical_ambiguities = [
         requirement.code for requirement in requirements if requirement.ambiguity_score >= 70
@@ -168,11 +184,15 @@ async def _collect_evidence(db: DbSession, item: ReleaseCandidate) -> dict[str, 
                     TraceLink.status == TraceLinkStatus.ACCEPTED,
                 )
             )
-        ).scalars().all()
+        )
+        .scalars()
+        .all()
     )
     traced_count = len(accepted_requirement_ids)
     untraced_codes = [
-        requirement.code for requirement in requirements if requirement.id not in accepted_requirement_ids
+        requirement.code
+        for requirement in requirements
+        if requirement.id not in accepted_requirement_ids
     ]
 
     approved_test_requirement_ids = {
@@ -181,7 +201,9 @@ async def _collect_evidence(db: DbSession, item: ReleaseCandidate) -> dict[str, 
         if test.status == TestCaseStatus.APPROVED and test.requirement_id in requirement_by_id
     }
     untested_codes = [
-        requirement.code for requirement in requirements if requirement.id not in approved_test_requirement_ids
+        requirement.code
+        for requirement in requirements
+        if requirement.id not in approved_test_requirement_ids
     ]
 
     impact_rows = list(
@@ -194,7 +216,9 @@ async def _collect_evidence(db: DbSession, item: ReleaseCandidate) -> dict[str, 
                 )
                 .order_by(ImpactAnalysis.created_at.desc())
             )
-        ).scalars().all()
+        )
+        .scalars()
+        .all()
     )
     latest_impact_by_requirement: dict[UUID, ImpactAnalysis] = {}
     for impact in impact_rows:
@@ -217,23 +241,35 @@ async def _collect_evidence(db: DbSession, item: ReleaseCandidate) -> dict[str, 
                     RequirementReview.due_date < date.today(),
                 )
             )
-        ).scalars().all()
+        )
+        .scalars()
+        .all()
     )
     overdue_codes = sorted(
-        {requirement_by_id[requirement_id].code for requirement_id in overdue_rows if requirement_id in requirement_by_id}
+        {
+            requirement_by_id[requirement_id].code
+            for requirement_id in overdue_rows
+            if requirement_id in requirement_by_id
+        }
     )
 
     rejected_codes = [
-        requirement.code for requirement in requirements if requirement.status == RequirementStatus.REJECTED
+        requirement.code
+        for requirement in requirements
+        if requirement.status == RequirementStatus.REJECTED
     ] + [test.code for test in tests if test.status == TestCaseStatus.REJECTED]
 
     documents = list(
-        (
-            await db.execute(select(Document).where(Document.project_id == item.project_id))
-        ).scalars().all()
+        (await db.execute(select(Document).where(Document.project_id == item.project_id)))
+        .scalars()
+        .all()
     )
-    processed_documents = [document for document in documents if document.status == DocumentStatus.EXTRACTED]
-    failed_documents = [document for document in documents if document.status == DocumentStatus.FAILED]
+    processed_documents = [
+        document for document in documents if document.status == DocumentStatus.EXTRACTED
+    ]
+    failed_documents = [
+        document for document in documents if document.status == DocumentStatus.FAILED
+    ]
 
     assistant_index = (
         await db.execute(select(AssistantIndex).where(AssistantIndex.project_id == item.project_id))
@@ -262,10 +298,16 @@ async def _collect_evidence(db: DbSession, item: ReleaseCandidate) -> dict[str, 
         "critical_ambiguity_codes": critical_ambiguities,
         "traceability_percent": round((traced_count / count) * 100, 1) if count else 0.0,
         "untraced_requirement_codes": untraced_codes,
-        "approved_test_coverage_percent": round((len(approved_test_requirement_ids) / count) * 100, 1) if count else 0.0,
+        "approved_test_coverage_percent": round(
+            (len(approved_test_requirement_ids) / count) * 100, 1
+        )
+        if count
+        else 0.0,
         "untested_requirement_codes": untested_codes,
         "included_test_case_count": len(tests),
-        "approved_test_case_count": sum(1 for test in tests if test.status == TestCaseStatus.APPROVED),
+        "approved_test_case_count": sum(
+            1 for test in tests if test.status == TestCaseStatus.APPROVED
+        ),
         "high_risk_impact_count": len(high_risk_impacts),
         "high_risk_requirement_codes": [impact.requirement_code for impact in high_risk_impacts],
         "overdue_review_count": len(overdue_codes),
@@ -277,7 +319,9 @@ async def _collect_evidence(db: DbSession, item: ReleaseCandidate) -> dict[str, 
         "failed_document_count": len(failed_documents),
         "ai_index_ready": index_ready,
         "ai_index_fresh": index_fresh,
-        "ai_last_indexed_at": assistant_index.last_indexed_at.isoformat() if assistant_index and assistant_index.last_indexed_at else None,
+        "ai_last_indexed_at": assistant_index.last_indexed_at.isoformat()
+        if assistant_index and assistant_index.last_indexed_at
+        else None,
     }
 
 
@@ -356,7 +400,9 @@ async def create_release(
         )
     )
     if duplicate.scalar_one_or_none() is not None:
-        raise HTTPException(status_code=409, detail="A release candidate with this version already exists")
+        raise HTTPException(
+            status_code=409, detail="A release candidate with this version already exists"
+        )
     await _validate_selection(
         db,
         project_id,
@@ -384,7 +430,9 @@ async def create_release(
 
 
 @router.get("/{release_id}", response_model=ReleaseCandidateRead)
-async def read_release(project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser):
+async def read_release(
+    project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser
+):
     return await _candidate(db, project_id, release_id, current_user.id)
 
 
@@ -414,7 +462,9 @@ async def update_release(
         )
     )
     if duplicate.scalar_one_or_none() is not None:
-        raise HTTPException(status_code=409, detail="A release candidate with this version already exists")
+        raise HTTPException(
+            status_code=409, detail="A release candidate with this version already exists"
+        )
     values = payload.model_dump(exclude={"status"})
     values["selected_requirement_ids"] = [str(value) for value in payload.selected_requirement_ids]
     values["selected_test_case_ids"] = [str(value) for value in payload.selected_test_case_ids]
@@ -442,7 +492,9 @@ async def update_release(
 
 
 @router.delete("/{release_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_release(project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser):
+async def delete_release(
+    project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser
+):
     item = await _candidate(db, project_id, release_id, current_user.id)
     if item.status == ReleaseCandidateStatus.RELEASED or item.locked_at:
         raise HTTPException(status_code=409, detail="Released candidates cannot be deleted")
@@ -452,7 +504,9 @@ async def delete_release(project_id: UUID, release_id: UUID, db: DbSession, curr
 
 
 @router.post("/{release_id}/evaluate", response_model=ReleaseEvaluationRead)
-async def evaluate_release(project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser):
+async def evaluate_release(
+    project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser
+):
     item = await _candidate(db, project_id, release_id, current_user.id)
     if item.locked_at:
         raise HTTPException(status_code=409, detail="Released candidates are locked")
@@ -466,7 +520,7 @@ async def evaluate_release(project_id: UUID, release_id: UUID, db: DbSession, cu
         require_active_baseline=item.require_active_baseline,
         require_approved_requirements=item.require_approved_requirements,
     )
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     item.readiness_score = float(result["readiness_score"])
     item.readiness_label = ReleaseReadinessLabel(str(result["readiness_label"]))
     item.gate_summary = {
@@ -523,12 +577,16 @@ async def evaluate_release(project_id: UUID, release_id: UUID, db: DbSession, cu
 
 
 @router.post("/{release_id}/submit", response_model=ReleaseCandidateRead)
-async def submit_release(project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser):
+async def submit_release(
+    project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser
+):
     item = await _candidate(db, project_id, release_id, current_user.id)
     if item.locked_at:
         raise HTTPException(status_code=409, detail="Released candidates are locked")
     if item.readiness_label == ReleaseReadinessLabel.NOT_EVALUATED:
-        raise HTTPException(status_code=409, detail="Evaluate quality gates before submitting for review")
+        raise HTTPException(
+            status_code=409, detail="Evaluate quality gates before submitting for review"
+        )
     item.status = ReleaseCandidateStatus.IN_REVIEW
     await _audit(
         db,
@@ -553,15 +611,21 @@ async def decide_release(
 ):
     item = await _candidate(db, project_id, release_id, current_user.id)
     if item.status != ReleaseCandidateStatus.IN_REVIEW:
-        raise HTTPException(status_code=409, detail="Submit the release for review before recording a decision")
+        raise HTTPException(
+            status_code=409, detail="Submit the release for review before recording a decision"
+        )
     if payload.approved and item.readiness_label != ReleaseReadinessLabel.READY:
-        raise HTTPException(status_code=409, detail="Only a release with Ready quality-gate status can be approved")
-    now = datetime.now(timezone.utc)
+        raise HTTPException(
+            status_code=409, detail="Only a release with Ready quality-gate status can be approved"
+        )
+    now = datetime.now(UTC)
     item.reviewer_name = payload.reviewer_name
     item.review_comments = payload.review_comments
     item.decision_reason = payload.decision_reason
     item.signed_off_at = now
-    item.status = ReleaseCandidateStatus.READY if payload.approved else ReleaseCandidateStatus.BLOCKED
+    item.status = (
+        ReleaseCandidateStatus.READY if payload.approved else ReleaseCandidateStatus.BLOCKED
+    )
     await _audit(
         db,
         project_id=project_id,
@@ -580,11 +644,15 @@ async def decide_release(
 
 
 @router.post("/{release_id}/publish", response_model=ReleaseCandidateRead)
-async def publish_release(project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser):
+async def publish_release(
+    project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser
+):
     item = await _candidate(db, project_id, release_id, current_user.id)
     if item.status != ReleaseCandidateStatus.READY or item.signed_off_at is None:
-        raise HTTPException(status_code=409, detail="A signed-off Ready release is required before publishing")
-    now = datetime.now(timezone.utc)
+        raise HTTPException(
+            status_code=409, detail="A signed-off Ready release is required before publishing"
+        )
+    now = datetime.now(UTC)
     item.status = ReleaseCandidateStatus.RELEASED
     item.locked_at = now
     item.release_snapshot = _snapshot(item)
@@ -622,7 +690,9 @@ async def compare_releases(
 
 
 @router.get("/{release_id}/report")
-async def release_report(project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser):
+async def release_report(
+    project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser
+):
     item = await _candidate(db, project_id, release_id, current_user.id)
     evidence = await _collect_evidence(db, item)
     return {
@@ -636,24 +706,28 @@ async def release_report(project_id: UUID, release_id: UUID, db: DbSession, curr
             "require_approved_requirements": item.require_approved_requirements,
         },
         "evidence": evidence,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
     }
 
 
 @router.get("/{release_id}/report.csv")
-async def release_report_csv(project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser):
+async def release_report_csv(
+    project_id: UUID, release_id: UUID, db: DbSession, current_user: CurrentUser
+):
     item = await _candidate(db, project_id, release_id, current_user.id)
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["Gate", "Status", "Measured value", "Threshold", "Message"])
     for gate in item.gate_summary.get("results", []):
-        writer.writerow([
-            gate.get("name"),
-            gate.get("status"),
-            gate.get("measured_value"),
-            gate.get("threshold"),
-            gate.get("message"),
-        ])
+        writer.writerow(
+            [
+                gate.get("name"),
+                gate.get("status"),
+                gate.get("measured_value"),
+                gate.get("threshold"),
+                gate.get("message"),
+            ]
+        )
     filename = f"atlas-release-{item.version_label}-readiness.csv"
     return Response(
         content=output.getvalue(),

@@ -6,12 +6,12 @@ ATLAS is a full-stack requirements engineering platform that converts software p
 
 ## Current release
 
-**v0.11.0 — Administration and Platform Operations**
+**v1.0.0 — Production Stabilization Candidate 2**
 
 Development branch:
 
 ```text
-feature/milestone-11-administration
+release/v1.0.0
 ```
 
 ## Project status
@@ -28,15 +28,16 @@ feature/milestone-11-administration
 | 8 | Requirement governance, review, and baselines | Completed |
 | 9 | Test Case Intelligence | Completed |
 | 10 | Release readiness and quality gates | Completed |
-| 11 | Administration and platform operations | In development |
+| 11 | Administration and platform operations | Completed |
 
 ## Main capabilities
 
 ### Authentication and project management
 
-- Registration with strong-password validation
-- Argon2 password hashing and JWT authentication
-- Owner-isolated project CRUD
+- Registration with strong-password validation and persistent abuse rate limits
+- Argon2 password hashing and strict JWT issuer/audience/session validation
+- Single-use password recovery with session invalidation
+- Owner-isolated project CRUD and backend-enforced administrator authorization
 - Duplicate project-name protection
 - Responsive project dashboard with direct access to every module
 
@@ -239,8 +240,13 @@ docker compose logs --tail=200 postgres backend frontend
 | `0004` | Artifacts and trace links |
 | `0005` | Requirement snapshots and impact reports |
 | `0006` | AI assistant knowledge and conversation records |
-
-Milestone 7 does not require a migration because all analytics are calculated from existing live records.
+| `0007` | Requirement governance and baselines |
+| `0008` | Governance input completeness |
+| `0009` | Test Case Intelligence |
+| `0010` | Release readiness and quality gates |
+| `0011` | Secure password recovery |
+| `0012` | Administration and platform operations |
+| `0013` | Persistent authentication rate limiting |
 
 ## Analytics workflow
 
@@ -307,14 +313,7 @@ docker compose exec backend ruff check .
 docker compose build frontend
 ```
 
-Milestone 7 verified results:
-
-```text
-36 backend tests passed
-Ruff checks passed
-Frontend production build passed with 94 transformed modules
-No Milestone 7 migration required
-```
+The stable release is approved only after the full backend suite, Ruff checks, frontend production build, Nginx validation, migration check, and end-to-end browser workflow pass on the target Docker environment. See `docs/TESTING_REPORT.md`.
 
 ## Versioning
 
@@ -328,29 +327,49 @@ No Milestone 7 migration required
 | `v0.6.0` | AI project assistant |
 | `v0.7.0` | Analytics, reporting, UI/UX, and validation |
 | `v0.8.0` | Requirement governance, reviews, and baselines |
-| `v0.8.1` | Review priority/due dates, selected baseline scope, status, and baseline comparison |
+| `v0.8.1` | Governance completeness |
+| `v0.9.0` | Test Case Intelligence |
+| `v0.10.0` | Release readiness and quality gates |
+| `v0.10.1` | Dashboard modules and secure password recovery |
+| `v0.11.0` | Administration and platform operations |
+| `v1.0.0` | Security, deployment, documentation, and performance stabilization |
 | `v1.0.0` | Stable final release |
 
 ## Current limitations
 
-- The generated project report is HTML rather than PDF.
 - Scanned PDFs require OCR, which is not implemented.
 - Exact PDF page-coordinate citations are not available.
-- Indexing and analytics are synchronous and intended for student-scale projects.
-- Generated AI answers should be verified against their cited project evidence.
+- Indexing, extraction, and analytics are synchronous and intended for student/small-team projects.
+- Generated AI answers must be verified against cited project evidence.
+- Browser bearer tokens are stored in `localStorage`; secure HttpOnly cookie authentication is recommended for a public internet deployment.
+- Mailpit and the exposed Docker development ports are intended for local development.
+
+See `docs/KNOWN_LIMITATIONS.md` for the complete list.
 
 ## Next release
 
-### v1.0.0 — Final stable project
+### v1.0.0 — Stable release
 
-Planned finalization work:
+Remaining release work is validation only:
 
-- Full end-to-end acceptance test
-- Production deployment guidance
-- Optional cloud configuration
-- Final MCA report and demonstration script
-- Security and performance review
-- Formal release notes and repository cleanup
+- full Docker regression suite
+- fresh-install and v0.11.0 upgrade verification
+- end-to-end acceptance demonstration
+- final version change from `1.0.0` to `1.0.0`
+- merge, tag, and release notes
+
+
+## Documentation
+
+- `docs/INSTALLATION.md` — development and production setup
+- `docs/USER_GUIDE.md` — complete user workflow
+- `docs/ADMIN_GUIDE.md` — platform administration
+- `docs/ARCHITECTURE.md` — components, data, and security boundaries
+- `docs/BACKUP_RESTORE.md` — database and file recovery
+- `docs/SECURITY.md` — security controls and deployment requirements
+- `docs/TESTING_REPORT.md` — release validation checklist
+- `docs/DEMO_SCRIPT.md` — final demonstration flow
+- `docs/KNOWN_LIMITATIONS.md` — declared constraints
 
 
 ## Requirement governance and baselines
@@ -373,6 +392,7 @@ The module is available from **Reviews & Baselines** in every project workspace.
 ATLAS 0.9.0 adds a traceable test engineering workspace with manual and AI-assisted test case authoring, numbered steps, review status, priorities, requirement coverage, and immutable version snapshots.
 
 Project route: `/projects/{project_id}/test-cases`
+
 
 
 

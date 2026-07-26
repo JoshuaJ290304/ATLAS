@@ -100,7 +100,9 @@ async def ensure_ready_index(db: DbSession, project_id: UUID) -> AssistantIndex:
 async def ensure_ai_enabled(db: DbSession) -> None:
     platform = await get_platform_settings(db)
     if not platform.ai_generation_enabled:
-        raise HTTPException(status_code=503, detail="AI generation is disabled by a platform administrator")
+        raise HTTPException(
+            status_code=503, detail="AI generation is disabled by a platform administrator"
+        )
 
 
 @router.get("/status", response_model=AssistantStatusRead)

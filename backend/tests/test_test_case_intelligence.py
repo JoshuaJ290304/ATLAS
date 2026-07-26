@@ -1,8 +1,20 @@
 from uuid import uuid4
+
 import pytest
 from pydantic import ValidationError
-from app.models.test_case import TestCasePriority, TestCaseStatus, TestCaseType
-from app.schemas.test_case import TestCaseCreate, TestCaseGenerateRequest, TestStepCreate
+
+from app.models.test_case import (
+    TestCasePriority as CasePriority,
+)
+from app.models.test_case import (
+    TestCaseType as CaseType,
+)
+from app.schemas.test_case import (
+    TestCaseCreate as CaseCreate,
+)
+from app.schemas.test_case import (
+    TestCaseGenerateRequest as CaseGenerateRequest,
+)
 
 
 def valid_payload(**overrides):
@@ -16,16 +28,21 @@ def valid_payload(**overrides):
         test_type="security",
         priority="critical",
         status="draft",
-        steps=[{"action":"Upload a supported PDF.","expected_result":"The PDF is accepted."}],
+        steps=[
+            {
+                "action": "Upload a supported PDF.",
+                "expected_result": "The PDF is accepted.",
+            }
+        ],
     )
     data.update(overrides)
-    return TestCaseCreate(**data)
+    return CaseCreate(**data)
 
 
 def test_test_case_accepts_traceability_and_steps():
     payload = valid_payload()
-    assert payload.test_type == TestCaseType.SECURITY
-    assert payload.priority == TestCasePriority.CRITICAL
+    assert payload.test_type == CaseType.SECURITY
+    assert payload.priority == CasePriority.CRITICAL
     assert len(payload.steps) == 1
 
 
@@ -36,4 +53,4 @@ def test_rejected_test_case_requires_reason():
 
 def test_generation_requires_at_least_one_scenario():
     with pytest.raises(ValidationError):
-        TestCaseGenerateRequest(requirement_id=uuid4(), test_types=[])
+        CaseGenerateRequest(requirement_id=uuid4(), test_types=[])

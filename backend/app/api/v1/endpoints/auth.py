@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 
 from app.api.dependencies import CurrentUser, DbSession
+from app.core.config import settings
 from app.core.security import create_access_token, hash_password
 from app.models.admin import AuditSeverity
 from app.models.user import User
@@ -24,6 +25,12 @@ from app.services.auth import (
     reset_password_with_token,
 )
 from app.services.email import send_password_reset_email
+from app.services.rate_limit import (
+    clear_rate_limit_events,
+    enforce_rate_limit,
+    prune_rate_limit_events,
+    record_rate_limit_event,
+)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -32,11 +39,34 @@ PASSWORD_RESET_REQUEST_MESSAGE = (
 )
 
 
+def _client_identifier(request: Request) -> str:
+    return request.client.host if request.client else "unknown"
+
+
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 async def register(payload: UserCreate, request: Request, db: DbSession) -> User:
+    client_identifier = _client_identifier(request)
+    await enforce_rate_limit(
+        db,
+        scope="registration_ip",
+        identifier=client_identifier,
+        limit=settings.REGISTRATION_RATE_LIMIT_ATTEMPTS,
+        window_seconds=settings.REGISTRATION_RATE_LIMIT_WINDOW_SECONDS,
+    )
+    await record_rate_limit_event(
+        db,
+        scope="registration_ip",
+        identifier=client_identifier,
+    )
+    await prune_rate_limit_events(db)
+    await db.commit()
+
     platform = await get_platform_settings(db)
     if not platform.registration_enabled:
-        raise HTTPException(status_code=403, detail="New account registration is currently disabled")
+        raise HTTPException(
+            status_code=403,
+            detail="New account registration is currently disabled",
+        )
 
     normalized_email = payload.email.lower()
     if await get_user_by_email(db, normalized_email):
@@ -55,7 +85,7 @@ async def register(payload: UserCreate, request: Request, db: DbSession) -> User
             action="account.registered",
             actor_id=user.id,
             target_user_id=user.id,
-            ip_address=request.client.host if request.client else None,
+            ip_address=client_identifier,
             details={"email": user.email},
         )
         await db.commit()
@@ -74,17 +104,53 @@ async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: DbSession,
 ) -> Token:
-    requested_ip = request.client.host if request.client else None
-    user = await authenticate_user(db, form_data.username, form_data.password)
+    normalized_email = form_data.username.strip().lower()
+    email_too_large = len(normalized_email) > 320
+    login_identifier = normalized_email[:320] or "invalid-email"
+    requested_ip = _client_identifier(request)
+
+    await enforce_rate_limit(
+        db,
+        scope="login_email",
+        identifier=login_identifier,
+        limit=settings.LOGIN_RATE_LIMIT_ATTEMPTS,
+        window_seconds=settings.LOGIN_RATE_LIMIT_WINDOW_SECONDS,
+    )
+    await enforce_rate_limit(
+        db,
+        scope="login_ip",
+        identifier=requested_ip,
+        limit=settings.LOGIN_RATE_LIMIT_ATTEMPTS * 3,
+        window_seconds=settings.LOGIN_RATE_LIMIT_WINDOW_SECONDS,
+    )
+
+    credentials_too_large = email_too_large or len(form_data.password) > 128
+    user = None
+    if not credentials_too_large:
+        user = await authenticate_user(db, normalized_email, form_data.password)
+
     if user is None:
-        known_user = await get_user_by_email(db, form_data.username)
+        await record_rate_limit_event(
+            db,
+            scope="login_email",
+            identifier=login_identifier,
+        )
+        await record_rate_limit_event(
+            db,
+            scope="login_ip",
+            identifier=requested_ip,
+        )
+        await prune_rate_limit_events(db)
+        known_user = None
+        if not email_too_large:
+            known_user = await get_user_by_email(db, normalized_email)
         await write_platform_audit(
             db,
             action="auth.login_failed",
             target_user_id=known_user.id if known_user else None,
             severity=AuditSeverity.WARNING,
             ip_address=requested_ip,
-            details={"email": form_data.username.strip().lower()},
+            details={"email": login_identifier},
         )
         await db.commit()
         raise HTTPException(
@@ -93,6 +159,11 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    await clear_rate_limit_events(
+        db,
+        scope="login_email",
+        identifier=login_identifier,
+    )
     user.last_login_at = datetime.now(UTC)
     await write_platform_audit(
         db,
@@ -120,7 +191,35 @@ async def forgot_password(
     background_tasks: BackgroundTasks,
     db: DbSession,
 ) -> PasswordRecoveryMessage:
-    requested_ip = request.client.host if request.client else None
+    requested_ip = _client_identifier(request)
+    await enforce_rate_limit(
+        db,
+        scope="password_reset_email",
+        identifier=payload.email,
+        limit=settings.PASSWORD_RESET_RATE_LIMIT_ATTEMPTS,
+        window_seconds=settings.PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS,
+    )
+    await enforce_rate_limit(
+        db,
+        scope="password_reset_ip",
+        identifier=requested_ip,
+        limit=settings.PASSWORD_RESET_RATE_LIMIT_ATTEMPTS * 3,
+        window_seconds=settings.PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS,
+    )
+    await record_rate_limit_event(
+        db,
+        scope="password_reset_email",
+        identifier=payload.email,
+    )
+    await record_rate_limit_event(
+        db,
+        scope="password_reset_ip",
+        identifier=requested_ip,
+    )
+    await prune_rate_limit_events(db)
+    # Commit rate-limit evidence for both known and unknown email addresses.
+    await db.commit()
+
     delivery = await create_password_reset_request(db, payload.email, requested_ip)
     if delivery is not None:
         user, raw_token = delivery
@@ -142,18 +241,51 @@ async def reset_password(
     request: Request,
     db: DbSession,
 ) -> PasswordRecoveryMessage:
+    requested_ip = _client_identifier(request)
+    await enforce_rate_limit(
+        db,
+        scope="password_reset_confirm_ip",
+        identifier=requested_ip,
+        limit=settings.PASSWORD_RESET_CONFIRM_RATE_LIMIT_ATTEMPTS,
+        window_seconds=settings.PASSWORD_RESET_CONFIRM_RATE_LIMIT_WINDOW_SECONDS,
+    )
+    await enforce_rate_limit(
+        db,
+        scope="password_reset_token",
+        identifier=payload.token,
+        limit=3,
+        window_seconds=settings.PASSWORD_RESET_CONFIRM_RATE_LIMIT_WINDOW_SECONDS,
+    )
+    await record_rate_limit_event(
+        db,
+        scope="password_reset_confirm_ip",
+        identifier=requested_ip,
+    )
+    await record_rate_limit_event(
+        db,
+        scope="password_reset_token",
+        identifier=payload.token,
+    )
+    await prune_rate_limit_events(db)
+    await db.commit()
+
     user = await reset_password_with_token(db, payload.token, payload.new_password)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This password-reset link is invalid, expired, or has already been used.",
         )
+    await clear_rate_limit_events(
+        db,
+        scope="password_reset_token",
+        identifier=payload.token,
+    )
     await write_platform_audit(
         db,
         action="auth.password_reset_completed",
         actor_id=user.id,
         target_user_id=user.id,
-        ip_address=request.client.host if request.client else None,
+        ip_address=requested_ip,
     )
     await db.commit()
     return PasswordRecoveryMessage(
