@@ -19,6 +19,20 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: str = "http://localhost:5173"
 
+    FRONTEND_URL: str = "http://localhost:5173"
+    PASSWORD_RESET_EXPIRE_MINUTES: int = Field(default=30, ge=5, le=1440)
+    PASSWORD_RESET_COOLDOWN_SECONDS: int = Field(default=60, ge=0, le=3600)
+
+    SMTP_HOST: str = "mailpit"
+    SMTP_PORT: int = Field(default=1025, ge=1, le=65535)
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = "no-reply@atlas.local"
+    SMTP_FROM_NAME: str = "ATLAS"
+    SMTP_STARTTLS: bool = False
+    SMTP_USE_SSL: bool = False
+    SMTP_TIMEOUT_SECONDS: float = Field(default=10.0, ge=1, le=60)
+
     UPLOAD_ROOT: str = "storage/uploads"
     MAX_UPLOAD_SIZE_MB: int = Field(default=10, ge=1, le=100)
     ALLOWED_DOCUMENT_EXTENSIONS: str = ".pdf,.docx"

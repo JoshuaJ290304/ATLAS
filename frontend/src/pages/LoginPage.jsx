@@ -63,7 +63,15 @@ export default function LoginPage() {
           <FieldError>{errors.email}</FieldError>
         </label>
         <label className="atlas-label">
-          Password
+          <span className="flex items-center justify-between gap-3">
+            <span>Password</span>
+            <Link
+              className="text-xs font-extrabold text-indigo-700 hover:underline"
+              to="/forgot-password"
+            >
+              Forgot password?
+            </Link>
+          </span>
           <input
             type="password"
             autoComplete="current-password"

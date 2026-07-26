@@ -1,17 +1,32 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 
 from app.api.dependencies import CurrentUser, DbSession
 from app.core.security import create_access_token, hash_password
 from app.models.user import User
-from app.schemas.auth import Token
+from app.schemas.auth import (
+    ForgotPasswordRequest,
+    PasswordRecoveryMessage,
+    ResetPasswordRequest,
+    Token,
+)
 from app.schemas.user import UserCreate, UserRead
-from app.services.auth import authenticate_user, get_user_by_email
+from app.services.auth import (
+    authenticate_user,
+    create_password_reset_request,
+    get_user_by_email,
+    reset_password_with_token,
+)
+from app.services.email import send_password_reset_email
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+
+PASSWORD_RESET_REQUEST_MESSAGE = (
+    "If an active ATLAS account uses that email address, a password-reset link has been sent."
+)
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
@@ -48,7 +63,47 @@ async def login(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return Token(access_token=create_access_token(str(user.id)))
+    return Token(
+        access_token=create_access_token(
+            str(user.id), password_changed_at=user.password_changed_at
+        )
+    )
+
+
+@router.post("/forgot-password", response_model=PasswordRecoveryMessage)
+async def forgot_password(
+    payload: ForgotPasswordRequest,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    db: DbSession,
+) -> PasswordRecoveryMessage:
+    requested_ip = request.client.host if request.client else None
+    delivery = await create_password_reset_request(db, payload.email, requested_ip)
+    if delivery is not None:
+        user, raw_token = delivery
+        background_tasks.add_task(
+            send_password_reset_email,
+            user.email,
+            user.name,
+            raw_token,
+        )
+    return PasswordRecoveryMessage(message=PASSWORD_RESET_REQUEST_MESSAGE)
+
+
+@router.post("/reset-password", response_model=PasswordRecoveryMessage)
+async def reset_password(
+    payload: ResetPasswordRequest,
+    db: DbSession,
+) -> PasswordRecoveryMessage:
+    changed = await reset_password_with_token(db, payload.token, payload.new_password)
+    if not changed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This password-reset link is invalid, expired, or has already been used.",
+        )
+    return PasswordRecoveryMessage(
+        message="Your password has been reset. Sign in using the new password."
+    )
 
 
 @router.get("/me", response_model=UserRead)

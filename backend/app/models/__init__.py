@@ -25,6 +25,7 @@ from app.models.impact import (
     RequirementChangeType,
     RequirementVersion,
 )
+from app.models.password_reset import PasswordResetToken
 from app.models.project import Project, ProjectStatus
 from app.models.release_readiness import (
     QualityGateStatus,
@@ -73,6 +74,7 @@ __all__ = [
     "ImpactSeverity",
     "KnowledgeChunk",
     "KnowledgeSourceType",
+    "PasswordResetToken",
     "Project",
     "ProjectBaseline",
     "ProjectStatus",

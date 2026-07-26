@@ -17,12 +17,18 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return password_hash.verify(plain_password, hashed_password)
 
 
-def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    subject: str,
+    expires_delta: timedelta | None = None,
+    password_changed_at: datetime | None = None,
+) -> str:
     now = datetime.now(UTC)
     expires_at = now + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     payload: dict[str, Any] = {"sub": subject, "iat": now, "exp": expires_at}
+    if password_changed_at is not None:
+        payload["pwd"] = int(password_changed_at.timestamp() * 1_000_000)
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 

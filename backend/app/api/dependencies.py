@@ -38,6 +38,12 @@ async def get_current_user(
     user = await db.get(User, user_id)
     if user is None or not user.is_active:
         raise credentials_error
+
+    if user.password_changed_at is not None:
+        expected_password_version = int(user.password_changed_at.timestamp() * 1_000_000)
+        if payload.get("pwd") != expected_password_version:
+            raise credentials_error
+
     return user
 
 
