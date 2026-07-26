@@ -13,6 +13,8 @@ const PAGE_TITLES = {
   impact: "Impact Analysis",
   assistant: "AI Assistant",
   analytics: "Analytics",
+  releases: "Release Readiness",
+  "test-cases": "Test Cases",
 };
 
 export default function AppShell({ children }) {

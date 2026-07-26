@@ -1,4 +1,19 @@
-﻿## [0.9.0] — Test Case Intelligence
+﻿## [0.10.0] — Release Readiness and Quality Gates
+
+### Added
+- Release-candidate management with baseline, requirement, and test-case selection.
+- Configurable release thresholds for traceability, approved test coverage, high-risk impacts, and overdue reviews.
+- Ten explainable quality gates with weighted readiness scoring.
+- Ready, At Risk, Blocked, and Not Evaluated classifications.
+- Release submission, sign-off, rejection, publication lock, and immutable release snapshots.
+- Release comparison plus JSON and CSV readiness reports.
+- Alembic revision `0010` and focused backend readiness tests.
+- Responsive Release Readiness workspace aligned with the ATLAS project design system.
+
+### Development status
+- Version remains `0.10.0` until migration, backend tests, frontend build, and browser smoke tests pass.
+
+## [0.9.0] — Test Case Intelligence
 
 ### Added
 - Test case, test step, and test case version models.
@@ -177,4 +192,5 @@ All notable changes to ATLAS are documented here. The project follows Semantic V
 - Protected project CRUD
 - Docker Compose environment
 - Alembic migration `0001`
+
 

@@ -6,12 +6,12 @@ ATLAS is a full-stack requirements engineering platform that converts software p
 
 ## Current release
 
-**v0.8.1 — Governance Input Completeness**
+**v0.10.0 — Release Readiness and Quality Gates**
 
 Development branch:
 
 ```text
-feature/milestone-8-reviews-baselines
+feature/milestone-10-release-readiness
 ```
 
 ## Project status
@@ -26,6 +26,8 @@ feature/milestone-8-reviews-baselines
 | 6 | AI project assistant | Completed |
 | 7 | Analytics, reporting, UI/UX, and validation | Completed |
 | 8 | Requirement governance, review, and baselines | Completed |
+| 9 | Test Case Intelligence | Completed |
+| 10 | Release readiness and quality gates | In development |
 
 ## Main capabilities
 
@@ -88,6 +90,24 @@ feature/milestone-8-reviews-baselines
 - Immutable approved-requirement baselines
 - Added, modified, removed, and unchanged baseline comparison
 - Governance audit history
+
+
+### Test Case Intelligence
+
+- Manual and AI-assisted test-case authoring
+- Numbered steps and expected results
+- Requirement-to-test traceability
+- Draft, review, approval, rejection, and needs-review states
+- Test-case version history and approved coverage analytics
+
+### Release readiness and quality gates
+
+- Release-candidate planning with selected baselines, requirements, and test cases
+- Configurable traceability, test-coverage, impact-risk, and overdue-review thresholds
+- Ten explainable quality gates with Passed, Failed, Warning, and Not Evaluated outcomes
+- Weighted readiness score with Ready, At Risk, and Blocked classifications
+- Release review, approval/rejection, publication lock, and audit events
+- Candidate comparison plus JSON and CSV readiness reports
 
 ### Analytics and reporting
 
@@ -340,4 +360,5 @@ The module is available from **Reviews & Baselines** in every project workspace.
 ATLAS 0.9.0 adds a traceable test engineering workspace with manual and AI-assisted test case authoring, numbered steps, review status, priorities, requirement coverage, and immutable version snapshots.
 
 Project route: `/projects/{project_id}/test-cases`
+
 

@@ -26,6 +26,13 @@ from app.models.impact import (
     RequirementVersion,
 )
 from app.models.project import Project, ProjectStatus
+from app.models.release_readiness import (
+    QualityGateStatus,
+    ReleaseCandidate,
+    ReleaseCandidateStatus,
+    ReleaseGateEvaluation,
+    ReleaseReadinessLabel,
+)
 from app.models.requirement import (
     Requirement,
     RequirementSource,
@@ -69,6 +76,11 @@ __all__ = [
     "Project",
     "ProjectBaseline",
     "ProjectStatus",
+    "QualityGateStatus",
+    "ReleaseCandidate",
+    "ReleaseCandidateStatus",
+    "ReleaseGateEvaluation",
+    "ReleaseReadinessLabel",
     "Requirement",
     "RequirementComment",
     "RequirementReview",

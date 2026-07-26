@@ -32,6 +32,7 @@ const paths = {
   activity: <path d="M3 12h4l2-6 4 12 2-6h6"/>,
   shield: <><path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6z"/><path d="m9 12 2 2 4-4"/></>,
   clock: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
+  release: <><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/><path d="m14 17 2 2 4-4"/></>,
 };
 
 export default function Icon({ name, className = "h-5 w-5", strokeWidth = 1.8 }) {
