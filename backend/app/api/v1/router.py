@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     impact,
     projects,
     requirements,
+    release_readiness,
     traceability,
     test_cases,
 )
@@ -22,6 +23,7 @@ api_router.include_router(documents.router)
 api_router.include_router(requirements.router)
 api_router.include_router(governance.router)
 api_router.include_router(test_cases.router)
+api_router.include_router(release_readiness.router)
 
 api_router.include_router(traceability.artifact_router)
 api_router.include_router(traceability.trace_router)

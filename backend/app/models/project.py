@@ -130,3 +130,12 @@ class Project(TimestampMixin, Base):
 Project.test_cases = relationship(
     "TestCase", back_populates="project", cascade="all, delete-orphan", passive_deletes=True
 )
+
+
+# Milestone 10 release-readiness relationship.
+Project.release_candidates = relationship(
+    "ReleaseCandidate",
+    back_populates="project",
+    cascade="all, delete-orphan",
+    passive_deletes=True,
+)

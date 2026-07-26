@@ -11,6 +11,7 @@ const items = [
   { key: "impact", label: "Impact", icon: "impact" },
   { key: "assistant", label: "AI Assistant", icon: "assistant" },
   { key: "analytics", label: "Analytics", icon: "analytics" },
+  { key: "releases", label: "Release Readiness", icon: "release" },
 ];
 
 export default function ProjectNav({ projectId }) {

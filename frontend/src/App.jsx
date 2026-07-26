@@ -10,6 +10,7 @@ import ImpactAnalysisPage from "./pages/ImpactAnalysisPage";
 import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import RegisterPage from "./pages/RegisterPage";
+import ReleaseReadinessPage from "./pages/ReleaseReadinessPage";
 import RequirementsPage from "./pages/RequirementsPage";
 import TraceabilityPage from "./pages/TraceabilityPage";
 import TestCasesPage from "./pages/TestCasesPage";
@@ -84,6 +85,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ImpactAnalysisPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId/releases"
+            element={
+              <ProtectedRoute>
+                <ReleaseReadinessPage />
               </ProtectedRoute>
             }
           />

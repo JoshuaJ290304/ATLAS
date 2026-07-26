@@ -25,6 +25,8 @@ from app.models import (  # noqa: F401
     RequirementComment,
     RequirementReview,
     RequirementVersion,
+    ReleaseCandidate,
+    ReleaseGateEvaluation,
     TraceLink,
     User,
 )
