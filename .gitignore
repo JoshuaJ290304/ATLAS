@@ -53,3 +53,15 @@ atlas-migrate-old-db-to-new*.ps1
 *.zip
 *.dump
 .env.backup
+
+# Local development and release artifacts
+/.vscode/
+/backups/
+/.env.backup
+/clean-atlas-project-v2.ps1
+/ATLAS_*_Patch/
+/ATLAS_*_Fix/
+/ATLAS_*_Stabilization*/
+/ATLAS_*_Current_Source.zip
+/ATLAS_*_Stabilized_Source.zip
+/ATLAS_v*_Source.zip
