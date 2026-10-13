@@ -72,7 +72,16 @@ def _user_summary(user: User, counts: dict[str, dict[UUID, int]]) -> AdminUserSu
     )
 
 
-async def _active_admin_count(db: DbSession) -> int:
+async def _active_admin_count(db: DbSession, *, lock_rows: bool = False) -> int:
+    if lock_rows:
+        # Serialize administrator lifecycle changes so two concurrent demotions/suspensions
+        # cannot both observe two admins and reduce the platform to zero active admins.
+        await db.execute(
+            select(User.id)
+            .where(User.role == UserRole.ADMIN, User.is_active.is_(True))
+            .order_by(User.id)
+            .with_for_update()
+        )
     return int(
         (
             await db.execute(
@@ -283,8 +292,12 @@ async def update_user_role(
     user = await _get_user(db, user_id, for_update=True)
     if user.role == payload.role:
         return _user_summary(user, await aggregate_counts_by_owner(db))
+    if user.id == current_admin.id and payload.role == UserRole.USER:
+        raise HTTPException(
+            status_code=409, detail="An administrator cannot demote their own account"
+        )
     if user.role == UserRole.ADMIN and payload.role == UserRole.USER:
-        if user.is_active and await _active_admin_count(db) <= 1:
+        if user.is_active and await _active_admin_count(db, lock_rows=True) <= 1:
             raise HTTPException(
                 status_code=409, detail="The final active administrator cannot be demoted"
             )
@@ -316,7 +329,7 @@ async def update_user_status(
     activate = payload.status == "active"
     if user.is_active == activate:
         return _user_summary(user, await aggregate_counts_by_owner(db))
-    if not activate and user.role == UserRole.ADMIN and await _active_admin_count(db) <= 1:
+    if not activate and user.role == UserRole.ADMIN and await _active_admin_count(db, lock_rows=True) <= 1:
         raise HTTPException(
             status_code=409, detail="The final active administrator cannot be suspended"
         )

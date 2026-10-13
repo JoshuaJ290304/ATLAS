@@ -64,6 +64,28 @@ export default function DashboardPage() {
     return Object.keys(next).length === 0;
   }
 
+  async function deleteProject(project) {
+    const confirmation = window.prompt(
+      `This permanently deletes “${project.name}” and all project-scoped data.\n\nType the exact project name to continue:`,
+    );
+    if (confirmation === null) return;
+    if (confirmation !== project.name) {
+      setError("Project-name confirmation does not match. The project was not deleted.");
+      return;
+    }
+    if (!window.confirm(`Delete “${project.name}” permanently? This action cannot be undone.`)) return;
+
+    setError("");
+    setNotice("");
+    try {
+      await api.delete(`/projects/${project.id}`, { data: { project_name: confirmation } });
+      setProjects((current) => current.filter((item) => item.id !== project.id));
+      setNotice(`Project “${project.name}” was permanently deleted.`);
+    } catch (requestError) {
+      setError(apiErrorMessage(requestError, "Could not delete the project."));
+    }
+  }
+
   async function createProject(event) {
     event.preventDefault();
     if (!validateProject()) return;
@@ -187,6 +209,12 @@ export default function DashboardPage() {
                           <p className="mt-1 text-[10px] text-slate-400">{action.caption}</p>
                         </Link>
                       ))}
+                    </div>
+                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                      <span className="text-[11px] font-semibold text-slate-400">Project Settings · Danger Zone</span>
+                      <button type="button" onClick={() => deleteProject(project)} className="atlas-button-danger px-3 py-2 text-xs">
+                        <Icon name="trash" className="h-4 w-4" /> Delete Project
+                      </button>
                     </div>
                   </div>
                 </article>

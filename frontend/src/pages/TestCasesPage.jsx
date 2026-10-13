@@ -51,7 +51,7 @@ export default function TestCasesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [generateRequirement, setGenerateRequirement] = useState("");
-  const [generateTypes, setGenerateTypes] = useState(["functional", "negative", "boundary"]);
+  const [generateType, setGenerateType] = useState("functional");
 
   const load = async () => {
     setLoading(true);
@@ -149,13 +149,13 @@ export default function TestCasesPage() {
   };
 
   const generate = async () => {
-    if (!generateRequirement || generateTypes.length === 0) {
-      setMessage({ type: "error", text: "Select an approved/reviewed requirement and at least one scenario type." });
+    if (!generateRequirement || !generateType) {
+      setMessage({ type: "error", text: "Select an approved/reviewed requirement and exactly one test type." });
       return;
     }
     setSaving(true);
     try {
-      await api.post(`/projects/${projectId}/test-cases/generate`, { requirement_id: generateRequirement, test_types: generateTypes });
+      await api.post(`/projects/${projectId}/test-cases/generate`, { requirement_id: generateRequirement, test_type: generateType });
       setMessage({ type: "success", text: "AI-assisted draft test cases generated with requirement traceability." });
       await load();
     } catch (error) {
@@ -201,9 +201,12 @@ export default function TestCasesPage() {
               <option value="">Select approved/reviewed requirement</option>
               {requirements.filter((r) => ["approved", "reviewed"].includes(r.status)).map((r) => <option key={r.id} value={r.id}>{r.code} — {r.title}</option>)}
             </select>
-            <div className="flex flex-wrap gap-2">
-              {["functional","positive","negative","boundary","security","performance","integration","regression"].map((type) => <label key={type} className="atlas-chip"><input type="checkbox" checked={generateTypes.includes(type)} onChange={() => setGenerateTypes((current) => current.includes(type) ? current.filter((x) => x !== type) : [...current, type])} /> {type.replace("_", " ")}</label>)}
-            </div>
+            <label className="atlas-field">
+              <span>Test type <small className="font-normal text-slate-400">(select exactly one)</small></span>
+              <select className="atlas-input" value={generateType} onChange={(e) => setGenerateType(e.target.value)}>
+                {["functional","positive","negative","boundary","security","performance","integration","regression"].map((type) => <option key={type} value={type}>{type.replace("_", " ")}</option>)}
+              </select>
+            </label>
             <button className="atlas-button atlas-button-primary" type="button" onClick={generate} disabled={saving}><Icon name="assistant" className="h-4 w-4" />Generate</button>
           </div>
         </aside>

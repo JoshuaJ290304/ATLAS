@@ -50,3 +50,15 @@ class ProjectRead(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProjectDeleteConfirm(BaseModel):
+    project_name: str = Field(min_length=1, max_length=160)
+
+    @field_validator("project_name")
+    @classmethod
+    def validate_project_name(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("Project name confirmation is required")
+        return cleaned

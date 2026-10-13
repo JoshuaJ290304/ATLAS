@@ -208,7 +208,7 @@ async def delete_test_case(
     return Response(status_code=204)
 
 
-@router.post("/generate", response_model=list[TestCaseRead], status_code=201)
+@router.post("/generate", response_model=TestCaseRead, status_code=201)
 async def generate(
     project_id: UUID, payload: TestCaseGenerateRequest, db: DbSession, current_user: CurrentUser
 ):
@@ -216,66 +216,64 @@ async def generate(
     req = await validate_requirement(db, project_id, payload.requirement_id)
     if req.status not in {RequirementStatus.APPROVED, RequirementStatus.REVIEWED}:
         raise HTTPException(409, "Approve or review the requirement before generating test cases")
-    created = []
-    for t in dict.fromkeys(payload.test_types):
-        priority = (
-            TestCasePriority.CRITICAL
-            if t == TestCaseType.SECURITY
-            else TestCasePriority.HIGH
-            if t in {TestCaseType.NEGATIVE, TestCaseType.BOUNDARY}
-            else TestCasePriority.MEDIUM
-        )
-        item = TestCase(
-            project_id=project_id,
-            requirement_id=req.id,
-            code=await next_code(db, project_id),
-            title=f"{t.value.replace('_', ' ').title()} — {req.title}",
-            objective=f"Verify {req.code}: {req.description}",
-            preconditions="The application is running and the tester has appropriate access.",
-            test_data="Use valid project data plus scenario-specific invalid or boundary values.",
-            overall_expected_result=(
-                f"The system satisfies {req.code} for the {t.value.replace('_', ' ')} scenario."
-            ),
-            test_type=t,
-            priority=priority,
-            status=TestCaseStatus.DRAFT,
-            source=TestCaseSource.AI_GENERATED,
-            generation_explanation=(
-                f"Generated from {req.code} using requirement wording, "
-                "scenario type, and traceability context."
-            ),
-        )
-        db.add(item)
-        await db.flush()
-        steps = [
-            ("Open the relevant ATLAS workflow.", "The workflow loads without errors."),
+    t = payload.test_type
+    priority = (
+        TestCasePriority.CRITICAL
+        if t == TestCaseType.SECURITY
+        else TestCasePriority.HIGH
+        if t in {TestCaseType.NEGATIVE, TestCaseType.BOUNDARY}
+        else TestCasePriority.MEDIUM
+    )
+    item = TestCase(
+        project_id=project_id,
+        requirement_id=req.id,
+        code=await next_code(db, project_id),
+        title=f"{t.value.replace('_', ' ').title()} — {req.title}",
+        objective=f"Verify {req.code}: {req.description}",
+        preconditions="The application is running and the tester has appropriate access.",
+        test_data="Use valid project data plus scenario-specific invalid or boundary values.",
+        overall_expected_result=(
+            f"The system satisfies {req.code} for the {t.value.replace('_', ' ')} scenario."
+        ),
+        test_type=t,
+        priority=priority,
+        status=TestCaseStatus.DRAFT,
+        source=TestCaseSource.AI_GENERATED,
+        generation_explanation=(
+            f"Generated from {req.code} using requirement wording, "
+            "scenario type, and traceability context."
+        ),
+    )
+    db.add(item)
+    await db.flush()
+    steps = [
+        ("Open the relevant ATLAS workflow.", "The workflow loads without errors."),
+        (
+            f"Execute the {t.value.replace('_', ' ')} scenario described by {req.code}.",
             (
-                f"Execute the {t.value.replace('_', ' ')} scenario described by {req.code}.",
-                (
-                    "The system validates and processes the scenario "
-                    "consistently with the requirement."
-                ),
+                "The system validates and processes the scenario "
+                "consistently with the requirement."
             ),
-            (
-                "Review the displayed result and stored state.",
-                f"Observed behaviour matches {req.code} and no unrelated data is changed.",
-            ),
-        ]
-        for i, (a, e) in enumerate(steps, 1):
-            db.add(TestStep(test_case_id=item.id, position=i, action=a, expected_result=e))
-        await db.flush()
-        r = await db.execute(
-            select(TestCase).options(selectinload(TestCase.steps)).where(TestCase.id == item.id)
+        ),
+        (
+            "Review the displayed result and stored state.",
+            f"Observed behaviour matches {req.code} and no unrelated data is changed.",
+        ),
+    ]
+    for i, (a, e) in enumerate(steps, 1):
+        db.add(TestStep(test_case_id=item.id, position=i, action=a, expected_result=e))
+    await db.flush()
+    r = await db.execute(
+        select(TestCase).options(selectinload(TestCase.steps)).where(TestCase.id == item.id)
+    )
+    item = r.scalar_one()
+    db.add(
+        TestCaseVersion(
+            test_case_id=item.id,
+            version=1,
+            snapshot=snapshot(item),
+            change_note="AI-assisted generation",
         )
-        item = r.scalar_one()
-        db.add(
-            TestCaseVersion(
-                test_case_id=item.id,
-                version=1,
-                snapshot=snapshot(item),
-                change_note="AI-assisted generation",
-            )
-        )
-        created.append(item)
+    )
     await db.commit()
-    return created
+    return item

@@ -4,9 +4,11 @@ from fastapi import APIRouter, HTTPException, Response, status
 from sqlalchemy import func, select
 
 from app.api.dependencies import CurrentUser, DbSession
+from app.models.admin import AuditSeverity
 from app.models.project import Project
-from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
+from app.schemas.project import ProjectCreate, ProjectDeleteConfirm, ProjectRead, ProjectUpdate
 from app.services.assistant import delete_project_vectors
+from app.services.admin import write_platform_audit
 from app.services.documents import remove_project_upload_directory
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -98,8 +100,26 @@ async def delete_project(
     project_id: UUID,
     db: DbSession,
     current_user: CurrentUser,
+    payload: ProjectDeleteConfirm,
 ) -> Response:
     project = await get_owned_project(db, project_id, current_user.id)
+    if payload.project_name != project.name:
+        raise HTTPException(
+            status_code=409,
+            detail="Project-name confirmation does not match. The project was not deleted.",
+        )
+    await write_platform_audit(
+        db,
+        action="project.deleted",
+        actor_id=current_user.id,
+        project_id=project.id,
+        severity=AuditSeverity.WARNING,
+        details={
+            "project_name": project.name,
+            "project_id": str(project.id),
+            "confirmation": "exact_name",
+        },
+    )
     await delete_project_vectors(project_id)
     await db.delete(project)
     await db.commit()

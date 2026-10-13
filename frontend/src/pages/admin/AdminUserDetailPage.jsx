@@ -90,19 +90,30 @@ export default function AdminUserDetailPage() {
                   type="button"
                   disabled={busy}
                   className="atlas-button-secondary justify-center"
-                  onClick={() => action(
-                    () => api.patch(`/admin/users/${user.id}/role`, { role: user.role === "admin" ? "user" : "admin" }),
-                    user.role === "admin" ? "Administrator role removed." : "User promoted to administrator.",
-                  )}
+                  onClick={() => {
+                    const demoting = user.role === "admin";
+                    const message = demoting
+                      ? `Demote ${user.name} to a regular user? Their administrator privileges will be removed.`
+                      : `Promote ${user.name} to administrator? This grants platform administration privileges.`;
+                    if (!window.confirm(message)) return;
+                    action(
+                      () => api.patch(`/admin/users/${user.id}/role`, { role: demoting ? "user" : "admin" }),
+                      demoting ? "Administrator role removed." : "User promoted to administrator.",
+                    );
+                  }}
                 ><Icon name="shield" className="h-4 w-4" />{user.role === "admin" ? "Demote to user" : "Promote to admin"}</button>
                 <button
                   type="button"
                   disabled={busy}
                   className={user.is_active ? "atlas-button-danger justify-center" : "atlas-button-primary justify-center"}
-                  onClick={() => action(
-                    () => api.patch(`/admin/users/${user.id}/status`, { status: user.is_active ? "suspended" : "active", reason: reason.trim() || null }),
-                    user.is_active ? "Account suspended and sessions invalidated." : "Account reactivated.",
-                  )}
+                  onClick={() => {
+                    const suspending = user.is_active;
+                    if (suspending && !window.confirm(`Suspend ${user.name}? Their active sessions will be invalidated and they will be unable to authenticate.`)) return;
+                    action(
+                      () => api.patch(`/admin/users/${user.id}/status`, { status: suspending ? "suspended" : "active", reason: reason.trim() || null }),
+                      suspending ? "Account suspended and sessions invalidated." : "Account reactivated.",
+                    );
+                  }}
                 ><Icon name={user.is_active ? "lock" : "check"} className="h-4 w-4" />{user.is_active ? "Suspend account" : "Reactivate account"}</button>
                 <button type="button" disabled={busy} className="atlas-button-secondary justify-center" onClick={() => action(() => api.post(`/admin/users/${user.id}/invalidate-sessions`), "All active sessions were invalidated.")}><Icon name="logout" className="h-4 w-4" />Invalidate all sessions</button>
                 <button type="button" disabled={busy || !user.is_active} className="atlas-button-secondary justify-center" onClick={() => action(() => api.post(`/admin/users/${user.id}/password-reset`), "Password-recovery email requested.")}><Icon name="send" className="h-4 w-4" />Send password reset</button>
