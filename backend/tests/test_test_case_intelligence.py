@@ -51,6 +51,11 @@ def test_rejected_test_case_requires_reason():
         valid_payload(status="rejected", rejection_reason="")
 
 
-def test_generation_requires_at_least_one_scenario():
+def test_generation_accepts_exactly_one_scenario_type():
+    payload = CaseGenerateRequest(requirement_id=uuid4(), test_type="boundary")
+    assert payload.test_type == CaseType.BOUNDARY
+
+
+def test_generation_rejects_legacy_multi_type_payload():
     with pytest.raises(ValidationError):
-        CaseGenerateRequest(requirement_id=uuid4(), test_types=[])
+        CaseGenerateRequest(requirement_id=uuid4(), test_types=["functional", "security"])

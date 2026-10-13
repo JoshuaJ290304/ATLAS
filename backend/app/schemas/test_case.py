@@ -84,7 +84,7 @@ class TestCaseSummary(BaseModel):
 
 
 class TestCaseGenerateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     requirement_id: UUID
-    test_types: list[TestCaseType] = Field(
-        default_factory=lambda: [TestCaseType.FUNCTIONAL], min_length=1, max_length=8
-    )
+    test_type: TestCaseType = TestCaseType.FUNCTIONAL
